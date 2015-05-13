@@ -16,7 +16,6 @@ namespace RightpointLabs.ConferenceRoom.Services
             config.Formatters.JsonFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/html"));
             UnityConfig.RegisterComponents();
 
-
             // Web API routes
             config.MapHttpAttributeRoutes();
 

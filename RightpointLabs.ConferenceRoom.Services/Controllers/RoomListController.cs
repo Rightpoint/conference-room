@@ -4,6 +4,7 @@ using Microsoft.Exchange.WebServices.Data;
 
 namespace RightpointLabs.ConferenceRoom.Services.Controllers
 {
+    [RoutePrefix("api/roomList")]
     public class RoomListController : ApiController
     {
         private readonly ExchangeService _exchangeService;
@@ -26,6 +27,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         }
 
         [Route("{id}/rooms")]
+        [HttpGet]
         public object GetRooms(string id)
         {
             return _exchangeService.GetRooms(id).Select(i => new
