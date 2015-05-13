@@ -5,6 +5,9 @@ using Microsoft.Exchange.WebServices.Data;
 
 namespace RightpointLabs.ConferenceRoom.Services.Controllers
 {
+    /// <summary>
+    /// Operations dealing with a room
+    /// </summary>
     [RoutePrefix("api/room")]
     public class RoomController : ApiController
     {
@@ -15,6 +18,11 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             _exchangeService = exchangeService;
         }
 
+        /// <summary>
+        /// Gets the schedule for a single room.
+        /// </summary>
+        /// <param name="id">The <see cref="Address"/> returned from <see cref="RoomListController.GetRooms"/></param>
+        /// <returns></returns>
         [Route("{id}/schedule")]
         public object GetSchedule(string id)
         {
