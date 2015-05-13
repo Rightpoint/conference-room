@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 using Microsoft.Exchange.WebServices.Data;
+using RightpointLabs.ConferenceRoom.Services.Models;
+using RightpointLabs.ConferenceRoom.Services.Repositories;
 
 namespace RightpointLabs.ConferenceRoom.Services.Controllers
 {
@@ -12,10 +15,12 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
     public class RoomController : ApiController
     {
         private readonly ExchangeService _exchangeService;
+        private readonly IMeetingRepository _meetingRepository;
 
-        public RoomController(ExchangeService exchangeService)
+        public RoomController(ExchangeService exchangeService, IMeetingRepository meetingRepository)
         {
             _exchangeService = exchangeService;
+            _meetingRepository = meetingRepository;
         }
 
         /// <summary>
@@ -26,22 +31,21 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         [Route("{roomAddress}/schedule")]
         public object GetSchedule(string roomAddress)
         {
-            var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
-            var cal = CalendarFolder.Bind(_exchangeService, calId);
-            return cal.FindAppointments(new CalendarView(DateTime.Today, DateTime.Today.AddDays(2))).Select(i => BuildMeeting(i)).ToList();
+            return LoadSoonAppointments(roomAddress);
         }
 
-        private static object BuildMeeting(Appointment i)
+        private List<Meeting> LoadSoonAppointments(string roomAddress)
         {
-            return new
-            {
-                i.Id,
-                i.Subject,
-                i.Start,
-                i.End,
-                Organizer = i.Organizer.Name,
-                IsStarted = false,
-            };
+            var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
+            var cal = CalendarFolder.Bind(_exchangeService, calId);
+            var apt = cal.FindAppointments(new CalendarView(DateTime.Today, DateTime.Today.AddDays(2))).ToList();
+            var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.UniqueId);
+            return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() {  UniqueId = i.Id.UniqueId } )).ToList();
+        }
+
+        private static Meeting BuildMeeting(Appointment i, MeetingInfo meetingInfo)
+        {
+            return new Meeting {Id = i.Id, Subject = i.Subject, Start = i.Start, End = i.End, Organizer = i.Organizer.Name, IsStarted = meetingInfo.IsStarted, IsEndedEarly = meetingInfo.IsEndedEarly, IsCancelled = meetingInfo.IsCancelled};
         }
 
         /// <summary>
@@ -82,16 +86,15 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
             var cal = CalendarFolder.Bind(_exchangeService, calId);
             var now = DateTime.Now;
-            var current =
-                cal.FindAppointments(new CalendarView(DateTime.Today, DateTime.Today.AddDays(2)))
+            var current =LoadSoonAppointments(roomAddress)
                     .OrderBy(i => i.Start)
-                    .FirstOrDefault(i => i.End > now);
+                    .FirstOrDefault(i => !i.IsCancelled && !i.IsEndedEarly && i.End > now);
 
             if (null == current)
             {
                 return new
                 {
-                    Status = "free",
+                    Status = RoomStatus.Free,
                     NextChangeSeconds = 15*60,
                 };
             }
@@ -99,9 +102,9 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             {
                 return new
                 {
-                    Status = "free",
+                    Status = RoomStatus.Free,
                     NextChangeSeconds = Math.Min(15 * 60, current.Start.Subtract(now).TotalSeconds),
-                    Meeting = BuildMeeting(current),
+                    Meeting = current,
                 };
             }
             else
@@ -110,7 +113,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
                 {
                     Status = "busy",
                     NextChangeSeconds = current.End.Subtract(now).TotalSeconds,
-                    Meeting = BuildMeeting(current),
+                    Meeting = current,
                 };
             }
         }
