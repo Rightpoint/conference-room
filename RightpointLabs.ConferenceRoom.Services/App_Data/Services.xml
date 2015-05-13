@@ -496,7 +496,7 @@
             <summary>
             Gets all the rooms in the specified room list.
             </summary>
-            <param name="id">The <see cref="!:Address"/> returned from <see cref="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomListController.GetAll"/></param>
+            <param name="roomListAddress">The room list address returned from <see cref="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomListController.GetAll"/></param>
             <returns></returns>
         </member>
         <member name="T:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController">
@@ -508,7 +508,33 @@
             <summary>
             Gets the schedule for a single room.
             </summary>
-            <param name="id">The <see cref="!:Address"/> returned from <see cref="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomListController.GetRooms(System.String)"/></param>
+            <param name="roomAddress">The room address returned from <see cref="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomListController.GetRooms(System.String)"/></param>
+            <returns></returns>
+        </member>
+        <member name="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController.PostStartMeeting(System.String,System.String,System.String)">
+            <summary>
+            Marks a meeting as started
+            </summary>
+            <param name="roomAddress">The address of the room</param>
+            <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
+            <param name="uniqueId">The unique ID of the meeting</param>
+            <returns></returns>
+        </member>
+        <member name="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController.PostAbandonMeeting(System.String,System.String,System.String)">
+            <summary>
+            Marks a meeting as abandoned (not started in time).
+            A client *must* call this.  If we lost connectivity to a client at a room, we'd rather let meetings continue normally than start cancelling them with no way for people to stop it.
+            </summary>
+            <param name="roomAddress">The address of the room</param>
+            <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
+            <param name="uniqueId">The unique ID of the meeting</param>
+            <returns></returns>
+        </member>
+        <member name="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController.GetStatus(System.String)">
+            <summary>
+            Get room status
+            </summary>
+            <param name="roomAddress">The address of the room</param>
             <returns></returns>
         </member>
     </members>

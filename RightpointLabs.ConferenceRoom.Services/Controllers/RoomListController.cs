@@ -36,13 +36,13 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         /// <summary>
         /// Gets all the rooms in the specified room list.
         /// </summary>
-        /// <param name="id">The <see cref="Address"/> returned from <see cref="GetAll"/></param>
+        /// <param name="roomListAddress">The room list address returned from <see cref="GetAll"/></param>
         /// <returns></returns>
         [Route("{id}/rooms")]
         [HttpGet]
-        public object GetRooms(string id)
+        public object GetRooms(string roomListAddress)
         {
-            return _exchangeService.GetRooms(id).Select(i => new
+            return _exchangeService.GetRooms(roomListAddress).Select(i => new
             {
                 i.Id,
                 i.Address,
