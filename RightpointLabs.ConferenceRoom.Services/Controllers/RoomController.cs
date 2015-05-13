@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 using Microsoft.Exchange.WebServices.Data;
-using RightpointLabs.ConferenceRoom.Services.Models;
-using RightpointLabs.ConferenceRoom.Services.Repositories;
+using RightpointLabs.ConferenceRoom.Domain.Models;
+using RightpointLabs.ConferenceRoom.Domain.Repositories;
+using RightpointLabs.ConferenceRoom.Domain.Services;
 
 namespace RightpointLabs.ConferenceRoom.Services.Controllers
 {
@@ -14,13 +15,11 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
     [RoutePrefix("api/room")]
     public class RoomController : ApiController
     {
-        private readonly ExchangeService _exchangeService;
-        private readonly IMeetingRepository _meetingRepository;
+        private readonly IConferenceRoomService _conferenceRoomService;
 
-        public RoomController(ExchangeService exchangeService, IMeetingRepository meetingRepository)
+        public RoomController(IConferenceRoomService conferenceRoomService)
         {
-            _exchangeService = exchangeService;
-            _meetingRepository = meetingRepository;
+            _conferenceRoomService = conferenceRoomService;
         }
 
         /// <summary>
@@ -31,21 +30,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         [Route("{roomAddress}/schedule")]
         public object GetSchedule(string roomAddress)
         {
-            return LoadSoonAppointments(roomAddress);
-        }
-
-        private List<Meeting> LoadSoonAppointments(string roomAddress)
-        {
-            var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
-            var cal = CalendarFolder.Bind(_exchangeService, calId);
-            var apt = cal.FindAppointments(new CalendarView(DateTime.Today, DateTime.Today.AddDays(2))).ToList();
-            var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.UniqueId);
-            return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() {  UniqueId = i.Id.UniqueId } )).ToList();
-        }
-
-        private static Meeting BuildMeeting(Appointment i, MeetingInfo meetingInfo)
-        {
-            return new Meeting {Id = i.Id, Subject = i.Subject, Start = i.Start, End = i.End, Organizer = i.Organizer.Name, IsStarted = meetingInfo.IsStarted, IsEndedEarly = meetingInfo.IsEndedEarly, IsCancelled = meetingInfo.IsCancelled};
+            return _conferenceRoomService.GetUpcomingAppointmentsForRoom(roomAddress);
         }
 
         /// <summary>
@@ -83,10 +68,8 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         [Route("{roomAddress}/status")]
         public object GetStatus(string roomAddress)
         {
-            var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
-            var cal = CalendarFolder.Bind(_exchangeService, calId);
             var now = DateTime.Now;
-            var current =LoadSoonAppointments(roomAddress)
+            var current = _conferenceRoomService.GetUpcomingAppointmentsForRoom(roomAddress)
                     .OrderBy(i => i.Start)
                     .FirstOrDefault(i => !i.IsCancelled && !i.IsEndedEarly && i.End > now);
 

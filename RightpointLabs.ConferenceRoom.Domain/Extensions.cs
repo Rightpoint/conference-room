@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
-namespace RightpointLabs.ConferenceRoom.Services
+namespace RightpointLabs.ConferenceRoom.Domain
 {
     public static class Extensions
     {

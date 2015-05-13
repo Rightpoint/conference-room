@@ -5,6 +5,10 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RightpointLabs.ConferenceRoom.Services", "RightpointLabs.ConferenceRoom.Services\RightpointLabs.ConferenceRoom.Services.csproj", "{D542CB1E-F9B0-4E2D-920D-7D0909FDDC2A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RightpointLabs.ConferenceRoom.Domain", "RightpointLabs.ConferenceRoom.Domain\RightpointLabs.ConferenceRoom.Domain.csproj", "{AD5CB851-8AAD-4C68-832C-810E2C383EA6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RightpointLabs.ConferenceRoom.Infrastructure", "RightpointLabs.ConferenceRoom.Infrastructure\RightpointLabs.ConferenceRoom.Infrastructure.csproj", "{30948D84-111A-44B7-9FEE-3513CEA6FE3E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{D542CB1E-F9B0-4E2D-920D-7D0909FDDC2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D542CB1E-F9B0-4E2D-920D-7D0909FDDC2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D542CB1E-F9B0-4E2D-920D-7D0909FDDC2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD5CB851-8AAD-4C68-832C-810E2C383EA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD5CB851-8AAD-4C68-832C-810E2C383EA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD5CB851-8AAD-4C68-832C-810E2C383EA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD5CB851-8AAD-4C68-832C-810E2C383EA6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30948D84-111A-44B7-9FEE-3513CEA6FE3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30948D84-111A-44B7-9FEE-3513CEA6FE3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30948D84-111A-44B7-9FEE-3513CEA6FE3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30948D84-111A-44B7-9FEE-3513CEA6FE3E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

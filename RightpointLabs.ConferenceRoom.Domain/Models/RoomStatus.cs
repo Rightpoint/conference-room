@@ -1,4 +1,4 @@
-﻿namespace RightpointLabs.ConferenceRoom.Services.Models
+﻿namespace RightpointLabs.ConferenceRoom.Domain.Models
 {
     public enum RoomStatus
     {

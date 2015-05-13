@@ -1,11 +1,10 @@
 using System;
-using Microsoft.Exchange.WebServices.Data;
 
-namespace RightpointLabs.ConferenceRoom.Services.Models
+namespace RightpointLabs.ConferenceRoom.Domain.Models
 {
     public class Meeting
     {
-        public ItemId Id { get; set; }
+        public string UniqueId { get; set; }
         public string Subject { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
