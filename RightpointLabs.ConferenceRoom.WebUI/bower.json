@@ -1,0 +1,23 @@
+{
+  "name": "RightpointLabs.ConferenceRoom.WebUI",
+  "version": "1.0.0",
+  "homepage": "https://github.com/jorupp/conference-room",
+  "authors": [
+    "jorupp <jorupp@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.3.15",
+    "bootstrap-less": "~3.3.4",
+    "jquery": "~2.1.3",
+    "restangular": "~1.5.1",
+    "angular-ui-router": "~0.2.14"
+  }
+}

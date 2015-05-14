@@ -198,3 +198,5 @@ FakesAssemblies/
 /RightpointLabs.ConferenceRoom.Services/AppSettings.config
 /RightpointLabs.ConferenceRoom.Services/logs
 /RightpointLabs.ConferenceRoom.Services/ConnectionStrings.config
+/RightpointLabs.ConferenceRoom.WebUI/.idea
+/RightpointLabs.ConferenceRoom.WebUI/dist
