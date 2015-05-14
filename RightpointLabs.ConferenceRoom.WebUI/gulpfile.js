@@ -94,6 +94,7 @@ gulp.task('open', ['server'], function() {
     open('http://localhost:' + PORT);
 });
 gulp.task('reload', [], function() {
+    // not working, don't know why
     connect.reload();
 });
 
