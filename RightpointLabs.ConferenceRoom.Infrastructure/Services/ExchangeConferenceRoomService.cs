@@ -18,12 +18,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly ExchangeService _exchangeService;
         private readonly IMeetingRepository _meetingRepository;
         private readonly ISecurityRepository _securityRepository;
+        private readonly IBroadcastService _broadcastService;
 
-        public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository)
+        public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService)
         {
             _exchangeService = exchangeService;
             _meetingRepository = meetingRepository;
             _securityRepository = securityRepository;
+            _broadcastService = broadcastService;
         }
 
         /// <summary>
@@ -172,7 +174,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         private void BroadcastUpdate(string roomAddress)
         {
-            // TODO
+            _broadcastService.BroadcastUpdate(roomAddress);
         }
 
         private void SendEmail(Appointment item, string subject, string body)

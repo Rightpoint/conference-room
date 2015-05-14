@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Web.Http;
 using Microsoft.Exchange.WebServices.Data;
+using RightpointLabs.ConferenceRoom.Domain.Services;
 
 namespace RightpointLabs.ConferenceRoom.Services.Controllers
 {
@@ -10,11 +11,11 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
     [RoutePrefix("api/roomList")]
     public class RoomListController : ApiController
     {
-        private readonly ExchangeService _exchangeService;
+        private readonly IConferenceRoomService _conferenceRoomService;
 
-        public RoomListController(ExchangeService exchangeService)
+        public RoomListController(IConferenceRoomService conferenceRoomService)
         {
-            _exchangeService = exchangeService;
+            _conferenceRoomService = conferenceRoomService;
         }
 
         /// <summary>
@@ -23,14 +24,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         /// <returns></returns>
         public object GetAll()
         {
-            return _exchangeService.GetRoomLists().Select(i => new
-            {
-                i.Id,
-                i.Address,
-                i.MailboxType,
-                i.Name,
-                i.RoutingType
-            }).ToList();
+            return _conferenceRoomService.GetRoomLists();
         }
 
         /// <summary>
@@ -38,18 +32,11 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         /// </summary>
         /// <param name="roomListAddress">The room list address returned from <see cref="GetAll"/></param>
         /// <returns></returns>
-        [Route("{id}/rooms")]
+        [Route("{roomListAddress}/rooms")]
         [HttpGet]
         public object GetRooms(string roomListAddress)
         {
-            return _exchangeService.GetRooms(roomListAddress).Select(i => new
-            {
-                i.Id,
-                i.Address,
-                i.MailboxType,
-                i.Name,
-                i.RoutingType
-            }).ToList();
+            return _conferenceRoomService.GetRoomsFromRoomList(roomListAddress);
         }
     }
 }
