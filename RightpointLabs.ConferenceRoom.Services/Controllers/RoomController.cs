@@ -24,6 +24,17 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         }
 
         /// <summary>
+        /// Gets the info for a single room.
+        /// </summary>
+        /// <param name="roomAddress">The room address returned from <see cref="RoomListController.GetRooms"/></param>
+        /// <returns></returns>
+        [Route("{roomAddress}/info")]
+        public object GetInfo(string roomAddress, string securityKey)
+        {
+            return _conferenceRoomService.GetInfo(roomAddress, securityKey);
+        }
+
+        /// <summary>
         /// Gets the schedule for a single room.
         /// </summary>
         /// <param name="roomAddress">The room address returned from <see cref="RoomListController.GetRooms"/></param>

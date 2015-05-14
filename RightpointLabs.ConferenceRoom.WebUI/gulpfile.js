@@ -18,6 +18,7 @@ var plumber = function() {
     }})
 };
 var debug = require('gulp-debug');
+var proxy = require('json-proxy');
 
 var JS_SCRIPT_SOURCE = 'src/**/*.js';
 var TS_SCRIPT_SOURCE = 'src/**/*.ts';
@@ -85,7 +86,14 @@ gulp.task('server', ['index'], function() {
         root: ['dist', '.'], 
         middleware: function(c, opt) {
             return [
-                c().use('/bower_components', c.static('./bower_components'))
+                c().use('/bower_components', c.static('./bower_components')),
+                proxy.initialize({
+                    proxy: {
+                        forward: {
+                            '/api': 'http://localhost:63915'
+                        }
+                    }
+                })
             ];
         }
     });

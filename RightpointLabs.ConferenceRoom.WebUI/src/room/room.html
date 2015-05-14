@@ -1,0 +1,19 @@
+<h3>{{c.displayName}}</h3>
+<table class="table-bordered">
+    <thead>
+        <tr>
+            <th>Subject</th>
+            <th>Organizer</th>
+            <th>Start</th>
+            <th>End</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="appt in c.appointments">
+            <td>{{ appt.Subject }}</td>
+            <td>{{ appt.Organizer }}</td>
+            <td>{{ appt.Start }}</td>
+            <td>{{ appt.End }}</td>
+        </tr>
+    </tbody>
+</table>

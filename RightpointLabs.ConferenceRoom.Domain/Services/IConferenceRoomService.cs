@@ -26,5 +26,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Services
         void CancelMeeting(string roomAddress, string uniqueId, string securityKey);
         void EndMeeting(string roomAddress, string uniqueId, string securityKey);
         void StartNewMeeting(string roomAddress, string securityKey, string title, int minutes);
+        object GetInfo(string roomAddress, string securityKey = null);
     }
 }

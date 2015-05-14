@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
 using System.Reflection;
+using System.Text;
 using log4net;
 using Microsoft.Exchange.WebServices.Data;
 using RightpointLabs.ConferenceRoom.Domain;
@@ -45,6 +46,16 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         public IEnumerable<Room> GetRoomsFromRoomList(string roomListAddress)
         {
             return _exchangeService.GetRooms(roomListAddress).Select(i => new Room {Address = i.Address, Name = i.Name}).ToList();
+        }
+
+        public object GetInfo(string roomAddress, string securityKey = null)
+        {
+            var roomInfo = _exchangeService.ResolveName(roomAddress).Single();
+            return new
+            {
+                DisplayName = roomInfo.Mailbox.Name,
+                SecurityStatus = _securityRepository.GetSecurityRights(roomAddress, securityKey),
+            };
         }
 
         public IEnumerable<Meeting> GetUpcomingAppointmentsForRoom(string roomAddress)

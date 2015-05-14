@@ -1,0 +1,4 @@
+<ul>
+    <li ng-repeat="roomList in c.roomLists"><a ui-sref="roomList.details({ roomListAddress: roomList.Address })">{{::roomList.Name}}</a></li>
+</ul>
+<div ui-view></div>

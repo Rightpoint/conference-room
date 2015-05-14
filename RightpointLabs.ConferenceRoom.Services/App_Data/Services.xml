@@ -504,6 +504,13 @@
             Operations dealing with a room
             </summary>
         </member>
+        <member name="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController.GetInfo(System.String,System.String)">
+            <summary>
+            Gets the info for a single room.
+            </summary>
+            <param name="roomAddress">The room address returned from <see cref="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomListController.GetRooms(System.String)"/></param>
+            <returns></returns>
+        </member>
         <member name="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController.GetSchedule(System.String)">
             <summary>
             Gets the schedule for a single room.
