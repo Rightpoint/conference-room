@@ -6,6 +6,7 @@ using Microsoft.Exchange.WebServices.Data;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
+using RightpointLabs.ConferenceRoom.Infrastructure.Services;
 
 namespace RightpointLabs.ConferenceRoom.Services.Controllers
 {
@@ -39,11 +40,23 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         /// <param name="roomAddress">The address of the room</param>
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
-        /// <returns></returns>
         [Route("{roomAddress}/meeting/start")]
-        public object PostStartMeeting(string roomAddress, string securityKey, string uniqueId)
+        public void PostStartMeeting(string roomAddress, string securityKey, string uniqueId)
         {
-            throw new NotImplementedException();
+            _conferenceRoomService.StartMeeting(roomAddress, uniqueId, securityKey);
+        }
+
+        /// <summary>
+        /// Warn attendees this meeting will be marked as abandoned (not started in time) very soon.
+        /// A client *must* call this.  If we lost connectivity to a client at a room, we'd rather let meetings continue normally than start cancelling them with no way for people to stop it.
+        /// </summary>
+        /// <param name="roomAddress">The address of the room</param>
+        /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
+        /// <param name="uniqueId">The unique ID of the meeting</param>
+        [Route("{roomAddress}/meeting/warnAbandon")]
+        public void PostWarnAbandonMeeting(string roomAddress, string securityKey, string uniqueId)
+        {
+            _conferenceRoomService.WarnMeeting(roomAddress, uniqueId, securityKey);
         }
 
         /// <summary>
@@ -53,11 +66,36 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         /// <param name="roomAddress">The address of the room</param>
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
-        /// <returns></returns>
         [Route("{roomAddress}/meeting/abandon")]
-        public object PostAbandonMeeting(string roomAddress, string securityKey, string uniqueId)
+        public void PostAbandonMeeting(string roomAddress, string securityKey, string uniqueId)
         {
-            throw new NotImplementedException();
+            _conferenceRoomService.CancelMeeting(roomAddress, uniqueId, securityKey);
+        }
+
+        /// <summary>
+        /// Start a new meeting
+        /// </summary>
+        /// <param name="roomAddress">The address of the room</param>
+        /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
+        /// <param name="title">The title of the meeting</param>
+        /// <param name="minutes">The length of the meeting in minutes</param>
+        [Route("{roomAddress}/meeting/startNew")]
+        public void PostStartNewMeeting(string roomAddress, string securityKey, string title, int minutes)
+        {
+            _conferenceRoomService.StartNewMeeting(roomAddress, securityKey, title, minutes);
+        }
+
+        /// <summary>
+        /// Marks a meeting as ended early.
+        /// A client *must* call this.  If we lost connectivity to a client at a room, we'd rather let meetings continue normally than start cancelling them with no way for people to stop it.
+        /// </summary>
+        /// <param name="roomAddress">The address of the room</param>
+        /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
+        /// <param name="uniqueId">The unique ID of the meeting</param>
+        [Route("{roomAddress}/meeting/end")]
+        public void PostEndMeeting(string roomAddress, string securityKey, string uniqueId)
+        {
+            _conferenceRoomService.EndMeeting(roomAddress, securityKey, uniqueId);
         }
 
         /// <summary>
@@ -68,37 +106,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         [Route("{roomAddress}/status")]
         public object GetStatus(string roomAddress)
         {
-            var now = DateTime.Now;
-            var current = _conferenceRoomService.GetUpcomingAppointmentsForRoom(roomAddress)
-                    .OrderBy(i => i.Start)
-                    .FirstOrDefault(i => !i.IsCancelled && !i.IsEndedEarly && i.End > now);
-
-            if (null == current)
-            {
-                return new
-                {
-                    Status = RoomStatus.Free,
-                    NextChangeSeconds = 15*60,
-                };
-            }
-            else if (now < current.Start)
-            {
-                return new
-                {
-                    Status = RoomStatus.Free,
-                    NextChangeSeconds = Math.Min(15 * 60, current.Start.Subtract(now).TotalSeconds),
-                    Meeting = current,
-                };
-            }
-            else
-            {
-                return new
-                {
-                    Status = "busy",
-                    NextChangeSeconds = current.End.Subtract(now).TotalSeconds,
-                    Meeting = current,
-                };
-            }
+            return _conferenceRoomService.GetStatus(roomAddress);
         }
     }
 }

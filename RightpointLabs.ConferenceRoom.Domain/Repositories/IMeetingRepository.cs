@@ -6,6 +6,9 @@ namespace RightpointLabs.ConferenceRoom.Domain.Repositories
     {
         MeetingInfo GetMeetingInfo(string uniqueId);
         MeetingInfo[] GetMeetingInfo(string[] uniqueIds);
+        void StartMeeting(string uniqueId);
+        void CancelMeeting(string uniqueId);
+        void EndMeeting(string uniqueId);
     }
 
 }

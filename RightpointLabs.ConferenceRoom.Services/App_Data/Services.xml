@@ -518,7 +518,15 @@
             <param name="roomAddress">The address of the room</param>
             <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
             <param name="uniqueId">The unique ID of the meeting</param>
-            <returns></returns>
+        </member>
+        <member name="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController.PostWarnAbandonMeeting(System.String,System.String,System.String)">
+            <summary>
+            Warn attendees this meeting will be marked as abandoned (not started in time) very soon.
+            A client *must* call this.  If we lost connectivity to a client at a room, we'd rather let meetings continue normally than start cancelling them with no way for people to stop it.
+            </summary>
+            <param name="roomAddress">The address of the room</param>
+            <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
+            <param name="uniqueId">The unique ID of the meeting</param>
         </member>
         <member name="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController.PostAbandonMeeting(System.String,System.String,System.String)">
             <summary>
@@ -528,7 +536,24 @@
             <param name="roomAddress">The address of the room</param>
             <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
             <param name="uniqueId">The unique ID of the meeting</param>
-            <returns></returns>
+        </member>
+        <member name="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController.PostStartNewMeeting(System.String,System.String,System.String,System.Int32)">
+            <summary>
+            Start a new meeting
+            </summary>
+            <param name="roomAddress">The address of the room</param>
+            <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
+            <param name="title">The title of the meeting</param>
+            <param name="minutes">The length of the meeting in minutes</param>
+        </member>
+        <member name="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController.PostEndMeeting(System.String,System.String,System.String)">
+            <summary>
+            Marks a meeting as ended early.
+            A client *must* call this.  If we lost connectivity to a client at a room, we'd rather let meetings continue normally than start cancelling them with no way for people to stop it.
+            </summary>
+            <param name="roomAddress">The address of the room</param>
+            <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
+            <param name="uniqueId">The unique ID of the meeting</param>
         </member>
         <member name="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController.GetStatus(System.String)">
             <summary>

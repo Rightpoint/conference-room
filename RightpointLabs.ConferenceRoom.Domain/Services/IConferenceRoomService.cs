@@ -19,5 +19,12 @@ namespace RightpointLabs.ConferenceRoom.Domain.Services
         /// <param name="roomListAddress">The room list address returned from <see cref="GetRoomLists()"/></param>
         /// <returns></returns>
         IEnumerable<Room> GetRoomsFromRoomList(string roomListAddress);
+
+        RoomStatusInfo GetStatus(string roomAddress);
+        void StartMeeting(string roomAddress, string uniqueId, string securityKey);
+        void WarnMeeting(string roomAddress, string uniqueId, string securityKey);
+        void CancelMeeting(string roomAddress, string uniqueId, string securityKey);
+        void EndMeeting(string roomAddress, string uniqueId, string securityKey);
+        void StartNewMeeting(string roomAddress, string securityKey, string title, int minutes);
     }
 }

@@ -45,5 +45,9 @@ namespace RightpointLabs.ConferenceRoom.Domain
             return chainCall(obj);
         }
 
+        public static DateTime TruncateToTheMinute(this DateTime date)
+        {
+            return new DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, 0, date.Kind);
+        }
     }
 }
