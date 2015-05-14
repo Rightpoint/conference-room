@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="Extensions.cs" />
     <Compile Include="Models\BaseObject.cs" />
+    <Compile Include="Models\Entity.cs" />
     <Compile Include="Models\Meeting.cs" />
     <Compile Include="Models\MeetingInfo.cs" />
     <Compile Include="Models\RoomStatus.cs" />

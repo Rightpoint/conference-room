@@ -47,8 +47,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
             var cal = CalendarFolder.Bind(_exchangeService, calId);
             var apt = cal.FindAppointments(new CalendarView(DateTime.Today, DateTime.Today.AddDays(2))).ToList();
-            var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.UniqueId);
-            return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { UniqueId = i.Id.UniqueId })).ToList();
+            var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
+            return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { Id = i.Id.UniqueId })).ToList();
         }
 
         private static Meeting BuildMeeting(Appointment i, MeetingInfo meetingInfo)

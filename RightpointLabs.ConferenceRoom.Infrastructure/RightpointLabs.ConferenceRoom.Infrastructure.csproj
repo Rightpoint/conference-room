@@ -40,6 +40,18 @@
     <Reference Include="Microsoft.Exchange.WebServices.Auth">
       <HintPath>..\packages\Microsoft.Exchange.WebServices.2.2\lib\40\Microsoft.Exchange.WebServices.Auth.dll</HintPath>
     </Reference>
+    <Reference Include="MongoDB.Bson">
+      <HintPath>..\packages\MongoDB.Bson.2.0.0\lib\net45\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver">
+      <HintPath>..\packages\MongoDB.Driver.2.0.0\lib\net45\MongoDB.Driver.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver.Core">
+      <HintPath>..\packages\MongoDB.Driver.Core.2.0.0\lib\net45\MongoDB.Driver.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver.Legacy">
+      <HintPath>..\packages\mongocsharpdriver.2.0.0\lib\net45\MongoDB.Driver.Legacy.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -49,7 +61,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Persistence\Collections\SecurityRequestCollectionDefinition.cs" />
+    <Compile Include="Persistence\Models\MeetingInfoValues.cs" />
+    <Compile Include="Persistence\Models\SecurityRequest.cs" />
+    <Compile Include="Persistence\Repositories\MeetingRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Persistence\Collections\MeetingInfoValuesCollectionDefinition.cs" />
+    <Compile Include="Persistence\Repositories\SecurityRepository.cs" />
+    <Compile Include="Persistence\Collections\EntityCollectionDefinition.cs" />
+    <Compile Include="Persistence\Repositories\EntityRepository.cs" />
+    <Compile Include="Persistence\IMongoConnectionHandler.cs" />
+    <Compile Include="Persistence\MongoConnectionHandler.cs" />
     <Compile Include="Services\ExchangeConferenceRoomService.cs" />
   </ItemGroup>
   <ItemGroup>
