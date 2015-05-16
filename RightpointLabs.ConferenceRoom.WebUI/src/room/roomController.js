@@ -13,7 +13,6 @@
         self.Granted = 3;
 
         self.moment = window.moment;
-        self.loadsInProgress = 0;
         self.displayName = 'Loading...';
         self.roomAddress = $stateParams.roomAddress;
         var room = Restangular.one('room', self.roomAddress);
@@ -87,16 +86,13 @@
         }
 
         function loadInfo() {
-            self.loadsInProgress++;
             return room.one('info').get({ securityKey: securityKey }).then(function(data) {
-                self.loadsInProgress--;
 
                 timeDelta = moment().diff(moment(data.CurrentTime));
                 self.displayName = data.DisplayName;
                 self.hasSecurityRights = data.SecurityStatus == 3; // granted
                 updateTimeline();
             }, function() {
-                self.loadsInProgress--;
             });
         }
 
@@ -106,9 +102,7 @@
                 $timeout.cancel(statusTimeout);
             }
 
-            self.loadsInProgress++;
             return room.one('status').get().then(function(data) {
-                self.loadsInProgress--;
                 statusTimeout = $timeout(loadStatus, 60 * 1000);
                 self.status = data.Status;
                 self.appointments = _.sortBy(data.NearTermMeetings, 'Start');
@@ -119,7 +113,6 @@
                 var waitTime = data.NextChangeSeconds ? Math.min(5 * 60, data.NextChangeSeconds + 1) : (5 * 60);
                 statusTimeout = $timeout(loadStatus, waitTime * 1000);
             }, function() {
-                self.loadsInProgress--;
                 statusTimeout = $timeout(loadStatus, 60 * 1000);
             });
         }

@@ -21,6 +21,7 @@
     "angular-ui-router": "~0.2.14",
     "moment": "~2.10.3",
     "underscore": "~1.8.3",
-    "angular-local-storage": "~0.2.0"
+    "angular-local-storage": "~0.2.0",
+    "toastr": "~2.1.1"
   }
 }
