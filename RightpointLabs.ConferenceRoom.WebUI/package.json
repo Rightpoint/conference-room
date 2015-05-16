@@ -19,6 +19,7 @@
   "devDependencies": {
     "event-stream": "^3.3.1",
     "gulp": "^3.8.11",
+    "gulp-angular-templatecache": "^1.6.0",
     "gulp-changed": "^1.2.1",
     "gulp-concat": "^2.5.2",
     "gulp-connect": "^2.2.0",
@@ -26,14 +27,15 @@
     "gulp-inject": "^1.2.0",
     "gulp-less": "^3.0.3",
     "gulp-merge": "^0.1.0",
+    "gulp-rev": "^3.0.1",
     "gulp-sourcemaps": "^1.5.2",
     "gulp-typescript": "^2.6.0",
     "gulp-watch": "^4.2.4",
     "open": "0.0.5",
     "proxy-middleware": "^0.11.1",
+    "rimraf": "^2.3.3",
     "run-sequence": "^1.1.0",
     "serve-static": "^1.9.2",
-    "url": "^0.10.3",
     "wiredep": "^2.2.2"
   },
   "dependencies": {}
