@@ -97,24 +97,78 @@
                 self.displayName = data.DisplayName;
                 self.hasSecurityRights = data.SecurityStatus == 3; // granted
                 updateTimeline();
+                scheduleCancel();
             }, function() {
                 infoTimeout = $timeout(loadInfo, 60 * 1000); // if load failed, try again in 60 seconds
             });
         }
 
         var statusTimeout = null;
+        var cancelTimeout = null;
+        var warnings = {};
+
+        function scheduleCancel() {
+            if(cancelTimeout) {
+                $timeout.cancel(cancelTimeout);
+            }
+            if(!self.current || self.current.IsStarted) {
+                return;
+            }
+
+            var now = self.currentTime();
+            var warnTime = warnings[self.current.UniqueId];
+            if(!warnTime) {
+                // we haven't warned yet - figure out when we should
+                warnTime = moment(self.current.Start).add(4, 'minute');
+                if(!warnTime.isAfter(now)) {
+                    // whoops, we should have done that already.... let's do it now.
+                    room.one('meeting').post('warnAbandon', {}, { securityKey: securityKey, uniqueId: self.current.UniqueId }).then(function() {
+                        // ok, we've told people, just remember what time it is so we give them a minute to start the meeting
+                        warnings[self.current.UniqueId] = self.currentTime();
+                        if(cancelTimeout) {
+                            $timeout.cancel(cancelTimeout);
+                        }
+                        cancelTimeout = $timeout(scheduleCancel, 61 * 1000);
+                    }, function() {
+                        // well, the warning failed... maybe the item was deleted?  In any case, reloading the status will re-run us
+                        $timeout(loadStatus, 1000);
+                    });
+                } else{
+                    // ok, not time to warn yet - re-run once it's time
+                    cancelTimeout = $timeout(scheduleCancel, warnTime.diff(now, 'millisecond', true) + 1000);
+                }
+                return;
+            }
+
+            // ok, we've warned.  Have they had a minute to get back to us yet?
+            var canCancelAt = warnTime.clone().add(1, 'minute');
+            if(!canCancelAt.isAfter(now)) {
+                // they've taken too long - cancel it now
+                room.one('meeting').post('abandon', {}, { securityKey: securityKey, uniqueId: self.current.UniqueId }).then(function() {
+                    // ok, meeting is cancelled.  Just refresh
+                    loadStatus();
+                }, function() {
+                    // well, the cancel failed... maybe the item was deleted?  In any case, reloading the status will re-run us
+                    $timeout(loadStatus, 1000);
+                });
+            } else {
+                // we need to give them some more time
+                cancelTimeout = $timeout(scheduleCancel, canCancelAt.diff(now, 'millisecond', true) + 1000);
+            }
+        }
+
         function loadStatus() {
             if(statusTimeout) {
                 $timeout.cancel(statusTimeout);
             }
 
             return room.one('status').get().then(function(data) {
-                statusTimeout = $timeout(loadStatus, 60 * 1000);
                 self.status = data.Status;
                 self.appointments = _.sortBy(data.NearTermMeetings, 'Start');
                 self.current = data.CurrentMeeting;
                 self.next = data.NextMeeting;
                 updateTimeline();
+                scheduleCancel();
 
                 var waitTime = data.NextChangeSeconds ? Math.min(5 * 60, data.NextChangeSeconds + 1) : (5 * 60);
                 statusTimeout = $timeout(loadStatus, waitTime * 1000);
@@ -185,6 +239,9 @@
             }
             if(statusTimeout) {
                 $timeout.cancel(statusTimeout);
+            }
+            if(cancelTimeout) {
+                $timeout.cancel(cancelTimeout);
             }
         });
 

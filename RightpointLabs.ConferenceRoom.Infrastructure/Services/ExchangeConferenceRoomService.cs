@@ -130,11 +130,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             var meeting = SecurityCheck(roomAddress, uniqueId, securityKey);
             var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
             var cal = CalendarFolder.Bind(_exchangeService, calId);
-            var items = cal.FindItems(new SearchFilter.IsEqualTo(AppointmentSchema.Id, uniqueId), new ItemView(100)).Cast<Appointment>().ToList();
-            items.ForEach(item =>
-            {
-                SendEmail(item, string.Format("WARNING: your meeting '{0}' is about to be cancelled.", item.Subject), "Use the conference room management device to start the meeting ASAP.");
-            });
+            var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
+            SendEmail(item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "Use the conference room management device to start the meeting ASAP.");
         }
 
         public void CancelMeeting(string roomAddress, string uniqueId, string securityKey)
@@ -144,12 +141,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
             var cal = CalendarFolder.Bind(_exchangeService, calId);
-            var items = cal.FindItems(new SearchFilter.IsEqualTo(AppointmentSchema.Id, uniqueId), new ItemView(100)).Cast<Appointment>().ToList();
-            items.ForEach(item =>
-            {
-                SendEmail(item, string.Format("Your meeting '{0}' has been cancelled.", item.Subject), "If you want to keep the room, use the conference room management device to start a new meeting ASAP.");
-                item.Delete(DeleteMode.SoftDelete);
-            });
+            var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
+            SendEmail(item, string.Format("Your meeting '{0}' in {1} has been cancelled.", item.Subject, item.Location), "If you want to keep the room, use the conference room management device to start a new meeting ASAP.");
+            item.Delete(DeleteMode.SoftDelete);
 
             BroadcastUpdate(roomAddress);
         }
@@ -162,19 +156,16 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             var now = _dateTimeService.Now.TruncateToTheMinute();
             var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
             var cal = CalendarFolder.Bind(_exchangeService, calId);
-            var items = cal.FindItems(new SearchFilter.IsEqualTo(AppointmentSchema.Id, uniqueId), new ItemView(100)).Cast<Appointment>().ToList();
-            items.ForEach(item =>
+            var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
+            if (now >= item.Start)
             {
-                if (now >= item.Start)
-                {
-                    item.End = now;
-                }
-                else
-                {
-                    item.End = item.Start;
-                }
-                item.Update(ConflictResolutionMode.AlwaysOverwrite, SendInvitationsOrCancellationsMode.SendToNone);
-            });
+                item.End = now;
+            }
+            else
+            {
+                item.End = item.Start;
+            }
+            item.Update(ConflictResolutionMode.AlwaysOverwrite, SendInvitationsOrCancellationsMode.SendToNone);
 
             BroadcastUpdate(roomAddress);
         }
