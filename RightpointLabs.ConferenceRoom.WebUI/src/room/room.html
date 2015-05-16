@@ -1,19 +1,17 @@
 <div class="room">
     <div ng-if="c.loadsInProgress">LOADING - {{ c.loadsInProgress }}</div>
-    <div class="buttons">
+    <h3 class="date">
+        {{ c.currentTime().format('ddd M/DD') }}
+    </h3>
+    <div class="buttons btn-group">
         <button class="btn" ng-click="c.refresh()">Refresh</button>
-        <div ng-if="c.current">
-            <div ng-if="c.current.status == c.BusyNotConfirmed">
-                <button class="btn" ng-click="c.start(c.current)">{{ current.isInFuture ? 'Start Early' : 'Start' }}</button>
-                <button class="btn" ng-click="c.cancel(c.current)">Cancel</button>
-            </div>
-            <div ng-if="c.current.status == c.Busy">
-                <button class="btn" ng-click="c.end(c.current)">End early</button>
-                <button ng-if="next" class="btn" ng-click="c.endAndStartNext(c.current, c.mnext)">End early and start next meeting</button>
-            </div>
-        </div>
+        <button class="btn" ng-if="!c.hasSecurityRights" ng-click="c.requestControl()">Request Control</button>
+        <button class="btn" ng-click="c.start(c.current)" ng-if="c.current && c.hasSecurityRights &&!c.current.IsStarted">{{ current.isInFuture ? 'Start Early' : 'Start' }}</button>
+        <button class="btn" ng-click="c.cancel(c.current)" ng-if="c.current && c.hasSecurityRights &&!c.current.IsStarted">Cancel</button>
+        <button class="btn" ng-click="c.end(c.current)" ng-if="c.current && c.hasSecurityRights &&c.current.IsStarted">End early</button>
+        <button class="btn" ng-click="c.endAndStartNext(c.current, c.next)" ng-if="c.current && c.hasSecurityRights && c.current.IsStarted && c.next && c.moment(c.next.Start).diff(c.currentTime(), 'minutes') < 10">End early and start next meeting</button>
     </div>
-    <h3>{{c.displayName}} - {{ c.currentTime().format('ddd M/DD h:mm a') }}</h3>
+    <h3>{{c.displayName}}</h3>
     <div class="current-appointment">
         <div ng-if="c.current">
             <h4>{{c.current.Subject}}</h4>

@@ -518,6 +518,13 @@
             <param name="roomAddress">The room address returned from <see cref="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomListController.GetRooms(System.String)"/></param>
             <returns></returns>
         </member>
+        <member name="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController.PostRequestAccess(System.String,System.String)">
+            <summary>
+            Request access to control a room
+            </summary>
+            <param name="roomAddress">The room address returned from <see cref="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomListController.GetRooms(System.String)"/></param>
+            <param name="securityKey">The key that will be used to control the room in the future (if this request is approved)</param>
+        </member>
         <member name="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController.PostStartMeeting(System.String,System.String,System.String)">
             <summary>
             Marks a meeting as started

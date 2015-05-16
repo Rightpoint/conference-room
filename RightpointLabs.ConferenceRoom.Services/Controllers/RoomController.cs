@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.ServiceModel.Channels;
+using System.Web;
 using System.Web.Http;
 using Microsoft.Exchange.WebServices.Data;
 using RightpointLabs.ConferenceRoom.Domain.Models;
@@ -43,6 +46,17 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         public object GetStatus(string roomAddress)
         {
             return _conferenceRoomService.GetStatus(roomAddress);
+        }
+
+        /// <summary>
+        /// Request access to control a room
+        /// </summary>
+        /// <param name="roomAddress">The room address returned from <see cref="RoomListController.GetRooms"/></param>
+        /// <param name="securityKey">The key that will be used to control the room in the future (if this request is approved)</param>
+        [Route("{roomAddress}/requestAccess")]
+        public void PostRequestAccess(string roomAddress, string securityKey)
+        {
+            _conferenceRoomService.RequestAccess(roomAddress, securityKey, GetClientIp());
         }
 
         /// <summary>
@@ -106,7 +120,30 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         [Route("{roomAddress}/meeting/end")]
         public void PostEndMeeting(string roomAddress, string securityKey, string uniqueId)
         {
-            _conferenceRoomService.EndMeeting(roomAddress, securityKey, uniqueId);
+            _conferenceRoomService.EndMeeting(roomAddress, uniqueId, securityKey);
+        }
+
+        private string GetClientIp(HttpRequestMessage request = null)
+        {
+            request = request ?? Request;
+
+            if (request.Properties.ContainsKey("MS_HttpContext"))
+            {
+                return ((HttpContextWrapper)request.Properties["MS_HttpContext"]).Request.UserHostAddress;
+            }
+            else if (request.Properties.ContainsKey(RemoteEndpointMessageProperty.Name))
+            {
+                RemoteEndpointMessageProperty prop = (RemoteEndpointMessageProperty)request.Properties[RemoteEndpointMessageProperty.Name];
+                return prop.Address;
+            }
+            else if (HttpContext.Current != null)
+            {
+                return HttpContext.Current.Request.UserHostAddress;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

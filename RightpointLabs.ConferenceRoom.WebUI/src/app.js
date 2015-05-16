@@ -1,8 +1,10 @@
 (function() {
     'use strict;'
 
-    angular.module('app', ['ng', 'restangular', 'ui.router']).config(['RestangularProvider', '$urlRouterProvider', function(RestangularProvider, $urlRouterProvider) {
+    angular.module('app', ['ng', 'restangular', 'ui.router', 'LocalStorageModule']).config(['RestangularProvider', '$urlRouterProvider', 'localStorageServiceProvider', function(RestangularProvider, $urlRouterProvider, localStorageServiceProvider) {
         RestangularProvider.setBaseUrl('/api');
         $urlRouterProvider.otherwise('/');
+        localStorageServiceProvider.setStorageType('localStorage');
+        localStorageServiceProvider.setPrefix('confRoom');
     }])
 })();

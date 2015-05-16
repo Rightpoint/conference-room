@@ -2,8 +2,16 @@
 // endbower
 .room {
   .buttons {
-    .btn-group();
+    //.btn-group(); - this doesn't fully work (child rules like .btn-group .btn don't get set up :(
     float: right;
+    clear: right;
+  }
+  .date {
+    float: right;
+    margin-top: 0;
+  }
+  .current-appointment {
+    min-height: 100px;
   }
   .timeline {
     position: relative;

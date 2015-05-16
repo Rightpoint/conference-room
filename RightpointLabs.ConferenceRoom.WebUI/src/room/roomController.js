@@ -1,20 +1,23 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', function(Restangular, $stateParams, $timeout, $interval, $q) {
+    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', 'localStorageService', function(Restangular, $stateParams, $timeout, $interval, $q, localStorageService) {
         var self = this;
-
-        var securityKey = '';
 
         self.Free = 0;
         self.Busy = 1;
         self.BusyNotConfirmed = 2;
+
+        self.Requested = 1;
+        self.Denied = 2;
+        self.Granted = 3;
 
         self.moment = window.moment;
         self.loadsInProgress = 0;
         self.displayName = 'Loading...';
         self.roomAddress = $stateParams.roomAddress;
         var room = Restangular.one('room', self.roomAddress);
+        var securityKey = localStorageService.get('room_' + self.roomAddress) || '';
 
         var timeDelta = moment().diff(moment());
         self.currentTime = function currentTime() {
@@ -90,6 +93,7 @@
 
                 timeDelta = moment().diff(moment(data.CurrentTime));
                 self.displayName = data.DisplayName;
+                self.hasSecurityRights = data.SecurityStatus == 3; // granted
                 updateTimeline();
             }, function() {
                 self.loadsInProgress--;
@@ -121,31 +125,41 @@
         }
 
         self.start = function(item) {
-            var p = room.post('start', { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
+            var p = room.one('meeting').post('start', {}, { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
                 return loadStatus();
             });
             showIndicator(p);
         };
         self.cancel = function(item) {
-            var p = room.post('abandon', { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
+            var p = room.one('meeting').post('abandon', {}, { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
                 return loadStatus();
             });
             showIndicator(p);
         };
         self.end = function(item) {
-            var p = room.post('end', { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
+            var p = room.one('meeting').post('end', {}, { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
                 return loadStatus();
             });
             showIndicator(p);
         };
         self.endAndStartNext = function(item, next) {
-            var p = room.post('end', { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
-                return room.post('start', { securityKey: securityKey, uniqueId: next.UniqueId }).then(function() {
+            var p = room.one('meeting').post('end', {}, { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
+                return room.one('meeting').post('start', {}, { securityKey: securityKey, uniqueId: next.UniqueId }).then(function() {
                     return loadStatus();
                 });
             });
             showIndicator(p);
         };
+        self.requestControl = function() {
+            if(!securityKey) {
+                securityKey = (''+Math.random()).replace('.','');
+                localStorageService.set('room_' + self.roomAddress, securityKey);
+            }
+            var p = room.post('requestAccess', {}, { securityKey: securityKey }).then(function() {
+                return loadStatus();
+            });
+            showIndicator(p);
+        }
         self.refresh = function() {
             var p = $q.all(loadInfo(), loadStatus());
             showIndicator(p);

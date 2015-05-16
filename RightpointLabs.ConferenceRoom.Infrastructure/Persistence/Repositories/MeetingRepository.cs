@@ -31,33 +31,39 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
         {
             var update = Update<MeetingInfoValues>
                 .Set(i => i.IsStarted, true)
-                .Set(i => i.LastModified, DateTime.Now)
-                .SetOnInsert(i => i.IsStarted, true)
-                .SetOnInsert(i => i.LastModified, DateTime.Now);
+                .Set(i => i.LastModified, DateTime.Now);
 
-            Collection.Update(Query<MeetingInfoValues>.Where(i => i.Id == uniqueId), update, UpdateFlags.Upsert);
+            var result = Collection.Update(Query<MeetingInfoValues>.Where(i => i.Id == uniqueId), update, UpdateFlags.Upsert, WriteConcern.Acknowledged);
+            if (result.DocumentsAffected != 1)
+            {
+                throw new Exception(string.Format("Expected to affect {0} documents, but affected {1}", 1, result.DocumentsAffected));
+            }
         }
 
         public void CancelMeeting(string uniqueId)
         {
             var update = Update<MeetingInfoValues>
                 .Set(i => i.IsCancelled, true)
-                .Set(i => i.LastModified, DateTime.Now)
-                .SetOnInsert(i => i.IsCancelled, true)
-                .SetOnInsert(i => i.LastModified, DateTime.Now);
+                .Set(i => i.LastModified, DateTime.Now);
 
-            Collection.Update(Query<MeetingInfoValues>.Where(i => i.Id == uniqueId), update, UpdateFlags.Upsert);
+            var result = Collection.Update(Query<MeetingInfoValues>.Where(i => i.Id == uniqueId), update, UpdateFlags.Upsert, WriteConcern.Acknowledged);
+            if (result.DocumentsAffected != 1)
+            {
+                throw new Exception(string.Format("Expected to affect {0} documents, but affected {1}", 1, result.DocumentsAffected));
+            }
         }
 
         public void EndMeeting(string uniqueId)
         {
             var update = Update<MeetingInfoValues>
                 .Set(i => i.IsEndedEarly, true)
-                .Set(i => i.LastModified, DateTime.Now)
-                .SetOnInsert(i => i.IsEndedEarly, true)
-                .SetOnInsert(i => i.LastModified, DateTime.Now);
+                .Set(i => i.LastModified, DateTime.Now);
 
-            Collection.Update(Query<MeetingInfoValues>.Where(i => i.Id == uniqueId), update, UpdateFlags.Upsert);
+            var result = Collection.Update(Query<MeetingInfoValues>.Where(i => i.Id == uniqueId), update, UpdateFlags.Upsert, WriteConcern.Acknowledged);
+            if (result.DocumentsAffected != 1)
+            {
+                throw new Exception(string.Format("Expected to affect {0} documents, but affected {1}", 1, result.DocumentsAffected));
+            }
         }
     }
 }

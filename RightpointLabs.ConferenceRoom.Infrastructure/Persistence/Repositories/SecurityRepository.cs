@@ -22,12 +22,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
                     .Max() ?? SecurityStatus.None;
         }
 
-        public void RequestAccess(string roomAddress, string securityKey)
+        public void RequestAccess(string roomAddress, string securityKey, string clientInfo)
         {
             base.Add(new SecurityRequest()
             {
                 RoomId = roomAddress,
                 Key = securityKey,
+                ClientInfo = clientInfo,
             });
         }
     }

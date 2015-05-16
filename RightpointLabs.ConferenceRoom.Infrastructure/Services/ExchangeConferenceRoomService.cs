@@ -61,6 +61,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             };
         }
 
+        public void RequestAccess(string roomAddress, string securityKey, string clientInfo)
+        {
+            _securityRepository.RequestAccess(roomAddress, securityKey, clientInfo);
+        }
+
         public IEnumerable<Meeting> GetUpcomingAppointmentsForRoom(string roomAddress)
         {
             var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
@@ -160,8 +165,15 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             var items = cal.FindItems(new SearchFilter.IsEqualTo(AppointmentSchema.Id, uniqueId), new ItemView(100)).Cast<Appointment>().ToList();
             items.ForEach(item =>
             {
-                item.End = now;
-                item.Update(ConflictResolutionMode.AlwaysOverwrite);
+                if (now >= item.Start)
+                {
+                    item.End = now;
+                }
+                else
+                {
+                    item.End = item.Start;
+                }
+                item.Update(ConflictResolutionMode.AlwaysOverwrite, SendInvitationsOrCancellationsMode.SendToNone);
             });
 
             BroadcastUpdate(roomAddress);
