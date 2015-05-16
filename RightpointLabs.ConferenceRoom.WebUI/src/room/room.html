@@ -5,6 +5,7 @@
     <div class="buttons btn-group">
         <button class="btn" ng-click="c.refresh()">Refresh</button>
         <button class="btn" ng-if="!c.hasSecurityRights" ng-click="c.requestControl()">Request Control</button>
+        <button class="btn" ng-if="c.hasSecurityRights && !c.isDefaultRoom" ng-click="c.setDefaultRoom()">Set as Default</button>
         <button class="btn" ng-click="c.start(c.current)" ng-if="c.current && c.hasSecurityRights &&!c.current.IsStarted">{{ current.isInFuture ? 'Start Early' : 'Start' }}</button>
         <button class="btn" ng-click="c.cancel(c.current)" ng-if="c.current && c.hasSecurityRights &&!c.current.IsStarted">Cancel</button>
         <button class="btn" ng-click="c.end(c.current)" ng-if="c.current && c.hasSecurityRights &&c.current.IsStarted">End early</button>

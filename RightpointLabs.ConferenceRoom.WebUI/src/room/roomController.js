@@ -17,6 +17,7 @@
         self.roomAddress = $stateParams.roomAddress;
         var room = Restangular.one('room', self.roomAddress);
         var securityKey = localStorageService.get('room_' + self.roomAddress) || '';
+        self.isDefaultRoom = localStorageService.get('defaultRoom') == self.roomAddress;
 
         var timeDelta = moment().diff(moment());
         self.currentTime = function currentTime() {
@@ -153,6 +154,10 @@
                 return loadStatus();
             });
             showIndicator(p);
+        };
+        self.setDefaultRoom = function() {
+            localStorageService.set('defaultRoom', self.roomAddress);
+            self.isDefaultRoom = localStorageService.get('defaultRoom') == self.roomAddress;
         };
         self.refresh = function() {
             var p = $q.all(loadInfo(), loadStatus());
