@@ -26,9 +26,9 @@
         <div class="marker" style="left: {{ marker.position * 100 }}%" ng-repeat="marker in c.timeline.markers">{{ marker.time ? c.moment(marker.time).format('h') : '' }}</div>
         <div class="progress">
             <div ng-repeat="range in c.timeline.ranges track by $index"
-                 title="{{ range.appointment ? (range.appointment.Subject + ': ' + c.moment(range.appointment.Start).format('h:mm a') + ' - ' + c.moment(range.appointment.End).format('h:mm a') ) : 'Free' }}"
+                 title="{{ range.appointment ? (range.appointment.Subject + ': ' + c.moment(range.appointment.Start).format('h:mm a') + ' - ' + c.moment(range.appointment.End).format('h:mm a') ) : range.isLoading ? 'Loading' : 'Free' }}"
                  class="progress-bar"
-                 ng-class="{ 'progress-bar-success': !range.appointment, 'progress-bar-danger': !!range.appointment, 'progress-bar-striped' : ((range.appointment && range.appointment.IsStarted) || range.isLoading || range.isHovered), active: range.isLoading || range.isHovered }"
+                 ng-class="{ 'progress-bar-success': !range.appointment && !range.isLoading, 'progress-bar-warning': range.isLoading, 'progress-bar-danger': !!range.appointment, 'progress-bar-striped' : ((range.appointment && range.appointment.IsStarted) || range.isLoading || range.isHovered), active: range.isLoading || range.isHovered }"
                  ng-mouseenter="range.isHovered = true"
                  ng-mouseleave="range.isHovered = false"
                  style="width: {{ range.size * 100}}%">
