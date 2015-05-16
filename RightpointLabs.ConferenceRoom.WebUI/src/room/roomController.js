@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', 'localStorageService', function(Restangular, $stateParams, $timeout, $interval, $q, localStorageService) {
+    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', 'localStorageService', '$scope', function(Restangular, $stateParams, $timeout, $interval, $q, localStorageService, $scope) {
         var self = this;
 
         self.Free = 0;
@@ -86,7 +86,11 @@
             };
         }
 
+        var infoTimeout = null;
         function loadInfo() {
+            if(infoTimeout) {
+                $timeout.cancel(infoTimeout);
+            }
             return room.one('info').get({ securityKey: securityKey }).then(function(data) {
 
                 timeDelta = moment().diff(moment(data.CurrentTime));
@@ -94,7 +98,7 @@
                 self.hasSecurityRights = data.SecurityStatus == 3; // granted
                 updateTimeline();
             }, function() {
-                $timeout(loadInfo, 60 * 1000); // if load failed, try again in 60 seconds
+                infoTimeout = $timeout(loadInfo, 60 * 1000); // if load failed, try again in 60 seconds
             });
         }
 
@@ -170,7 +174,19 @@
 
         self.refresh();
 
-        $interval(loadInfo, 60 * 60 * 1000);
+        var infoInterval = $interval(loadInfo, 60 * 60 * 1000);
+
+        $scope.$on('$destroy', function() {
+            if(infoInterval) {
+                $interval.cancel(infoInterval);
+            }
+            if(infoTimeout) {
+                $timeout.cancel(infoTimeout);
+            }
+            if(statusTimeout) {
+                $timeout.cancel(statusTimeout);
+            }
+        });
 
 
     }]);
