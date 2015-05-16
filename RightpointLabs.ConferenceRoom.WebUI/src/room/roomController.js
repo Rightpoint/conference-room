@@ -31,7 +31,7 @@
             var marker = start;
             var markers = [];
             while(!marker.isAfter(end)) {
-                markers.push({ position: marker.diff(start, 'minute', true) / totalMinutes, time: marker });
+                markers.push({ position: marker.diff(start, 'minute', true) / totalMinutes, time: marker.isBefore(end) ? marker : null });
                 marker = marker.clone().add(1, 'hour');
             }
 
@@ -99,7 +99,7 @@
         var statusTimeout = null;
         function loadStatus() {
             if(statusTimeout) {
-                statusTimeout.cancel();
+                $timeout.cancel(statusTimeout);
             }
 
             self.loadsInProgress++;

@@ -5,4 +5,36 @@
     .btn-group();
     float: right;
   }
+  .timeline {
+    position: relative;
+    padding-top: 30px;
+    padding-bottom: 20px;
+    .marker {
+      padding-left: 2px;
+      padding-top: 8px;
+      position: absolute;
+      top: 10px;
+      bottom: -0px;
+      border-left: solid 1px red;
+      z-index: -1;
+      color: red;
+      font-size: 8px;
+    }
+    .marker.now {
+      border-left: solid 3px yellow;
+      z-index: 1;
+      top: 0;
+      color: black;
+      padding-top: 0;
+      font-size: 14px;
+      padding-left: 4px;
+    }
+
+    .progress {
+      margin-bottom: 0;
+    }
+    .progress-bar {
+      border-radius: 8px;
+    }
+  }
 }
