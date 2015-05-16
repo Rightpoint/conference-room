@@ -20,13 +20,15 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly IMeetingRepository _meetingRepository;
         private readonly ISecurityRepository _securityRepository;
         private readonly IBroadcastService _broadcastService;
+        private readonly IDateTimeService _dateTimeService;
 
-        public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService)
+        public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService)
         {
             _exchangeService = exchangeService;
             _meetingRepository = meetingRepository;
             _securityRepository = securityRepository;
             _broadcastService = broadcastService;
+            _dateTimeService = dateTimeService;
         }
 
         /// <summary>
@@ -53,6 +55,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             var roomInfo = _exchangeService.ResolveName(roomAddress).Single();
             return new
             {
+                CurrentTime = _dateTimeService.Now,
                 DisplayName = roomInfo.Mailbox.Name,
                 SecurityStatus = _securityRepository.GetSecurityRights(roomAddress, securityKey),
             };
@@ -62,24 +65,28 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         {
             var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
             var cal = CalendarFolder.Bind(_exchangeService, calId);
-            var apt = cal.FindAppointments(new CalendarView(DateTime.Today, DateTime.Today.AddDays(2))).ToList();
+            var apt = cal.FindAppointments(new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))).ToList();
             var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
             return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { Id = i.Id.UniqueId })).ToList();
         }
 
         public RoomStatusInfo GetStatus(string roomAddress)
         {
-            var now = DateTime.Now;
-            var current = GetUpcomingAppointmentsForRoom(roomAddress)
-                    .OrderBy(i => i.Start)
-                    .FirstOrDefault(i => !i.IsCancelled && !i.IsEndedEarly && i.End > now);
+            var now = _dateTimeService.Now;
+            var allMeetings = GetUpcomingAppointmentsForRoom(roomAddress)
+                .OrderBy(i => i.Start).ToList();
+            var meetings = allMeetings
+                    .Where(i => !i.IsCancelled && !i.IsEndedEarly && i.End > now)
+                    .Take(2)
+                    .ToList();
+            var current = meetings.FirstOrDefault();
 
             if (null == current)
             {
                 return new RoomStatusInfo
                 {
                     Status = RoomStatus.Free,
-                    NextChangeSeconds = 15 * 60,
+                    NearTermMeetings = allMeetings.ToArray(),
                 };
             }
             else if (now < current.Start)
@@ -87,8 +94,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 return new RoomStatusInfo
                 {
                     Status = RoomStatus.Free, 
-                    NextChangeSeconds = Math.Min(15 * 60, current.Start.Subtract(now).TotalSeconds), 
-                    Meeting = current
+                    NextChangeSeconds = current.Start.Subtract(now).TotalSeconds,
+                    CurrentMeeting = current,
+                    NextMeeting = meetings.Skip(1).FirstOrDefault(),
+                    NearTermMeetings = allMeetings.ToArray(),
                 };
             }
             else
@@ -97,7 +106,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 {
                     Status = current.IsStarted ? RoomStatus.Busy : RoomStatus.BusyNotConfirmed,
                     NextChangeSeconds = current.End.Subtract(now).TotalSeconds,
-                    Meeting = current,
+                    CurrentMeeting = current,
+                    NextMeeting = meetings.Skip(1).FirstOrDefault(),
+                    NearTermMeetings = allMeetings.ToArray(),
                 };
             }
         }
@@ -143,7 +154,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             SecurityCheck(roomAddress, uniqueId, securityKey);
             _meetingRepository.EndMeeting(uniqueId);
 
-            var now = DateTime.Now.TruncateToTheMinute();
+            var now = _dateTimeService.Now.TruncateToTheMinute();
             var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
             var cal = CalendarFolder.Bind(_exchangeService, calId);
             var items = cal.FindItems(new SearchFilter.IsEqualTo(AppointmentSchema.Id, uniqueId), new ItemView(100)).Cast<Appointment>().ToList();
@@ -169,8 +180,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             }
             var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
             
-            var now = DateTime.Now.TruncateToTheMinute();
-            minutes = Math.Max(minutes, Math.Min(240, status.Meeting.ChainIfNotNull(m => (int?)m.Start.Subtract(now).TotalMinutes) ?? 240));
+            var now = _dateTimeService.Now.TruncateToTheMinute();
+            minutes = Math.Max(minutes, Math.Min(240, status.NextMeeting.ChainIfNotNull(m => (int?)m.Start.Subtract(now).TotalMinutes) ?? 240));
 
             var appt = new Appointment(_exchangeService);
             appt.Start = now;

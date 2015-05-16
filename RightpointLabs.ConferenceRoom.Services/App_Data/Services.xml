@@ -511,9 +511,9 @@
             <param name="roomAddress">The room address returned from <see cref="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomListController.GetRooms(System.String)"/></param>
             <returns></returns>
         </member>
-        <member name="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController.GetSchedule(System.String)">
+        <member name="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController.GetStatus(System.String)">
             <summary>
-            Gets the schedule for a single room.
+            Gets the status for a single room.
             </summary>
             <param name="roomAddress">The room address returned from <see cref="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomListController.GetRooms(System.String)"/></param>
             <returns></returns>
@@ -561,13 +561,6 @@
             <param name="roomAddress">The address of the room</param>
             <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
             <param name="uniqueId">The unique ID of the meeting</param>
-        </member>
-        <member name="M:RightpointLabs.ConferenceRoom.Services.Controllers.RoomController.GetStatus(System.String)">
-            <summary>
-            Get room status
-            </summary>
-            <param name="roomAddress">The address of the room</param>
-            <returns></returns>
         </member>
     </members>
 </doc>

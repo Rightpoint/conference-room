@@ -35,14 +35,14 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         }
 
         /// <summary>
-        /// Gets the schedule for a single room.
+        /// Gets the status for a single room.
         /// </summary>
         /// <param name="roomAddress">The room address returned from <see cref="RoomListController.GetRooms"/></param>
         /// <returns></returns>
-        [Route("{roomAddress}/schedule")]
-        public object GetSchedule(string roomAddress)
+        [Route("{roomAddress}/status")]
+        public object GetStatus(string roomAddress)
         {
-            return _conferenceRoomService.GetUpcomingAppointmentsForRoom(roomAddress);
+            return _conferenceRoomService.GetStatus(roomAddress);
         }
 
         /// <summary>
@@ -107,17 +107,6 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         public void PostEndMeeting(string roomAddress, string securityKey, string uniqueId)
         {
             _conferenceRoomService.EndMeeting(roomAddress, securityKey, uniqueId);
-        }
-
-        /// <summary>
-        /// Get room status
-        /// </summary>
-        /// <param name="roomAddress">The address of the room</param>
-        /// <returns></returns>
-        [Route("{roomAddress}/status")]
-        public object GetStatus(string roomAddress)
-        {
-            return _conferenceRoomService.GetStatus(roomAddress);
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Configuration;
+using System.Data;
 using System.Reflection;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -42,6 +43,7 @@ namespace RightpointLabs.ConferenceRoom.Services
             container.RegisterType<IMeetingRepository, MeetingRepository>(new HierarchicalLifetimeManager());
             container.RegisterType<ISecurityRepository, SecurityRepository>(new HierarchicalLifetimeManager());
             container.RegisterType<IConnectionManager>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => GlobalHost.ConnectionManager));
+            container.RegisterType<IDateTimeService>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => new DateTimeService(TimeSpan.FromHours(-24))));
             
             // register all your components with the container here
             // it is NOT necessary to register your controllers
