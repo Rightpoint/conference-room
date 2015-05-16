@@ -93,6 +93,7 @@
                 self.hasSecurityRights = data.SecurityStatus == 3; // granted
                 updateTimeline();
             }, function() {
+                $timeout(loadStatus, 60 * 1000); // if load failed, try again in 60 seconds
             });
         }
 
@@ -152,7 +153,7 @@
                 return loadStatus();
             });
             showIndicator(p);
-        }
+        };
         self.refresh = function() {
             var p = $q.all(loadInfo(), loadStatus());
             showIndicator(p);

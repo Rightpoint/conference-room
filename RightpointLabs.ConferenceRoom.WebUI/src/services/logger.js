@@ -9,7 +9,7 @@
             toastr.error(message, title, options ||
                 {
                     'closeButton': true,
-                    'timeOut': 120000, // wait 2min for errors
+                    'timeOut': 65000, // wait 65s for errors (generally retry @ 60s)
                     'extendedTimeOut': 15000 // 15s after they hover it
                 });
             $log.error('Error: ' + message);

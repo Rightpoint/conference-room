@@ -4,7 +4,7 @@
     angular.module('app').factory('requestInterceptor', ['$q', 'logger', 'spinner', function($q, logger, spinner){
         function startRequest(arg) {
             spinner.startRequest();
-            return arg || $q.when(arg);
+            return $q.when(arg);
         }
         function endRequest() {
             spinner.endRequest();
@@ -16,11 +16,11 @@
             } else{
                 logger.error("Unknown error communicating with server", "Unknown error");
             }
-            return arg || $q.reject(arg);
+            return $q.reject(arg);
         }
         function endSuccess(arg) {
             endRequest();
-            return arg || $q.when(arg);
+            return $q.when(arg);
         }
 
         return {
