@@ -12,7 +12,7 @@ var serveStatic = require('serve-static');
 var inject = require('gulp-inject');
 var gp = require('gulp-plumber');
 var plumber = function() {
-    return gp({ handleError: function(err) {
+    return gp({ errorHandler: function(err) {
         console.log(err);
         this.emit('end');
     }})
