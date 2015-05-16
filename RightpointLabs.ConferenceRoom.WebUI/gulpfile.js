@@ -25,6 +25,9 @@ var ngTemplates = require('gulp-angular-templatecache');
 var rev = require("gulp-rev");
 var rimraf = require('rimraf');
 var concat = require('gulp-concat');
+var ngAnnotate = require('gulp-ng-annotate');
+var uglify = require('gulp-uglify');
+var minifyCss = require('gulp-minify-css');
 
 var JS_SCRIPT_SOURCE = 'src/**/*.js';
 var TS_SCRIPT_SOURCE = 'src/**/*.ts';
@@ -47,10 +50,10 @@ function scripts() {
     return [
         tsResult.dts,
         merge([
-            tsResult.js
-                .pipe(sourcemaps.write()),
+            tsResult.js,
             gulp.src(JS_SCRIPT_SOURCE)
                 .pipe(plumber())
+                .pipe(changed('dist/scripts'))
         ])
     ];
 }
@@ -61,6 +64,7 @@ gulp.task('scripts', [], function() {
         r[0]
             .pipe(gulp.dest('dist/definitions')),
         r[1]
+            .pipe(sourcemaps.write())
             .pipe(gulp.dest('dist/scripts'))
     ]);
 });
@@ -73,7 +77,8 @@ gulp.task('scripts-release', [], function() {
             gulp.src(wiredep().js)
                 .pipe(plumber())
                 .pipe(sourcemaps.init()),
-            r[1],
+            r[1]
+                .pipe(ngAnnotate()),
             gulp.src(TEMPLATES_SOURCE)
                 .pipe(plumber())
                 .pipe(ngTemplates({
@@ -82,8 +87,9 @@ gulp.task('scripts-release', [], function() {
                 .pipe(debug()) // don't know why this helps, but it does....
         ])
             .pipe(concat('scripts.js'))
+            .pipe(uglify())
             .pipe(rev())
-            .pipe(sourcemaps.write())
+            .pipe(sourcemaps.write('.'))
             .pipe(gulp.dest('dist/scripts'))
     ]);
 });
@@ -127,8 +133,9 @@ gulp.task('styles-release', ['fonts'], function () {
                 .pipe(plumber())
         ])
         .pipe(concat('styles.css'))
+        .pipe(minifyCss())
         .pipe(rev())
-        .pipe(sourcemaps.write())
+        .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest('dist/styles'));
 });
 gulp.task('fonts', [], function() {
