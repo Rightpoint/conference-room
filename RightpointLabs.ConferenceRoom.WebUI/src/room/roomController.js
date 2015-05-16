@@ -93,7 +93,7 @@
                 self.hasSecurityRights = data.SecurityStatus == 3; // granted
                 updateTimeline();
             }, function() {
-                $timeout(loadStatus, 60 * 1000); // if load failed, try again in 60 seconds
+                $timeout(loadInfo, 60 * 1000); // if load failed, try again in 60 seconds
             });
         }
 

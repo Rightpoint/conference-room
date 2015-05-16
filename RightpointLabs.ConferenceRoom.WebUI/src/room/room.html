@@ -27,7 +27,7 @@
             <div ng-repeat="range in c.timeline.ranges track by $index"
                  title="{{ range.appointment ? (range.appointment.Subject + ': ' + c.moment(range.appointment.Start).format('h:mm a') + ' - ' + c.moment(range.appointment.End).format('h:mm a') ) : 'Free' }}"
                  class="progress-bar"
-                 ng-class="{ 'progress-bar-success': !range.appointment, 'progress-bar-danger': !!range.appointment, 'progress-bar-striped' : ((range.appointment && range.appointment.IsStarted) || range.isLoading || range.isHovered) }"
+                 ng-class="{ 'progress-bar-success': !range.appointment, 'progress-bar-danger': !!range.appointment, 'progress-bar-striped' : ((range.appointment && range.appointment.IsStarted) || range.isLoading || range.isHovered), active: range.isLoading || range.isHovered }"
                  ng-mouseenter="range.isHovered = true"
                  ng-mouseleave="range.isHovered = false"
                  style="width: {{ range.size * 100}}%">
