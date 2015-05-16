@@ -19,6 +19,7 @@ var plumber = function() {
 };
 var debug = require('gulp-debug');
 var proxy = require('json-proxy');
+var es = require('event-stream');
 
 var JS_SCRIPT_SOURCE = 'src/**/*.js';
 var TS_SCRIPT_SOURCE = 'src/**/*.ts';
@@ -60,7 +61,27 @@ gulp.task('styles', ['fonts'], function () {
         .pipe(plumber())
         .pipe(changed('dist/styles'))
         .pipe(sourcemaps.init())
+        // we run wiredep twice, once to really pull in bower components (bower: block), and once to just reference the (bower-refonly: block)
         .pipe(wiredep.stream())
+        .pipe(wiredep.stream({
+            fileTypes:{
+                less: {
+                    block: /(([ \t]*)\/\/\s*bower-refonly:*(\S*))(\n|\r|.)*?(\/\/\s*endbower)/gi,
+                    replace: {
+                        less: '@import (reference) "{{filePath}}";'
+                    }
+                }
+            }
+        }))
+        //.pipe(debug())
+        //.pipe(function() {
+        //    function t(file, cb) {
+        //        console.log(String(file.contents));
+        //        cb(null, file);
+        //    }
+        //    return es.map(t);
+        //}())
+        //.pipe(debug())
         .pipe(less())
         .pipe(sourcemaps.write())
         .pipe(gulp.dest('dist/styles'));
@@ -103,7 +124,7 @@ gulp.task('open', ['server'], function() {
 });
 gulp.task('reload', [], function() {
     // not working, don't know why
-    connect.reload();
+    return gulp.src('dist/index.html').pipe(connect.reload())
 });
 
 gulp.task('watch', ['scripts'], function() {

@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/jorupp/conference-room",
   "devDependencies": {
+    "event-stream": "^3.3.1",
     "gulp": "^3.8.11",
     "gulp-changed": "^1.2.1",
     "gulp-concat": "^2.5.2",
