@@ -25,8 +25,20 @@
         <!-- something with nested progress bars? -->
     </div>
     <div class="timeline">
+        <div class="progress">
+            <div ng-repeat="range in c.timeline.ranges track by $index"
+                 title="{{ range.appointment ? (range.appointment.Subject + ': ' + c.moment(range.appointment.Start).format('h:mm a') + ' - ' + c.moment(range.appointment.End).format('h:mm a') ) : 'Free' }}"
+                 class="progress-bar"
+                 ng-class="{ 'progress-bar-success': !range.appointment, 'progress-bar-danger': !!range.appointment, 'progress-bar-striped' : ((range.appointment && range.appointment.IsStarted) || range.isLoading || range.isHovered) }"
+                 ng-mouseenter="range.isHovered = true"
+                 ng-mouseleave="range.isHovered = false"
+                 style="width: {{ range.size * 100}}%">
+                <span class="sr-only"></span>
+            </div>
+        </div>
 
     </div>
+    <pre>{{ c.timeline | json }}</pre>
     <table class="table-bordered">
         <thead>
         <tr>
@@ -45,5 +57,4 @@
         </tr>
         </tbody>
     </table>
-    <pre>{{ c | json }}</pre>
 </div>
