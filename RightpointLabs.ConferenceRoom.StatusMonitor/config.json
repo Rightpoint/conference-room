@@ -2,6 +2,6 @@
     "apiServer": "http://localhost:63915/api",
     "signalRServer": "http://localhost:63915/signalR",
     "room": "jrupp@rightpoint.com",
-    "redPin": 4,
-    "greenPin": 17
+    "redPin": 7,
+    "greenPin": 11
 }
