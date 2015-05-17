@@ -87,7 +87,7 @@
             }
 
             self.timeline = {
-                now: { position: Math.min(1.05, Math.max(-0.05, now.diff(start, 'minute', true) / totalMinutes)), time: now },
+                now: { position: Math.min(1.01, Math.max(-0.01, now.diff(start, 'minute', true) / totalMinutes)), time: now },
                 markers: markers,
                 ranges: buildTimelineRanges()
             };

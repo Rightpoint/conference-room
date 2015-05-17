@@ -14,7 +14,7 @@
     </div>
     <h3>{{c.displayName}}</h3>
     <div class="current-appointment">
-        <div ng-if="c.current && c.freeMinutes() <= 60">
+        <div ng-if="c.current && c.freeMinutes() <= 60 && c.freeMinutes() > 10">
             <p>Free for {{ c.freeMinutes() }} minutes</p>
         </div>
         <div ng-if="!c.current || c.freeMinutes() > 60">

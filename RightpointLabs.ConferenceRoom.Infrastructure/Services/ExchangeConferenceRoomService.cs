@@ -98,7 +98,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 return new RoomStatusInfo
                 {
-                    Status = RoomStatus.Free, 
+                    Status = current.IsStarted ? RoomStatus.Busy : RoomStatus.Free, 
                     NextChangeSeconds = current.Start.Subtract(now).TotalSeconds,
                     CurrentMeeting = current,
                     NextMeeting = meetings.Skip(1).FirstOrDefault(),
