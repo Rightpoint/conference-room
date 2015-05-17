@@ -1,0 +1,17 @@
+{
+  "name": "status-monitor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^0.9.0",
+    "promise": "^7.0.1",
+    "rpi-gpio": "^0.5.1",
+    "signalr-client": "0.0.12"
+  }
+}
