@@ -19,6 +19,8 @@ async.parallel([
     console.log('gpio setup');
     console.log(e);
     console.log(results);
+    setPins(false, false);
+    updateIn(1);
 });
 
 function getStatus() {
@@ -61,18 +63,24 @@ function updateIn(delay) {
 
 function red() {
     console.log('red');
-    gio.write(config.redPin, function(e) {
-        if(e) {
-            console.log(e);
-        }
-    });
+    setPins(true, false);
 }
 function green() {
     console.log('green');
-    gio.write(config.greenPin, function(e) {
-        if(e) {
-            console.log(e);
+    setPins(false, true);
+}
+function setPins(red, green) {
+    async.parallel([
+        function(c) {
+            gpio.write(config.redPin, red, c);
+        },
+        function(c) {
+            gpio.write(config.greenPin, green, c);
         }
+    ], function (e, results) {
+        console.log('set pins');
+        console.log(e);
+        console.log(results);
     });
 }
 
@@ -90,7 +98,5 @@ client.on('UpdateHub', 'Update', function(room) {
         updateIn(1);
     }
 });
-
-updateIn(1);
 
 // wait
