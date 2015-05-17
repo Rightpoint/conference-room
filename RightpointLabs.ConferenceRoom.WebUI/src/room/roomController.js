@@ -21,7 +21,14 @@
 
         var timeDelta = moment().diff(moment());
         self.currentTime = function currentTime() {
-            return moment().add(-timeDelta, 'milliseconds');
+            return moment().add(-timeDelta, 'milliseconds').second(0).millisecond(0);
+        };
+
+        self.freeMinutes = function() {
+            if(!self.current) {
+                return null;
+            }
+            return self.moment(self.current.Start).diff(self.currentTime(), 'minutes');
         };
 
         function updateTimeline() {
@@ -133,7 +140,7 @@
                         // well, the warning failed... maybe the item was deleted?  In any case, reloading the status will re-run us
                         $timeout(loadStatus, 1000);
                     });
-                } else{
+                } else {
                     // ok, not time to warn yet - re-run once it's time
                     cancelTimeout = $timeout(scheduleCancel, warnTime.diff(now, 'millisecond', true) + 1000);
                 }
@@ -229,6 +236,7 @@
         self.refresh();
 
         var infoInterval = $interval(loadInfo, 60 * 60 * 1000);
+        var scopeCycleInterval = $interval(function() {}, 10 * 1000);
 
         $scope.$on('$destroy', function() {
             if(infoInterval) {
@@ -242,6 +250,9 @@
             }
             if(cancelTimeout) {
                 $timeout.cancel(cancelTimeout);
+            }
+            if(scopeCycleInterval) {
+                $interval.cancel(scopeCycleInterval);
             }
         });
 

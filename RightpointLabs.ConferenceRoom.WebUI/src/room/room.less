@@ -29,7 +29,7 @@
       font-size: 8px;
     }
     .marker.now {
-      border-left: solid 3px yellow;
+      border-left: none;
       z-index: 1;
       top: 0;
       color: black;
@@ -37,12 +37,38 @@
       font-size: 14px;
       padding-left: 4px;
     }
+    .marker.now.now-left {
+      border-left: solid 3px yellow;
+      padding-left: 4px;
+      text-align: left;
+    }
+    .marker.now.now-right {
+      border-right: solid 3px yellow;
+      padding-right: 4px;
+      text-align: right;
+    }
 
     .progress {
       margin-bottom: 0;
     }
     .progress-bar {
       border-radius: 8px;
+    }
+
+
+    @media screen and (max-width: 320px) and (max-height: 240px) {
+      .marker {
+        padding-top: 0;
+      }
+      .marker.now {
+        top: -7px;
+      }
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding-top: 20px;
+      padding-bottom: 10px;
     }
   }
 }
