@@ -18,6 +18,7 @@
         var room = Restangular.one('room', self.roomAddress);
         var securityKey = localStorageService.get('room_' + self.roomAddress) || '';
         self.isDefaultRoom = localStorageService.get('defaultRoom') == self.roomAddress;
+        self.hasSecurityRights = false;
 
         var timeDelta = moment().diff(moment());
         self.currentTime = function currentTime() {
@@ -115,6 +116,9 @@
         var warnings = {};
 
         function scheduleCancel() {
+            if(!self.hasSecurityRights) {
+                return;
+            }
             if(cancelTimeout) {
                 $timeout.cancel(cancelTimeout);
             }

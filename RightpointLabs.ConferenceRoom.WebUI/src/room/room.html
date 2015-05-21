@@ -6,13 +6,13 @@
         <button class="btn" ng-click="c.refresh()"><span class="glyphicon glyphicon-refresh"></span></button>
         <button class="btn" ng-if="!c.hasSecurityRights" ng-click="c.requestControl()">Request Control</button>
         <button class="btn" ng-if="c.hasSecurityRights && !c.isDefaultRoom" ng-click="c.setDefaultRoom()">Set as Default</button>
-        <button class="btn" ng-click="c.start(c.current)" ng-if="c.current && c.hasSecurityRights && !c.current.IsStarted && c.freeMinutes() < 10">{{ c.moment(c.current.Start).diff(c.currentTime(), 'minutes') < 0 ? 'Start Early' : 'Start' }}</button>
-        <button class="btn" ng-click="c.cancel(c.current)" ng-if="c.current && c.hasSecurityRights && !c.current.IsStarted && c.freeMinutes() < 10">Cancel</button>
+        <button class="btn" ng-click="c.start(c.current)" ng-if="c.current && c.hasSecurityRights && !c.current.IsStarted && c.freeMinutes() <= 10">{{ c.moment(c.current.Start).diff(c.currentTime(), 'minutes') < 0 ? 'Start Early' : 'Start' }}</button>
+        <button class="btn" ng-click="c.cancel(c.current)" ng-if="c.current && c.hasSecurityRights && !c.current.IsStarted && c.freeMinutes() <= 10">Cancel</button>
         <button class="btn" ng-click="c.end(c.current)" ng-if="c.current && c.hasSecurityRights &&c.current.IsStarted">End early</button>
         <button class="btn" ng-click="c.endAndStartNext(c.current, c.next)" ng-if="c.current && c.hasSecurityRights && c.current.IsStarted && c.next && c.moment(c.next.Start).diff(c.currentTime(), 'minutes') < 10">End early &<br/>start next</button>
         <button class="btn" ng-if="!c.current || c.freeMinutes() > 10">New meeting</button>
     </div>
-    <h3>{{c.displayName}}</h3>
+    <h3 class="room-name">{{c.displayName}}</h3>
     <div class="current-appointment">
         <div ng-if="c.current && c.freeMinutes() <= 60 && c.freeMinutes() > 10">
             <p>Free for {{ c.freeMinutes() }} minutes</p>
@@ -21,13 +21,10 @@
             <p>Free for more than an hour</p>
         </div>
         <div ng-if="c.current">
-            <h4>{{ ( !currentInRange() ? 'Next: ' : '' ) + c.current.Subject}}</h4>
+            <h4>{{ ( c.freeMinutes() > 10 ? 'Next: ' : '' ) + c.current.Subject}}</h4>
             <h5>{{c.current.Organizer}}</h5>
             <p>{{ c.moment(c.current.Start).format('h:mm a') }} - {{ c.moment(c.current.End).format('h:mm a') }}</p>
         </div>
-    </div>
-    <div class="today-free-busy">
-        <!-- something with nested progress bars? -->
     </div>
     <div class="timeline" ng-show="c.timeline">
         <div class="marker" style="left: {{ marker.position * 100 }}%" ng-repeat="marker in c.timeline.markers">{{ marker.time ? c.moment(marker.time).format('h') : '' }}</div>
