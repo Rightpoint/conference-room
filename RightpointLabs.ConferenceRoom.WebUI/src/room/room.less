@@ -1,6 +1,21 @@
 // bower-refonly:less
 // endbower
 .room {
+  .loading-background, .loading-foreground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1001;
+  }
+  .loading-background {
+    background-color: black;
+    opacity: 0.6;
+  }
+  .loading-foreground {
+  
+  }
   .buttons {
     //.btn-group(); - this doesn't fully work (child rules like .btn-group .btn don't get set up :(
     float: right;

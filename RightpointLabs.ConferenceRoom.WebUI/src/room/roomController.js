@@ -99,8 +99,7 @@
             if(infoTimeout) {
                 $timeout.cancel(infoTimeout);
             }
-            return room.one('info').get({ securityKey: securityKey }).then(function(data) {
-
+            return $q.when(room.one('info').get({ securityKey: securityKey })).then(function(data) {
                 timeDelta = moment().diff(moment(data.CurrentTime));
                 self.displayName = data.DisplayName;
                 self.hasSecurityRights = data.SecurityStatus == 3; // granted
@@ -232,7 +231,7 @@
             self.isDefaultRoom = localStorageService.get('defaultRoom') == self.roomAddress;
         };
         self.refresh = function() {
-            var p = $q.all(loadInfo(), loadStatus());
+            var p = $q.all([loadInfo(), loadStatus()]);
             showIndicator(p);
         };
 
@@ -245,7 +244,10 @@
         };
 
         function showIndicator(loadPromise) {
-
+            self.isLoading = true;
+            loadPromise.then(function() {
+                self.isLoading = false;
+            });
         }
 
         self.refresh();
