@@ -10,7 +10,7 @@
         <button class="btn" ng-click="c.cancel(c.current)" ng-if="c.current && !c.current.IsNotManaged && c.hasSecurityRights && !c.current.IsStarted && c.freeMinutes() <= 10">Cancel</button>
         <button class="btn" ng-click="c.end(c.current)" ng-if="c.current && !c.current.IsNotManaged && c.hasSecurityRights &&c.current.IsStarted">End early</button>
         <button class="btn" ng-click="c.endAndStartNext(c.current, c.next)" ng-if="c.current && !c.current.IsNotManaged && c.hasSecurityRights && c.current.IsStarted && c.next && c.moment(c.next.Start).diff(c.currentTime(), 'minutes') < 10">End early &<br/>start next</button>
-        <button class="btn" ng-if="!c.current || c.freeMinutes() > 10">New meeting</button>
+        <button class="btn" ng-if="!c.current || c.freeMinutes() > 10" data-toggle="modal" data-target="#addMeetingModal">New meeting</button>
     </div>
     <h3 class="room-name">{{c.displayName}}</h3>
     <div class="current-appointment">
@@ -42,4 +42,27 @@
         <div class="marker now now-left" ng-if="c.timeline.now.position <= 0.5" style="left: {{ c.timeline.now.position * 100 }}%">{{ c.moment(c.currentTime()).format('h:mm a') }}</div>
         <div class="marker now now-right" ng-if="c.timeline.now.position > 0.5" style="right: {{ (1-c.timeline.now.position) * 100 }}%">{{ c.moment(c.currentTime()).format('h:mm a') }}</div>
     </div>
+    <div class="modal fade" role="dialog" aria-labelledby="addMeetingTitle" aria-hidden="true" id="addMeetingModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="addMeetingTitle">Schedule New Meeting</h4>
+                </div>
+                <div class="modal-body add-meeting-body">
+                    <p>
+                        Duration: {{ c.newMeetingTime }} minutes
+                        <span class="btn-group">
+                            <button class="btn" ng-disabled="c.newMeetingTime <= 15" ng-click="c.newMeetingTime = c.newMeetingTime - 15"><span class="glyphicon glyphicon-minus-sign"></span></button>
+                            <button class="btn" ng-disabled="c.newMeetingTime >= 120" ng-click="c.newMeetingTime = c.newMeetingTime + 15"><span class="glyphicon glyphicon-plus-sign"></span></button>
+                        </span>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="c.createNewMeeting()">Create Meeting</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 </div>

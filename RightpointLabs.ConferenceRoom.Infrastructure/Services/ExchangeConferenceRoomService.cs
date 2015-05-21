@@ -196,7 +196,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
 
             var now = _dateTimeService.Now.TruncateToTheMinute();
-            minutes = Math.Max(minutes, Math.Min(240, status.NextMeeting.ChainIfNotNull(m => (int?)m.Start.Subtract(now).TotalMinutes) ?? 240));
+            minutes = Math.Max(0, Math.Min(minutes, Math.Min(120, status.NextMeeting.ChainIfNotNull(m => (int?)m.Start.Subtract(now).TotalMinutes) ?? 120)));
 
             var appt = new Appointment(_exchangeService);
             appt.Start = now;

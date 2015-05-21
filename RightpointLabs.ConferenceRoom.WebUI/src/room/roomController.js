@@ -236,6 +236,14 @@
             showIndicator(p);
         };
 
+        self.newMeetingTime = 15;
+        self.createNewMeeting = function newMeeting() {
+            var p = room.one('meeting').post('startNew', {}, { securityKey: securityKey, title: 'New Meeting', minutes: self.newMeetingTime }).then(function() {
+                return loadStatus();
+            });
+            showIndicator(p);
+        };
+
         function showIndicator(loadPromise) {
 
         }
