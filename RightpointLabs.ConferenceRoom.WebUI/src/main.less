@@ -1,7 +1,29 @@
-// pull in all the less files exposed by our bower references (like boostrap)
-// bower:less
+// pull in any *variables.less files from bower components to get the defaults
+// bower-variablesonly:less
 // endbower
 
+// define any variables we want to affect our bower components
+@gray-light: #8d827a;
+@brand-primary: #cd3f25;
+@brand-success: #aaba40;
+@brand-danger: #d9534f;
+@brand-info: #52adc0;
+
+@body-bg: #f2efe8;
+@text-color: @gray-light;
+
+@navbar-default-color: #ffffff;
+@navbar-default-bg: @brand-primary;
+@navbar-default-link-color: @navbar-default-color;
+@navbar-default-link-hover-color: darken(@navbar-default-link-color, 20%);
+@navbar-default-link-active-color: lighten(@navbar-default-link-color, 20%);
+@navbar-default-link-active-bg: darken(@navbar-default-bg, 6.5%);
+
+// pull in the rest of our bower components
+// bower-novariables:less
+// endbower
+
+// and now define our own app-wide stuff
 @media screen and (max-width: 320px) and (max-height: 240px) {
   .navbar {
     display: none;
