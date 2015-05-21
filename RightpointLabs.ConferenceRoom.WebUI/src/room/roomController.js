@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', 'localStorageService', '$scope', function(Restangular, $stateParams, $timeout, $interval, $q, localStorageService, $scope) {
+    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', 'localStorageService', '$scope', 'matchmedia', function(Restangular, $stateParams, $timeout, $interval, $q, localStorageService, $scope, matchmedia) {
         var self = this;
 
         self.Free = 0;
@@ -125,6 +125,9 @@
             if(!self.current || self.current.IsStarted) {
                 return;
             }
+            if(self.IsNotManaged) {
+                return; // unmanaged meeting
+            }
 
             var now = self.currentTime();
             var warnTime = warnings[self.current.UniqueId];
@@ -239,6 +242,12 @@
 
         self.refresh();
 
+        self.isTiny = false;
+        var isTinyDispose = matchmedia.on('(max-width: 320px) and (max-height: 240px)', function(mql) {
+            self.isTiny = mql.matches;
+        });
+
+
         var infoInterval = $interval(loadInfo, 60 * 60 * 1000);
         var scopeCycleInterval = $interval(function() {}, 10 * 1000);
 
@@ -258,6 +267,7 @@
             if(scopeCycleInterval) {
                 $interval.cancel(scopeCycleInterval);
             }
+            isTinyDispose();
         });
 
 

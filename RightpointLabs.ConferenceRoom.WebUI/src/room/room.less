@@ -5,6 +5,11 @@
     //.btn-group(); - this doesn't fully work (child rules like .btn-group .btn don't get set up :(
     float: right;
     clear: right;
+    @media screen and (max-width: 320px) and (max-height: 240px) {
+      .btn {
+        padding: 20px 25px;
+      }
+    }
   }
   .date {
     float: right;
@@ -54,7 +59,6 @@
     .progress-bar {
       border-radius: 8px;
     }
-
 
     @media screen and (max-width: 320px) and (max-height: 240px) {
       .marker {
