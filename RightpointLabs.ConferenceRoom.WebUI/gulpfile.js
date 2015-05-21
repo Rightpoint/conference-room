@@ -118,6 +118,22 @@ function styles(){
                 }
             }
         }))
+        .pipe(wiredep.stream({
+            exclude: [ /!(variables\.less)/ ],
+            fileTypes:{
+                less: {
+                    block: /(([ \t]*)\/\/\s*bower-variablesonly:*(\S*))(\n|\r|.)*?(\/\/\s*endbower)/gi,
+                }
+            }
+        }))
+        .pipe(wiredep.stream({
+            exclude: [ /variables\.less/ ],
+            fileTypes:{
+                less: {
+                    block: /(([ \t]*)\/\/\s*bower-novariables:*(\S*))(\n|\r|.)*?(\/\/\s*endbower)/gi,
+                }
+            }
+        }))
         .pipe(less());
 }
 
