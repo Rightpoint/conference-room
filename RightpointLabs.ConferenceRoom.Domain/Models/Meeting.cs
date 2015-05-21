@@ -12,5 +12,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models
         public bool IsStarted { get; set; }
         public bool IsEndedEarly { get; set; }
         public bool IsCancelled { get; set; }
+        public bool IsNotManaged { get; set; }
     }
 }

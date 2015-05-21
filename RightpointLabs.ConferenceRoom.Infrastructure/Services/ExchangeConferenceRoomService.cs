@@ -37,7 +37,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         /// <returns></returns>
         public IEnumerable<RoomList> GetRoomLists()
         {
-            return _exchangeService.GetRoomLists().Select(i => new RoomList {Address = i.Address, Name = i.Name}).ToList();
+            return _exchangeService.GetRoomLists().Select(i => new RoomList { Address = i.Address, Name = i.Name }).ToList();
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         /// <returns></returns>
         public IEnumerable<Room> GetRoomsFromRoomList(string roomListAddress)
         {
-            return _exchangeService.GetRooms(roomListAddress).Select(i => new Room {Address = i.Address, Name = i.Name}).ToList();
+            return _exchangeService.GetRooms(roomListAddress).Select(i => new Room { Address = i.Address, Name = i.Name }).ToList();
         }
 
         public object GetInfo(string roomAddress, string securityKey = null)
@@ -98,7 +98,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 return new RoomStatusInfo
                 {
-                    Status = current.IsStarted ? RoomStatus.Busy : RoomStatus.Free, 
+                    Status = current.IsStarted ? RoomStatus.Busy : RoomStatus.Free,
                     NextChangeSeconds = current.Start.Subtract(now).TotalSeconds,
                     CurrentMeeting = current,
                     NextMeeting = meetings.Skip(1).FirstOrDefault(),
@@ -128,6 +128,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         public void WarnMeeting(string roomAddress, string uniqueId, string securityKey)
         {
             var meeting = SecurityCheck(roomAddress, uniqueId, securityKey);
+            if (meeting.IsNotManaged)
+            {
+                throw new Exception("Cannot manage this meeting");
+            }
             var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
             var cal = CalendarFolder.Bind(_exchangeService, calId);
             var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
@@ -137,6 +141,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         public void CancelMeeting(string roomAddress, string uniqueId, string securityKey)
         {
             var meeting = SecurityCheck(roomAddress, uniqueId, securityKey);
+            if (meeting.IsNotManaged)
+            {
+                throw new Exception("Cannot manage this meeting");
+            }
             _meetingRepository.CancelMeeting(uniqueId);
 
             var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
@@ -150,7 +158,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         public void EndMeeting(string roomAddress, string uniqueId, string securityKey)
         {
-            SecurityCheck(roomAddress, uniqueId, securityKey);
+            var meeting = SecurityCheck(roomAddress, uniqueId, securityKey);
+            if (meeting.IsNotManaged)
+            {
+                throw new Exception("Cannot manage this meeting");
+            }
             _meetingRepository.EndMeeting(uniqueId);
 
             var now = _dateTimeService.Now.TruncateToTheMinute();
@@ -182,7 +194,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 throw new Exception("Room is not free");
             }
             var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
-            
+
             var now = _dateTimeService.Now.TruncateToTheMinute();
             minutes = Math.Max(minutes, Math.Min(240, status.NextMeeting.ChainIfNotNull(m => (int?)m.Start.Subtract(now).TotalMinutes) ?? 240));
 
@@ -236,7 +248,18 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         private static Meeting BuildMeeting(Appointment i, MeetingInfo meetingInfo)
         {
-            return new Meeting { UniqueId = i.Id.UniqueId, Subject = i.Subject, Start = i.Start, End = i.End, Organizer = i.Organizer.Name, IsStarted = meetingInfo.IsStarted, IsEndedEarly = meetingInfo.IsEndedEarly, IsCancelled = meetingInfo.IsCancelled };
+            return new Meeting
+            {
+                UniqueId = i.Id.UniqueId,
+                Subject = i.Subject,
+                Start = i.Start,
+                End = i.End,
+                Organizer = i.Organizer.Name,
+                IsStarted = meetingInfo.IsStarted,
+                IsEndedEarly = meetingInfo.IsEndedEarly,
+                IsCancelled = meetingInfo.IsCancelled,
+                IsNotManaged = i.IsAllDayEvent,
+            };
         }
 
         public static Func<ExchangeService> GetExchangeServiceBuilder(string username, string password, string serviceUrl)
