@@ -63,6 +63,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             connection.OnDisconnect += OnDisconnect;
             connection.Open();
             _subIdToRoomAddress = subIdToRoomAddress;
+            log.DebugFormat("Opened subscription to {0}", string.Join(", ", subIdToRoomAddress.Values));
             return connection;
         }
 
@@ -73,12 +74,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         private void OnNotificationEvent(object sender, NotificationEventArgs args)
         {
+            log.DebugFormat("Got args: {0}", args.Subscription.Id);
             var d = _subIdToRoomAddress;
             if (null != d)
             {
                 var room = d.TryGetValue(args.Subscription.Id);
                 if (!string.IsNullOrEmpty(room))
                 {
+                    log.DebugFormat("Got update for room: {0} - {1}", args.Subscription.Id, room);
                     _broadcastService.BroadcastUpdate(room);
                 }
             }

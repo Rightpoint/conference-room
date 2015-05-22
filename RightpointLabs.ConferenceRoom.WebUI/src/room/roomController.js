@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', 'localStorageService', '$scope', 'matchmedia', function(Restangular, $stateParams, $timeout, $interval, $q, localStorageService, $scope, matchmedia) {
+    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', 'localStorageService', '$scope', 'matchmedia', 'UpdateHub', function(Restangular, $stateParams, $timeout, $interval, $q, localStorageService, $scope, matchmedia, UpdateHub) {
         var self = this;
 
         self.Free = 0;
@@ -260,6 +260,14 @@
 
         var infoInterval = $interval(loadInfo, 60 * 60 * 1000);
         var scopeCycleInterval = $interval(function() {}, 10 * 1000);
+
+        $scope.$on('roomRefresh', function(event, room) {
+            if(self.roomAddress == room) {
+                // don't trigger the spinners
+                loadInfo();
+                loadStatus();
+            }
+        });
 
         $scope.$on('$destroy', function() {
             if(infoInterval) {

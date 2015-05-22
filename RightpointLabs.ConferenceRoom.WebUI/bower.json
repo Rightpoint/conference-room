@@ -24,7 +24,8 @@
     "angular-local-storage": "~0.2.0",
     "toastr": "~2.1.1",
     "matchmedia-ng": "~1.0.5",
-    "spin.js": "~2.1.0"
+    "spin.js": "~2.1.0",
+    "angular-signalr-hub": "~1.5.0"
   },
   "overrides": {
     "bootstrap-less": {

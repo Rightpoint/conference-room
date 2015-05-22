@@ -273,7 +273,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 }
                 var log = log4net.LogManager.GetLogger(MethodInfo.GetCurrentMethod().DeclaringType);
                 log.DebugFormat("serviceUrl wasn't configured in appSettings, running auto-discovery");
-                var svc = new ExchangeService(ExchangeVersion.Exchange2010);
+                var svc = new ExchangeService(ExchangeVersion.Exchange2010_SP1);
                 svc.Credentials = new WebCredentials(username, password);
                 svc.AutodiscoverUrl(username, url => new Uri(url).Scheme == "https");
                 log.DebugFormat("Auto-discovery complete - found URL: {0}", svc.Url);
@@ -281,7 +281,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             });
 
             return () =>
-                new ExchangeService(ExchangeVersion.Exchange2010)
+                new ExchangeService(ExchangeVersion.Exchange2010_SP1)
                 {
                     Credentials = new WebCredentials(username, password),
                     Url = new Uri(svcUrl.Value),
