@@ -6,7 +6,7 @@
 @gray-light: #8d827a;
 @brand-primary: #cd3f25;
 @brand-success: #aaba40;
-@brand-danger: #d9534f;
+@brand-danger: @brand-primary;
 @brand-info: #52adc0;
 
 @body-bg: #f2efe8;
@@ -22,6 +22,10 @@
 // pull in the rest of our bower components
 // bower-novariables:less
 // endbower
+
+.toast-error{
+  background-color: @brand-danger;
+}
 
 // and now define our own app-wide stuff
 @media screen and (max-width: 320px) and (max-height: 240px) {
