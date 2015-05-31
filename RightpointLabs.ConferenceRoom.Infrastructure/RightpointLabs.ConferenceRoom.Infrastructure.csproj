@@ -72,6 +72,7 @@
     <Compile Include="Persistence\Repositories\EntityRepository.cs" />
     <Compile Include="Persistence\IMongoConnectionHandler.cs" />
     <Compile Include="Persistence\MongoConnectionHandler.cs" />
+    <Compile Include="Services\ChangeNotificationService.cs" />
     <Compile Include="Services\ExchangeConferenceRoomService.cs" />
   </ItemGroup>
   <ItemGroup>

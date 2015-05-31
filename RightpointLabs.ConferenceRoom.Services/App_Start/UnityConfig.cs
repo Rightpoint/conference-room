@@ -44,6 +44,12 @@ namespace RightpointLabs.ConferenceRoom.Services
             container.RegisterType<ISecurityRepository, SecurityRepository>(new HierarchicalLifetimeManager());
             container.RegisterType<IConnectionManager>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => GlobalHost.ConnectionManager));
             container.RegisterType<IDateTimeService>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => new DateTimeService(TimeSpan.FromHours(0))));
+
+            // create change notifier in a child container and register as a singleton with the main container (avoids creating it's dependencies in the global container)
+            var child = container.CreateChildContainer();
+            var changeNotificationService = child.Resolve<ChangeNotificationService>();
+            container.RegisterInstance(typeof(IChangeNotificationService), changeNotificationService, new ContainerControlledLifetimeManager());
+
             
             // register all your components with the container here
             // it is NOT necessary to register your controllers

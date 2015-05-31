@@ -20,10 +20,12 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
     public class RoomController : ApiController
     {
         private readonly IConferenceRoomService _conferenceRoomService;
+        private readonly IChangeNotificationService _changeNotificationService;
 
-        public RoomController(IConferenceRoomService conferenceRoomService)
+        public RoomController(IConferenceRoomService conferenceRoomService, IChangeNotificationService changeNotificationService)
         {
             _conferenceRoomService = conferenceRoomService;
+            _changeNotificationService = changeNotificationService;
         }
 
         /// <summary>
@@ -34,6 +36,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         [Route("{roomAddress}/info")]
         public object GetInfo(string roomAddress, string securityKey)
         {
+            _changeNotificationService.TrackRoom(roomAddress);
             return _conferenceRoomService.GetInfo(roomAddress, securityKey);
         }
 
@@ -45,6 +48,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         [Route("{roomAddress}/status")]
         public object GetStatus(string roomAddress)
         {
+            _changeNotificationService.TrackRoom(roomAddress);
             return _conferenceRoomService.GetStatus(roomAddress);
         }
 
