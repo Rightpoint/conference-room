@@ -42,7 +42,8 @@ function updateIn(delay) {
     }
     updateTimeout = setTimeout(function() {
         getStatus().then(function(data) {
-            var status = JSON.parse(data).Status;
+            var obj = JSON.parse(data);
+            var status = obj.Status;
             switch(status) {
                 case 0:
                     green();
@@ -56,6 +57,9 @@ function updateIn(delay) {
                 default:
                     console.log('invalid status: ' + status);
                     break;
+            }
+            if(obj.NextChangeSeconds) {
+                updateIn((obj.NextChangeSeconds + 1) * 1000); // server advises us to check back at this time
             }
         });
     }, delay);
