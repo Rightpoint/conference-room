@@ -5,8 +5,11 @@ var Promise = require('promise');
 var gpio = require('rpi-gpio');
 var async = require('async');
 var signalR = require('signalr-client');
+var path = require('path');
 
-var config = JSON.parse(fs.readFileSync('config.json'));
+var configFile = path.join(__dirname, 'config.json');
+console.log('Loading configuration from ' + configFile);
+var config = JSON.parse(fs.readFileSync(configFile));
 
 async.parallel([
     function(c) {
