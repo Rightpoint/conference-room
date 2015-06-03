@@ -124,7 +124,7 @@
             if(!self.current || self.current.IsStarted) {
                 return;
             }
-            if(self.IsNotManaged) {
+            if(self.current.IsNotManaged) {
                 return; // unmanaged meeting
             }
 
