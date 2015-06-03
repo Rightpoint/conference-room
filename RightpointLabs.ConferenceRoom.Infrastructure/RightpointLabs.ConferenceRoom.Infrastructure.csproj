@@ -74,6 +74,7 @@
     <Compile Include="Persistence\MongoConnectionHandler.cs" />
     <Compile Include="Services\ChangeNotificationService.cs" />
     <Compile Include="Services\ExchangeConferenceRoomService.cs" />
+    <Compile Include="Services\MeetingCacheService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

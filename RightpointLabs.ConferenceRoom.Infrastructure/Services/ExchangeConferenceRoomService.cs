@@ -4,12 +4,14 @@ using System.Linq;
 using System.Net.Mail;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using log4net;
 using Microsoft.Exchange.WebServices.Data;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
+using Task = System.Threading.Tasks.Task;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 {
@@ -21,14 +23,16 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly ISecurityRepository _securityRepository;
         private readonly IBroadcastService _broadcastService;
         private readonly IDateTimeService _dateTimeService;
+        private readonly IMeetingCacheService _meetingCacheService;
 
-        public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService)
+        public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService)
         {
             _exchangeService = exchangeService;
             _meetingRepository = meetingRepository;
             _securityRepository = securityRepository;
             _broadcastService = broadcastService;
             _dateTimeService = dateTimeService;
+            _meetingCacheService = meetingCacheService;
         }
 
         /// <summary>
@@ -68,11 +72,17 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         public IEnumerable<Meeting> GetUpcomingAppointmentsForRoom(string roomAddress)
         {
-            var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
-            var cal = CalendarFolder.Bind(_exchangeService, calId);
-            var apt = cal.FindAppointments(new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))).ToList();
-            var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
-            return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { Id = i.Id.UniqueId })).ToList();
+            return _meetingCacheService.GetUpcomingAppointmentsForRoom(roomAddress, () =>
+            {
+                return Task.Run(() =>
+                {
+                    var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
+                    var cal = CalendarFolder.Bind(_exchangeService, calId);
+                    var apt = cal.FindAppointments(new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))).ToList();
+                    var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
+                    return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
+                });
+            }).Result;
         }
 
         public RoomStatusInfo GetStatus(string roomAddress)
@@ -211,6 +221,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         private void BroadcastUpdate(string roomAddress)
         {
+            _meetingCacheService.ClearUpcomingAppointmentsForRoom(roomAddress);
             _broadcastService.BroadcastUpdate(roomAddress);
         }
 

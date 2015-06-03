@@ -20,12 +20,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         private readonly ExchangeService _exchangeService;
         private readonly IBroadcastService _broadcastService;
+        private readonly IMeetingCacheService _meetingCacheService;
 
         private Timer _startConnectionTimer = new Timer(10000);
-        public ChangeNotificationService(ExchangeService exchangeService, IBroadcastService broadcastService)
+        public ChangeNotificationService(ExchangeService exchangeService, IBroadcastService broadcastService, IMeetingCacheService meetingCacheService)
         {
             _exchangeService = exchangeService;
             _broadcastService = broadcastService;
+            _meetingCacheService = meetingCacheService;
             _startConnectionTimer.Stop();
             _startConnectionTimer.Elapsed += StartConnectionTimerOnElapsed;
         }
@@ -82,6 +84,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 if (!string.IsNullOrEmpty(room))
                 {
                     log.DebugFormat("Got update for room: {0} - {1}", args.Subscription.Id, room);
+                    _meetingCacheService.ClearUpcomingAppointmentsForRoom(room);
                     _broadcastService.BroadcastUpdate(room);
                 }
             }
