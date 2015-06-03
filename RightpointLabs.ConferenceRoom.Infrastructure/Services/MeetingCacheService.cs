@@ -24,5 +24,20 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _tasks.TryRemove(roomAddress, out value);
             // we don't care if there was an item to remove or not
         }
+
+        public void ClearAll()
+        {
+            // remove until there are no more keys
+            var keys = _tasks.Keys.ToList();
+            while (keys.Count > 0)
+            {
+                foreach(var key in keys)
+                {
+                    Task<IEnumerable<Meeting>> value;
+                    _tasks.TryRemove(key, out value);
+                }
+                keys = _tasks.Keys.ToList();
+            }
+        }
     }
 }

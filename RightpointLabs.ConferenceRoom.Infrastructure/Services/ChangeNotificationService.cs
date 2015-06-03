@@ -65,12 +65,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             connection.OnDisconnect += OnDisconnect;
             connection.Open();
             _subIdToRoomAddress = subIdToRoomAddress;
+            _meetingCacheService.ClearAll();
             log.DebugFormat("Opened subscription to {0}", string.Join(", ", subIdToRoomAddress.Values));
             return connection;
         }
 
         private void OnDisconnect(object sender, SubscriptionErrorEventArgs args)
         {
+            _meetingCacheService.ClearAll();
             UpdateConnection();
         }
 
