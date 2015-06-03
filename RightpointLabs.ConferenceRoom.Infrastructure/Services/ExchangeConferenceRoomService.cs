@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net.Mail;
 using System.Reflection;
@@ -24,6 +25,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly IBroadcastService _broadcastService;
         private readonly IDateTimeService _dateTimeService;
         private readonly IMeetingCacheService _meetingCacheService;
+        private readonly bool _ignoreFree;
 
         public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService)
         {
@@ -33,6 +35,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _broadcastService = broadcastService;
             _dateTimeService = dateTimeService;
             _meetingCacheService = meetingCacheService;
+            _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
         }
 
         /// <summary>
@@ -79,6 +82,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
                     var cal = CalendarFolder.Bind(_exchangeService, calId);
                     var apt = cal.FindAppointments(new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))).ToList();
+                    if (_ignoreFree)
+                    {
+                        apt = apt.Where(i => i.LegacyFreeBusyStatus != LegacyFreeBusyStatus.Free).ToList();
+                    }
                     var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
                     return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
                 });
