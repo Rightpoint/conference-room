@@ -100,6 +100,12 @@
                 $timeout.cancel(infoTimeout);
             }
             return $q.when(room.one('info').get({ securityKey: securityKey })).then(function(data) {
+                if(!data || data.error) {
+                    timeDelta = 0;
+                    self.displayName = "Access Denied";
+                    self.hasSecurityRights = false;
+                    return;
+                }
                 timeDelta = moment().diff(moment(data.CurrentTime));
                 self.displayName = data.DisplayName;
                 self.hasSecurityRights = data.SecurityStatus == 3; // granted
@@ -176,6 +182,14 @@
             }
 
             return room.one('status').get().then(function(data) {
+                if(!data || data.error) {
+                    self.status = {};
+                    self.appointments = [];
+                    self.current = null;
+                    self.next = null;
+                    return;
+                }
+
                 self.status = data.Status;
                 self.appointments = _.sortBy(data.NearTermMeetings, 'Start');
                 self.current = data.CurrentMeeting;
@@ -241,6 +255,7 @@
                 return loadStatus();
             });
             showIndicator(p);
+            self.newMeetingTime = 15;
         };
 
         function showIndicator(loadPromise) {

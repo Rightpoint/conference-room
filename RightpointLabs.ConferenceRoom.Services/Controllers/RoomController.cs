@@ -49,7 +49,22 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         public object GetStatus(string roomAddress)
         {
             _changeNotificationService.TrackRoom(roomAddress);
-            return _conferenceRoomService.GetStatus(roomAddress);
+            try
+            {
+                return _conferenceRoomService.GetStatus(roomAddress);
+            }
+            catch (AccessDeniedException)
+            {
+                return new {error = "Access Denied"};
+            }
+            catch (AggregateException ex)
+            {
+                if (ex.InnerExceptions.OfType<AccessDeniedException>().Any())
+                {
+                    return new { error = "Access Denied" };
+                }
+                throw;
+            }
         }
 
         /// <summary>
