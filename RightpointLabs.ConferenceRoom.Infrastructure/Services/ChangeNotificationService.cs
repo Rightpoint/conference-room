@@ -14,13 +14,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
     {
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly ExchangeService _exchangeService;
+        private readonly Func<ExchangeService> _exchangeServiceBuilder;
         private readonly IBroadcastService _broadcastService;
         private readonly IMeetingCacheService _meetingCacheService;
 
-        public ChangeNotificationService(ExchangeService exchangeService, IBroadcastService broadcastService, IMeetingCacheService meetingCacheService)
+        public ChangeNotificationService(Func<ExchangeService> exchangeServiceBuilder, IBroadcastService broadcastService, IMeetingCacheService meetingCacheService)
         {
-            _exchangeService = exchangeService;
+            _exchangeServiceBuilder = exchangeServiceBuilder;
             _broadcastService = broadcastService;
             _meetingCacheService = meetingCacheService;
         }
@@ -33,7 +33,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 if (_roomsTracked.ContainsKey(roomAddress))
                     return;
-                _roomsTracked.Add(roomAddress, new Watcher(_exchangeService, _broadcastService, _meetingCacheService, roomAddress));
+                _roomsTracked.Add(roomAddress, new Watcher(_exchangeServiceBuilder(), _broadcastService, _meetingCacheService, roomAddress));
             }
         }
 
@@ -56,7 +56,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 _roomAddress = roomAddress;
                 _startConnectionTimer.Stop();
                 _startConnectionTimer.Elapsed += StartConnectionTimerOnElapsed;
-                log.DebugFormat("Starting watcher for {0}", _roomAddress);
+                log.DebugFormat("Starting watcher for {0} with impersonation", _roomAddress);
+                _exchangeService.ImpersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, _roomAddress);
                 Task.Run(() => UpdateConnection()); // don't wait for this to complete
             }
 

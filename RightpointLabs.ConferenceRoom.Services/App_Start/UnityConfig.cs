@@ -38,6 +38,7 @@ namespace RightpointLabs.ConferenceRoom.Services
                     ConfigurationManager.AppSettings["serviceUrl"]);
 
             container.RegisterType<ExchangeService>(new HierarchicalLifetimeManager(), new InjectionFactory(c => serviceBuilder()));
+            container.RegisterType<Func<ExchangeService>>(new HierarchicalLifetimeManager(), new InjectionFactory(c => serviceBuilder));
             container.RegisterType<IBroadcastService, SignalrBroadcastService>(new HierarchicalLifetimeManager());
             container.RegisterType<IConferenceRoomService, ExchangeConferenceRoomService>(new HierarchicalLifetimeManager());
             container.RegisterType<IMeetingRepository, MeetingRepository>(new HierarchicalLifetimeManager());
