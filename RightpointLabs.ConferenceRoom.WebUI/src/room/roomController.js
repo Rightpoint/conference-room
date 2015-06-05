@@ -254,7 +254,7 @@
 
         self.isTiny = false;
         var isTinyDispose = matchmedia.on('(max-width: 320px) and (max-height: 240px)', function(mql) {
-            self.isTiny = mql.matches;
+            self.isTiny = mql.matches || localStorageService.get('kioskMode');
         });
 
 
