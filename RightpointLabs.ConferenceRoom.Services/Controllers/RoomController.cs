@@ -36,8 +36,9 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         [Route("{roomAddress}/info")]
         public object GetInfo(string roomAddress, string securityKey)
         {
+            var data = _conferenceRoomService.GetInfo(roomAddress, securityKey);
             _changeNotificationService.TrackRoom(roomAddress);
-            return _conferenceRoomService.GetInfo(roomAddress, securityKey);
+            return data;
         }
 
         /// <summary>
@@ -48,10 +49,11 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         [Route("{roomAddress}/status")]
         public object GetStatus(string roomAddress)
         {
-            _changeNotificationService.TrackRoom(roomAddress);
             try
             {
-                return _conferenceRoomService.GetStatus(roomAddress);
+                var data = _conferenceRoomService.GetStatus(roomAddress);
+                _changeNotificationService.TrackRoom(roomAddress);
+                return data;
             }
             catch (AccessDeniedException)
             {
@@ -66,7 +68,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
                 throw;
             }
         }
-
+         
         /// <summary>
         /// Request access to control a room
         /// </summary>
