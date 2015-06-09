@@ -59,11 +59,16 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         public object GetInfo(string roomAddress, string securityKey = null)
         {
-            var roomInfo = _exchangeService.ResolveName(roomAddress).Single();
+            var room = _exchangeService.ResolveName(roomAddress).SingleOrDefault();
+            if (null == room)
+            {
+                return null;
+            }
+
             return new
             {
                 CurrentTime = _dateTimeService.Now,
-                DisplayName = roomInfo.Mailbox.Name,
+                DisplayName = room.Mailbox.Name,
                 SecurityStatus = _securityRepository.GetSecurityRights(roomAddress, securityKey),
             };
         }
@@ -79,15 +84,26 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 return Task.Run(() =>
                 {
-                    var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
-                    var cal = CalendarFolder.Bind(_exchangeService, calId);
-                    var apt = cal.FindAppointments(new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))).ToList();
-                    if (_ignoreFree)
+                    try
                     {
-                        apt = apt.Where(i => i.LegacyFreeBusyStatus != LegacyFreeBusyStatus.Free).ToList();
+                        var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
+                        var cal = CalendarFolder.Bind(_exchangeService, calId);
+                        var apt = cal.FindAppointments(new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))).ToList();
+                        if (_ignoreFree)
+                        {
+                            apt = apt.Where(i => i.LegacyFreeBusyStatus != LegacyFreeBusyStatus.Free).ToList();
+                        }
+                        var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
+                        return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
                     }
-                    var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
-                    return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
+                    catch (ServiceResponseException ex)
+                    {
+                        if (ex.ErrorCode == ServiceError.ErrorFolderNotFound || ex.ErrorCode == ServiceError.ErrorNonExistentMailbox)
+                        {
+                            throw new AccessDeniedException("Folder/mailbox not found", ex);
+                        }
+                        throw;
+                    }
                 });
             }).Result;
         }
