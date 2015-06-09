@@ -26,6 +26,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly IDateTimeService _dateTimeService;
         private readonly IMeetingCacheService _meetingCacheService;
         private readonly bool _ignoreFree;
+        private readonly bool _noDeleteOnCancel;
 
         public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService)
         {
@@ -36,6 +37,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _dateTimeService = dateTimeService;
             _meetingCacheService = meetingCacheService;
             _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
+            _noDeleteOnCancel = bool.Parse(ConfigurationManager.AppSettings["noDeleteOnCancel"] ?? "false");
         }
 
         /// <summary>
@@ -184,7 +186,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             var cal = CalendarFolder.Bind(_exchangeService, calId);
             var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
             SendEmail(item, string.Format("Your meeting '{0}' in {1} has been cancelled.", item.Subject, item.Location), "If you want to keep the room, use the conference room management device to start a new meeting ASAP.");
-            item.Delete(DeleteMode.SoftDelete);
+            if (_noDeleteOnCancel)
+            {
+                item.Delete(DeleteMode.SoftDelete);
+            }
 
             BroadcastUpdate(roomAddress);
         }
