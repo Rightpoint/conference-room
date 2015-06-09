@@ -119,31 +119,36 @@
         var statusTimeout = null;
         var cancelTimeout = null;
         var warnings = {};
+        var cancels = {};
 
         function scheduleCancel() {
+            var current = self.current;
             if(!self.hasSecurityRights) {
                 return;
             }
             if(cancelTimeout) {
                 $timeout.cancel(cancelTimeout);
             }
-            if(!self.current || self.current.IsStarted) {
+            if(!current || current.IsStarted) {
                 return;
             }
-            if(self.current.IsNotManaged) {
+            if(current.IsNotManaged) {
                 return; // unmanaged meeting
+            }
+            if(cancels[current.UniqueId]) {
+                return; // already cancelled, we just aren't updated yet
             }
 
             var now = self.currentTime();
-            var warnTime = warnings[self.current.UniqueId];
+            var warnTime = warnings[current.UniqueId];
             if(!warnTime) {
                 // we haven't warned yet - figure out when we should
-                warnTime = moment(self.current.Start).add(4, 'minute');
+                warnTime = moment(current.Start).add(4, 'minute');
                 if(!warnTime.isAfter(now)) {
                     // whoops, we should have done that already.... let's do it now.
-                    room.one('meeting').post('warnAbandon', {}, { securityKey: securityKey, uniqueId: self.current.UniqueId }).then(function() {
+                    room.one('meeting').post('warnAbandon', {}, { securityKey: securityKey, uniqueId: current.UniqueId }).then(function() {
                         // ok, we've told people, just remember what time it is so we give them a minute to start the meeting
-                        warnings[self.current.UniqueId] = self.currentTime();
+                        warnings[current.UniqueId] = self.currentTime();
                         if(cancelTimeout) {
                             $timeout.cancel(cancelTimeout);
                         }
@@ -163,8 +168,9 @@
             var canCancelAt = warnTime.clone().add(1, 'minute');
             if(!canCancelAt.isAfter(now)) {
                 // they've taken too long - cancel it now
-                room.one('meeting').post('abandon', {}, { securityKey: securityKey, uniqueId: self.current.UniqueId }).then(function() {
+                room.one('meeting').post('abandon', {}, { securityKey: securityKey, uniqueId: current.UniqueId }).then(function() {
                     // ok, meeting is cancelled.  Just refresh
+                    cancels[current.UniqueId] = self.currentTime();
                     loadStatus();
                 }, function() {
                     // well, the cancel failed... maybe the item was deleted?  In any case, reloading the status will re-run us
