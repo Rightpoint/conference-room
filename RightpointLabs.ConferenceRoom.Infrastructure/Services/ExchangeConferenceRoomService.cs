@@ -260,8 +260,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             }
             foreach (var x in item.RequiredAttendees.Concat(item.OptionalAttendees))
             {
-                log.DebugFormat("Address: {0}, MailboxType: {1}", x.Address, x.MailboxType);
-                msg.CcRecipients.Add(x);
+                log.DebugFormat("Address: {0}, MailboxType: {1}, RoutingType: {2}", x.Address, x.MailboxType, x.RoutingType);
+                if (x.RoutingType == "SMTP" && x.Address.EndsWith("@rightpoint.com"))
+                {
+                    log.DebugFormat("Also sending to {0} @ {1}", x.Name, x.Address);
+                    msg.CcRecipients.Add(x.Name, x.Address);
+                }
             }
             msg.Send();
         }
