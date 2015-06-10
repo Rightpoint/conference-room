@@ -297,7 +297,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             return new Meeting
             {
                 UniqueId = i.Id.UniqueId,
-                Subject = i.Subject,
+                Subject = i.Sensitivity != Sensitivity.Normal ? i.Sensitivity.ToString() :
+                    i.Subject.Trim() == i.Organizer.Name.Trim() ? null : i.Subject,
                 Start = i.Start,
                 End = i.End,
                 Organizer = i.Organizer.Name,
