@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Reflection;
 using System.Timers;
 using log4net;
@@ -56,8 +57,16 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 _roomAddress = roomAddress;
                 _startConnectionTimer.Stop();
                 _startConnectionTimer.Elapsed += StartConnectionTimerOnElapsed;
-                log.DebugFormat("Starting watcher for {0} with impersonation", _roomAddress);
-                _exchangeService.ImpersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, _roomAddress);
+                var useImpersonation = bool.Parse(ConfigurationManager.AppSettings["useImpersonation"] ?? "false");
+                if (useImpersonation)
+                {
+                    log.DebugFormat("Starting watcher for {0} with impersonation", _roomAddress);
+                    _exchangeService.ImpersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, _roomAddress);
+                }
+                else
+                {
+                    log.DebugFormat("Starting watcher for {0}", _roomAddress);
+                }
                 Task.Run(() => UpdateConnection()); // don't wait for this to complete
             }
 
