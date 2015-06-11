@@ -9,7 +9,8 @@
         });
 
         var defaultRoom = localStorageService.get('defaultRoom');
-        if(defaultRoom) {
+        self.hasDefaultRoom = !!defaultRoom;
+        if(self.hasDefaultRoom) {
             // we have a default room we're supposed to be managing - time out and go there after 60 seconds
             var timeout = $timeout(function() {
                 $state.go('home');
