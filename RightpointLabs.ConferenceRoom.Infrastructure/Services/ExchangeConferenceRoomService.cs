@@ -305,7 +305,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 IsStarted = meetingInfo.IsStarted,
                 IsEndedEarly = meetingInfo.IsEndedEarly,
                 IsCancelled = meetingInfo.IsCancelled,
-                IsNotManaged = i.IsAllDayEvent,
+                IsNotManaged = i.IsAllDayEvent || Math.Abs(i.End.Subtract(i.Start).TotalHours) > 6, // all day events and events longer than 6 hours won't be auto-cancelled
             };
         }
 
