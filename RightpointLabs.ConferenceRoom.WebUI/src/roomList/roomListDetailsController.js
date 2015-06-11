@@ -1,15 +1,17 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('RoomListDetailsController', ['Restangular', '$stateParams', 'timelineService', function(Restangular, $stateParams, timelineService) {
+    angular.module('app').controller('RoomListDetailsController', ['Restangular', '$stateParams', 'timelineService', 'localStorageService', function(Restangular, $stateParams, timelineService, localStorageService) {
         var self = this;
         self.roomLists = [];
         self.moment = window.moment;
 
+        var defaultRoom = localStorageService.get('defaultRoom');
         Restangular.one('roomList', $stateParams.roomListAddress).getList('rooms').then(function(data) {
             self.rooms = data;
             angular.forEach(self.rooms, function(room) {
                 room.isLoading = true;
+                room.isDefault = room.Address == defaultRoom;
                 return Restangular.one('room', room.Address).one('status').get().then(function(data) {
                     room.isLoading = false;
                     if(!data || data.error) {

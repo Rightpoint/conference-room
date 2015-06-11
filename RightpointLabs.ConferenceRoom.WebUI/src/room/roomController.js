@@ -282,7 +282,6 @@
             if(scopeCycleInterval) {
                 $interval.cancel(scopeCycleInterval);
             }
-            isSmallScreenDispose();
         });
 
 
