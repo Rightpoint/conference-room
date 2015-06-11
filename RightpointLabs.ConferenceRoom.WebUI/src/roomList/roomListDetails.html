@@ -1,7 +1,7 @@
 <div class="room-list-details">
     <h4>Availability for the next hour</h4>
     <div class="row">
-        <div ng-repeat="room in c.rooms" class="col-xs-4 room-info" role="link" ui-sref="room({ roomAddress: room.Address })">
+        <div ng-repeat="room in c.rooms" class="col-xs-4 room-info" role="link" ui-sref="room({ roomAddress: room.Address })" title="{{::room.Name}}">
             <span ng-style="room.isDefault ? { 'font-weight': 'bold' } : {}">{{::room.Name}}</span>
             <div class="progress" ng-if="!room.isLoading">
                 <div ng-repeat="range in room.timeline track by $index"
