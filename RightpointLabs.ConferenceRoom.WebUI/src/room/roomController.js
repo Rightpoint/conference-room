@@ -68,6 +68,10 @@
                         });
                     }
                     var time = moment.min(itemEnd, end).diff(itemStart, 'minute', true);
+                    if(freeTime < 0) {
+                        // we're double-booked... um... just take it off the second one?
+                        time += freeTime;
+                    }
                     if(time > 0) {
                         ranges.push({
                             size: time/totalMinutes,
