@@ -26,7 +26,7 @@
                         break;
                     case $.signalR.connectionState.disconnected:
                         isFirstEvent = false;
-                        logger.warn('Live updates suspended');
+                        logger.warning('Live updates suspended');
                         break;
                 }
             }
