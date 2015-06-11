@@ -8,6 +8,16 @@
 
         var defaultRoom = localStorageService.get('defaultRoom');
         Restangular.one('roomList', $stateParams.roomListAddress).getList('rooms').then(function(data) {
+            angular.forEach(data, function(room) {
+                room.sortOrder = parseInt(room.Name.replace(/[^0-9]/g, '') || '99999');
+            });
+            data.sort(function(a,b) {
+                if(a.sortOrder == b.sortOrder) {
+                    return a.Name < b.Name ? -1 : 1;
+                }
+                return a.sortOrder < b.sortOrder ? -1 : 1;
+            });
+
             self.rooms = data;
             angular.forEach(self.rooms, function(room) {
                 room.isLoading = true;
