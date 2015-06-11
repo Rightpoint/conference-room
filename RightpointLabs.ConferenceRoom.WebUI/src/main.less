@@ -40,7 +40,7 @@
 }
 
 // and now define our own app-wide stuff
-.kiosk-basics {
+.small-screen-basics {
   .navbar {
     display: none;
   }
@@ -53,10 +53,10 @@
     margin-bottom: 5px;
   }
 }
-.kiosk {
-  .kiosk-basics();
+.small-screen {
+  .small-screen-basics();
 }
 @media screen and (max-width: 320px) and (max-height: 240px) {
-  .kiosk-basics();
+  .small-screen-basics();
 }
 

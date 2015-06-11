@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', 'localStorageService', '$scope', 'matchmedia', 'UpdateHub', function(Restangular, $stateParams, $timeout, $interval, $q, localStorageService, $scope, matchmedia, UpdateHub) {
+    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', 'localStorageService', '$scope', 'matchmedia', 'UpdateHub', 'smallScreenService', function(Restangular, $stateParams, $timeout, $interval, $q, localStorageService, $scope, matchmedia, UpdateHub, smallScreenService) {
         var self = this;
 
         self.Free = 0;
@@ -273,11 +273,14 @@
 
         self.refresh();
 
-        self.isTiny = false;
-        var isTinyDispose = matchmedia.on('(max-width: 320px) and (max-height: 240px)', function(mql) {
-            self.isTiny = mql.matches || localStorageService.get('kioskMode');
+        self.isSmallScreen = false;
+        var smallScreenMediaQuery = '(max-width: 320px) and (max-height: 240px)';
+        $scope.$on('$destroy', matchmedia.on(smallScreenMediaQuery, function(mql) {
+            self.isSmallScreen = mql.matches || smallScreenService.get();
+        }));
+        $scope.$on('smallScreenChanged', function() {
+            self.isSmallScreen = matchmedia.is(smallScreenMediaQuery) || smallScreenService.get();
         });
-
 
         var infoInterval = $interval(loadInfo, 60 * 60 * 1000);
         var scopeCycleInterval = $interval(function() {}, 10 * 1000);
@@ -306,7 +309,7 @@
             if(scopeCycleInterval) {
                 $interval.cancel(scopeCycleInterval);
             }
-            isTinyDispose();
+            isSmallScreenDispose();
         });
 
 

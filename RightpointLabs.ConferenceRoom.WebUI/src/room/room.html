@@ -2,8 +2,8 @@
     <h3 class="date">
         {{ c.currentTime().format('ddd M/DD') }}
     </h3>
-    <div class="buttons btn-group-vertical" ng-class="{ 'btn-group-lg': c.isTiny }">
-        <button class="btn btn-primary" ng-if="!c.isTiny" ng-click="c.refresh()"><span class="glyphicon glyphicon-refresh"></span></button>
+    <div class="buttons btn-group-vertical" ng-class="{ 'btn-group-lg': c.isSmallScreen }">
+        <button class="btn btn-primary" ng-if="!c.isSmallScreen" ng-click="c.refresh()"><span class="glyphicon glyphicon-refresh"></span></button>
         <button class="btn btn-primary" ng-if="!c.hasSecurityRights" ng-click="c.requestControl()">Request Control</button>
         <button class="btn btn-primary" ng-if="c.hasSecurityRights && !c.isDefaultRoom" ng-click="c.setDefaultRoom()">Set as Default</button>
         <button class="btn btn-primary" ng-click="c.start(c.current)" ng-if="c.current && !c.current.IsNotManaged && c.hasSecurityRights && !c.current.IsStarted && c.freeMinutes() <= 10">{{ c.moment(c.current.Start).diff(c.currentTime(), 'minutes') < 0 ? 'Start Early' : 'Start' }}</button>
@@ -21,8 +21,8 @@
             <p>Free for more than an hour</p>
         </div>
         <div ng-if="c.current">
-            <h4>{{ ( c.freeMinutes() > 10 ? 'Next: ' : '' ) + c.current.Subject}}</h4>
-            <h5>{{c.current.Organizer}}</h5>
+            <h4>{{ ( c.freeMinutes() > 10 ? 'Next: ' : '' ) + (c.current.Subject || c.current.Organizer)}}</h4>
+            <h5 ng-show="c.current.Subject">{{c.current.Organizer}}</h5>
             <p>{{ c.moment(c.current.Start).format('h:mm a') }} - {{ c.moment(c.current.End).format('h:mm a') }}</p>
         </div>
     </div>

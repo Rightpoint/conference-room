@@ -1,18 +1,14 @@
 (function() {
     'use strict;'
 
-    angular.module('app').directive('navbar', ['localStorageService', function(localStorageService) {
+    angular.module('app').directive('navbar', ['smallScreenService', function(smallScreenService) {
         return {
             restrict: 'A',
             templateUrl: 'navbar/navbar.html',
             replace: true,
             link: function(scope) {
-                scope.enableKioskMode = function() {
-                    localStorageService.set('kioskMode', true);
-                    $("html").addClass('kiosk');
-                }
-                if(localStorageService.get('kioskMode')) {
-                    $("html").addClass('kiosk');
+                scope.enableSmallScreenMode = function() {
+                    smallScreenService.set(true);
                 }
             }
         };
