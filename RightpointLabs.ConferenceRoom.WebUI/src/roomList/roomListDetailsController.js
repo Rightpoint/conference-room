@@ -4,6 +4,8 @@
     angular.module('app').controller('RoomListDetailsController', ['Restangular', '$stateParams', 'timelineService', function(Restangular, $stateParams, timelineService) {
         var self = this;
         self.roomLists = [];
+        self.moment = window.moment;
+
         Restangular.one('roomList', $stateParams.roomListAddress).getList('rooms').then(function(data) {
             self.rooms = data;
             angular.forEach(self.rooms, function(room) {
@@ -23,8 +25,7 @@
                     room.current = data.CurrentMeeting;
                     room.next = data.NextMeeting;
 
-                    var moment = window.moment;
-                    var now = moment();
+                    var now = self.moment();
                     var start = now.clone();
                     var end = now.clone().add(1, 'hours');
 
