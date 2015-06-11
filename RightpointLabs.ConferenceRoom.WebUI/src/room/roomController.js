@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', 'localStorageService', '$scope', 'matchmedia', 'UpdateHub', 'smallScreenService', function(Restangular, $stateParams, $timeout, $interval, $q, localStorageService, $scope, matchmedia, UpdateHub, smallScreenService) {
+    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', 'localStorageService', '$scope', 'matchmedia', 'UpdateHub', 'smallScreenService', 'timelineService', function(Restangular, $stateParams, $timeout, $interval, $q, localStorageService, $scope, matchmedia, UpdateHub, smallScreenService, timelineService) {
         var self = this;
 
         self.Free = 0;
@@ -46,55 +46,10 @@
                 marker = marker.clone().add(1, 'hour');
             }
 
-            function buildTimelineRanges() {
-                if(!self.appointments) {
-                    return [{
-                        size: 1,
-                        isLoading: true
-                    }];
-                }
-                var ranges = [];
-                var current = start;
-                _.each(self.appointments, function(item) {
-                    var itemStart = moment(item.Start);
-                    var itemEnd = moment(item.End);
-                    if(!itemStart.isBefore(end) || !itemEnd.isAfter(current)){
-                        return;
-                    }
-                    var freeTime = itemStart.diff(current, 'minute', true);
-                    if(freeTime > 0) {
-                        ranges.push({
-                            size: freeTime/totalMinutes
-                        });
-                    }
-                    var time = moment.min(itemEnd, end).diff(itemStart, 'minute', true);
-                    if(freeTime < 0) {
-                        // we're double-booked... um... just take it off the second one?
-                        time += freeTime;
-                    }
-                    if(time > 0) {
-                        ranges.push({
-                            size: time/totalMinutes,
-                            appointment: item
-                        })
-                    }
-
-                    current = itemEnd;
-                });
-
-                if(current.isBefore(end)) {
-                    ranges.push({
-                        size: end.diff(current, 'minute', true)/totalMinutes
-                    });
-                }
-
-                return ranges;
-            }
-
             self.timeline = {
                 now: { position: Math.min(1.01, Math.max(-0.01, now.diff(start, 'minute', true) / totalMinutes)), time: now },
                 markers: markers,
-                ranges: buildTimelineRanges()
+                ranges: timelineService.build(start, end, self.appointments)
             };
         }
 

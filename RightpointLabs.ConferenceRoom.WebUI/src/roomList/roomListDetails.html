@@ -1,3 +1,19 @@
-<ul>
-    <li ng-repeat="room in c.rooms"><a ui-sref="room({ roomAddress: room.Address })">{{::room.Name}}</a></li>
-</ul>
+<div class="room-list-details">
+    <h4>Availability for the next hour</h4>
+    <div class="row">
+        <div ng-repeat="room in c.rooms" class="col-xs-4 room-info" role="link" ui-sref="room({ roomAddress: room.Address })">
+            <span>{{::room.Name}}</span>
+            <div class="progress" ng-if="!room.isLoading">
+                <div ng-repeat="range in room.timeline track by $index"
+                     title="{{ range.appointment ? (range.appointment.Subject + ': ' + c.moment(range.appointment.Start).format('h:mm a') + ' - ' + c.moment(range.appointment.End).format('h:mm a') ) : range.isLoading ? 'Loading' : 'Free' }}"
+                     class="progress-bar"
+                     ng-class="{ 'progress-bar-success': !range.appointment && !range.isLoading, 'progress-bar-warning': range.isLoading, 'progress-bar-danger': !!range.appointment, 'progress-bar-striped' : ((range.appointment && range.appointment.IsStarted) || range.isLoading || range.isHovered), active: range.isLoading || range.isHovered }"
+                     ng-mouseenter="range.isHovered = true"
+                     ng-mouseleave="range.isHovered = false"
+                     style="width: {{ range.size * 100}}%">
+                    <span class="sr-only"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
