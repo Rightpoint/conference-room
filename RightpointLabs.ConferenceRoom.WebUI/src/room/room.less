@@ -63,13 +63,14 @@
       font-size: 14px;
       padding-left: 4px;
     }
+    @nowColor: black;
     .marker.now.now-left {
-      border-left: solid 3px yellow;
+      border-left: solid 3px @nowColor;
       padding-left: 4px;
       text-align: left;
     }
     .marker.now.now-right {
-      border-right: solid 3px yellow;
+      border-right: solid 3px @nowColor;
       padding-right: 4px;
       text-align: right;
     }
@@ -102,11 +103,11 @@
     .small-screen & {
       .small-screen-1();
 
-      padding-top: 40px;
+      padding-top: 50px;
       padding-bottom: 20px;
 
       .marker {
-        top: 20px;
+        top: 30px;
         font-size: 16px;
       }
       .marker.now {
