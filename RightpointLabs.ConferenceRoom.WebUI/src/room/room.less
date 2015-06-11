@@ -20,16 +20,51 @@
     //.btn-group(); - this doesn't fully work (child rules like .btn-group .btn don't get set up :(
     float: right;
     clear: right;
+
+    .dropdown-menu {
+      top: 0;
+      right: 101%;
+      left: initial;
+      bottom: initial;
+      background: none;
+      border-shadow: none;
+      border-radius: 0;
+      padding: 0;
+      margin: 0;
+      border: none;
+      .btn-group-vertical {
+        width: 100%;
+      }
+    }
+
     @media screen and (max-width: 320px) and (max-height: 240px) {
       .btn {
         padding: 20px 25px;
       }
+      .dropdown-menu {
+        position: fixed;
+        top: 10px;
+        right: initial;
+        left: 10px;
+        .btn {
+          padding: 15px 20px;
+        }
+      }
     }
-  }
-  .small-screen & {
-    .btn {
-      padding: 20px 25px;
-      font-size: 28px;
+    .small-screen & {
+      .btn {
+        padding: 20px 25px;
+        font-size: 28px;
+      }
+      .dropdown-menu {
+        position: fixed;
+        top: 20px;
+        right: 270px;
+        a {
+          font-size: 20px;
+          padding: 20px 30px;
+        }
+      }
     }
   }
   .date {

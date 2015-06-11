@@ -2,15 +2,27 @@
     <h3 class="date">
         {{ c.currentTime().format('ddd M/DD') }}
     </h3>
-    <div class="buttons btn-group-vertical" ng-class="{ 'btn-group-lg': c.isSmallScreen }">
-        <button class="btn btn-primary" ng-if="!c.isSmallScreen" ng-click="c.refresh()"><span class="glyphicon glyphicon-refresh"></span></button>
-        <button class="btn btn-primary" ng-if="!c.hasSecurityRights" ng-click="c.requestControl()">Request Control</button>
-        <button class="btn btn-primary" ng-if="c.hasSecurityRights && !c.isDefaultRoom" ng-click="c.setDefaultRoom()">Set as Default</button>
+    <div class="buttons btn-group-vertical dropup" ng-class="{ 'btn-group-lg': c.isSmallScreen }">
         <button class="btn btn-primary" ng-click="c.start(c.current)" ng-if="c.current && !c.current.IsNotManaged && c.hasSecurityRights && !c.current.IsStarted && c.freeMinutes() <= 10">{{ c.moment(c.current.Start).diff(c.currentTime(), 'minutes') < 0 ? 'Start Early' : 'Start' }}</button>
         <button class="btn btn-primary" ng-click="c.cancel(c.current)" ng-if="c.current && !c.current.IsNotManaged && c.hasSecurityRights && !c.current.IsStarted && c.freeMinutes() <= 10">Cancel</button>
         <button class="btn btn-primary" ng-click="c.end(c.current)" ng-if="c.current && !c.current.IsNotManaged && c.hasSecurityRights &&c.current.IsStarted">End early</button>
         <button class="btn btn-primary" ng-click="c.endAndStartNext(c.current, c.next)" ng-if="c.current && !c.current.IsNotManaged && c.hasSecurityRights && c.current.IsStarted && c.next && c.moment(c.next.Start).diff(c.currentTime(), 'minutes') < 10">End early &<br/>start next</button>
-        <button class="btn btn-primary" ng-if="!c.current || c.freeMinutes() > 10" data-toggle="modal" data-target="#addMeetingModal">New meeting</button>
+        <button class="btn btn-primary" ng-if="c.hasSecurityRights && (!c.current || c.freeMinutes() > 10)" data-toggle="modal" data-target="#addMeetingModal">New meeting</button>
+        <div class="btn-group">
+            <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                More <span class="glyphicon glyphicon-chevron-left" style="font-size: 0.5em;"></span>
+            </button>
+            <div class="dropdown-menu" role="menu">
+                <div class="btn-group-vertical">
+                    <button class="btn btn-primary" ng-if="c.roomListAddress" ui-sref="roomList.details({ roomListAddress: c.roomListAddress })">Browse Rooms</button>
+                    <button class="btn btn-primary" ng-if="!c.roomListAddress" ui-sref="roomList">Browse Rooms</button>
+                    <button class="btn btn-primary" ng-if="!c.isDefaultRoom" ui-sref="home"><span class="glyphicon glyphicon-home"></span> Home</button>
+                    <button class="btn btn-primary" ng-click="c.refresh()"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
+                    <button class="btn btn-primary" ng-if="!c.hasSecurityRights" ng-click="c.requestControl()">Request Control</button>
+                    <button class="btn btn-primary" ng-if="c.hasSecurityRights && !c.isDefaultRoom" ng-click="c.setDefaultRoom()">Set as Default</button>
+                </div>
+            </div>
+        </div>
     </div>
     <h3 class="room-name">{{c.displayName}}</h3>
     <div class="current-appointment">

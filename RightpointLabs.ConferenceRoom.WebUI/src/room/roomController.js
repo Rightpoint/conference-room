@@ -70,6 +70,20 @@
                 self.hasSecurityRights = data.SecurityStatus == 3; // granted
                 updateTimeline();
                 scheduleCancel();
+
+                if(!self.roomListAddress) {
+                    Restangular.all('roomList').getList().then(function(data) {
+                        angular.forEach(data, function(roomList) {
+                            Restangular.one('roomList', roomList.Address).getList('rooms').then(function(data) {
+                                angular.forEach(data, function(room) {
+                                   if(room.Address == self.roomAddress) {
+                                       self.roomListAddress = roomList.Address;
+                                   }
+                                });
+                            });
+                        });
+                    });
+                }
             }, function() {
                 infoTimeout = $timeout(loadInfo, 60 * 1000); // if load failed, try again in 60 seconds
             });
