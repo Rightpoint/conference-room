@@ -37,7 +37,6 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         public object GetInfo(string roomAddress, string securityKey)
         {
             var data = _conferenceRoomService.GetInfo(roomAddress, securityKey);
-            _changeNotificationService.TrackRoom(roomAddress);
             return data;
         }
 
