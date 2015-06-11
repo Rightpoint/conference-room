@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', 'localStorageService', '$scope', 'matchmedia', 'UpdateHub', 'smallScreenService', 'timelineService', function(Restangular, $stateParams, $timeout, $interval, $q, localStorageService, $scope, matchmedia, UpdateHub, smallScreenService, timelineService) {
+    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', 'localStorageService', '$scope', 'matchmedia', 'UpdateHub', 'smallScreenService', 'timelineService', '$state', function(Restangular, $stateParams, $timeout, $interval, $q, localStorageService, $scope, matchmedia, UpdateHub, smallScreenService, timelineService, $state) {
         var self = this;
 
         self.Free = 0;
@@ -17,8 +17,21 @@
         self.roomAddress = $stateParams.roomAddress;
         var room = Restangular.one('room', self.roomAddress);
         var securityKey = localStorageService.get('room_' + self.roomAddress) || '';
-        self.isDefaultRoom = localStorageService.get('defaultRoom') == self.roomAddress;
+        var defaultRoom = localStorageService.get('defaultRoom');
+        self.isDefaultRoom = defaultRoom == self.roomAddress;
         self.hasSecurityRights = false;
+
+        if(defaultRoom && !self.isDefaultRoom) {
+            // we have a default room we're supposed to be managing - time out and go there after 60 seconds
+            var defaultRoomTimeout = $timeout(function() {
+                if(!self.isDefaultRoom) {
+                    $state.go('home'); // double-check before we leave in case this was recently marked as default
+                }
+            }, 60000);
+            $scope.$on('$destroy', function() {
+                $timeout.cancel(defaultRoomTimeout);
+            });
+        }
 
         var timeDelta = moment().diff(moment());
         self.currentTime = function currentTime() {
