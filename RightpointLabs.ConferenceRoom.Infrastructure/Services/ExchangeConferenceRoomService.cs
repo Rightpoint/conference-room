@@ -98,10 +98,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     }
                     catch (ServiceResponseException ex)
                     {
-                        if (ex.ErrorCode == ServiceError.ErrorFolderNotFound || ex.ErrorCode == ServiceError.ErrorNonExistentMailbox)
+                        if (ex.ErrorCode == ServiceError.ErrorFolderNotFound || ex.ErrorCode == ServiceError.ErrorNonExistentMailbox || ex.ErrorCode == ServiceError.ErrorAccessDenied)
                         {
-                            throw new AccessDeniedException("Folder/mailbox not found", ex);
+                            log.DebugFormat("Access denied ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
+                            throw new AccessDeniedException("Folder/mailbox not found or access denied", ex);
                         }
+                        log.DebugFormat("Unexpected error ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
                         throw;
                     }
                 });
