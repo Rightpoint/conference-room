@@ -20,12 +20,10 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
     public class RoomController : ApiController
     {
         private readonly IConferenceRoomService _conferenceRoomService;
-        private readonly IChangeNotificationService _changeNotificationService;
 
-        public RoomController(IConferenceRoomService conferenceRoomService, IChangeNotificationService changeNotificationService)
+        public RoomController(IConferenceRoomService conferenceRoomService)
         {
             _conferenceRoomService = conferenceRoomService;
-            _changeNotificationService = changeNotificationService;
         }
 
         /// <summary>
@@ -51,7 +49,6 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             try
             {
                 var data = _conferenceRoomService.GetStatus(roomAddress);
-                _changeNotificationService.TrackRoom(roomAddress);
                 return data;
             }
             catch (AccessDeniedException)

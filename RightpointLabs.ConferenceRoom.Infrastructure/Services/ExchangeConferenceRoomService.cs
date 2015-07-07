@@ -25,9 +25,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly IBroadcastService _broadcastService;
         private readonly IDateTimeService _dateTimeService;
         private readonly IMeetingCacheService _meetingCacheService;
+        private readonly IChangeNotificationService _changeNotificationService;
         private readonly bool _ignoreFree;
+        private readonly bool _useChangeNotification;
 
-        public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService)
+        public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService)
         {
             _exchangeService = exchangeService;
             _meetingRepository = meetingRepository;
@@ -35,7 +37,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _broadcastService = broadcastService;
             _dateTimeService = dateTimeService;
             _meetingCacheService = meetingCacheService;
+            _changeNotificationService = changeNotificationService;
             _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
+            _useChangeNotification = bool.Parse(ConfigurationManager.AppSettings["useChangeNotification"] ?? "true");
         }
 
         /// <summary>
@@ -65,11 +69,18 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 return null;
             }
 
+            var rights = _securityRepository.GetSecurityRights(roomAddress, securityKey);
+            if (rights == SecurityStatus.Granted && _useChangeNotification)
+            {
+                // make sure we track rooms we're controlling
+                _changeNotificationService.TrackRoom(roomAddress);
+            }
+
             return new
             {
                 CurrentTime = _dateTimeService.Now,
                 DisplayName = room.Mailbox.Name,
-                SecurityStatus = _securityRepository.GetSecurityRights(roomAddress, securityKey),
+                SecurityStatus = rights
             };
         }
 
@@ -80,7 +91,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         public IEnumerable<Meeting> GetUpcomingAppointmentsForRoom(string roomAddress)
         {
-            return _meetingCacheService.GetUpcomingAppointmentsForRoom(roomAddress, () =>
+            var isTracked = _changeNotificationService.IsTrackedForChanges(roomAddress);
+            return _meetingCacheService.GetUpcomingAppointmentsForRoom(roomAddress, isTracked, () =>
             {
                 return Task.Run(() =>
                 {
@@ -89,6 +101,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                         var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
                         var cal = CalendarFolder.Bind(_exchangeService, calId);
                         var apt = cal.FindAppointments(new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))).ToList();
+                        log.DebugFormat("Got {0} appointments for {1} via {2} with {3}", apt.Count, roomAddress, _exchangeService.GetHashCode(), _exchangeService.CookieContainer.GetCookieHeader(_exchangeService.Url));
                         if (_ignoreFree)
                         {
                             apt = apt.Where(i => i.LegacyFreeBusyStatus != LegacyFreeBusyStatus.Free).ToList();

@@ -9,8 +9,7 @@ namespace RightpointLabs.ConferenceRoom.Domain.Services
 {
     public interface IMeetingCacheService
     {
-        Task<IEnumerable<Meeting>> GetUpcomingAppointmentsForRoom(string roomAddress, Func<Task<IEnumerable<Meeting>>> loader);
+        Task<IEnumerable<Meeting>> GetUpcomingAppointmentsForRoom(string roomAddress, bool isTracked, Func<Task<IEnumerable<Meeting>>> loader);
         void ClearUpcomingAppointmentsForRoom(string roomAddress);
-        void ClearAll();
     }
 }
