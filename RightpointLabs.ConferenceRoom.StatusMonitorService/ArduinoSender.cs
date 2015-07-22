@@ -47,6 +47,7 @@ namespace RightpointLabs.ConferenceRoom.StatusMonitorService
                         var newPort = new SerialPort(Config.SerialPortNameOverride);
                         newPort.DataReceived += ReadData;
                         newPort.Open();
+                        log.DebugFormat("Connected to serial port");
                         _activeConnection = newPort;
                         if (_lastColor.HasValue)
                         {
@@ -78,6 +79,7 @@ namespace RightpointLabs.ConferenceRoom.StatusMonitorService
 
         public void SetColor(Color color)
         {
+            log.DebugFormat("Setting color: {0}", color);
             _lastColor = color;
             var cn = GetActiveConnection();
             if (null != cn && cn.IsOpen)

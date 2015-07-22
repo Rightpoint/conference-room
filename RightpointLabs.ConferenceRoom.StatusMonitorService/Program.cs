@@ -15,6 +15,7 @@ namespace RightpointLabs.ConferenceRoom.StatusMonitorService
         /// </summary>
         static void Main(string[] args)
         {
+            InitLogging();
             if (args.Length > 0 && args[0] == "RUN")
             {
                 new StatusMonitor().Start();
@@ -29,6 +30,16 @@ namespace RightpointLabs.ConferenceRoom.StatusMonitorService
                 { 
                     new StatusMonitorServiceWrapper() 
                 });
+            }
+        }
+
+        private static void InitLogging()
+        {
+            // initialize log4net
+            var file = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log4net.config");
+            if (System.IO.File.Exists(file))
+            {
+                log4net.Config.XmlConfigurator.ConfigureAndWatch(new System.IO.FileInfo(file));
             }
         }
     }

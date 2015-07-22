@@ -15,6 +15,11 @@ namespace RightpointLabs.ConferenceRoom.StatusMonitorService
             get { return ConfigurationManager.AppSettings["ApiServer"]; }
         }
 
+        public static string SignalRServer
+        {
+            get { return ConfigurationManager.AppSettings["SignalRServer"]; }
+        }
+
         public static string RoomAddress
         {
             get { return ConfigurationManager.AppSettings["RoomAddress"]; }

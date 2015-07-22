@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using log4net;
+using Microsoft.AspNet.SignalR.Client;
 using Newtonsoft.Json;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 
@@ -15,10 +16,24 @@ namespace RightpointLabs.ConferenceRoom.StatusMonitorService
         ArduinoSender _sender = new ArduinoSender();
         private Timer _timer;
         private TimeSpan _statusInterval = Config.StatusInterval;
+        private readonly Connection _connection;
 
         public StatusMonitor()
         {
             _timer = new Timer(UpdateState, null, Timeout.Infinite, Timeout.Infinite);
+            _connection = new Connection(Config.SignalRServer);
+            _connection.Error += ConnectionOnError;
+            _connection.Received += ConnectionOnReceived;
+        }
+
+        private void ConnectionOnReceived(string data)
+        {
+            log.DebugFormat("Signalr data: {0}", data);
+        }
+
+        private void ConnectionOnError(Exception ex)
+        {
+            log.InfoFormat("SignalR connection error", ex);
         }
 
         public void Start()
@@ -38,7 +53,7 @@ namespace RightpointLabs.ConferenceRoom.StatusMonitorService
                 var status = GetStatus();
                 if (status.Status == RoomStatus.Free)
                 {
-                    _sender.SetColor(Color.Green);
+                    _sender.SetColor(Color.FromArgb(255, 255, 255, 255));
                 }
                 else
                 {
@@ -52,7 +67,7 @@ namespace RightpointLabs.ConferenceRoom.StatusMonitorService
             }
             catch (Exception ex)
             {
-                log.WarnFormat("Error updating state", ex);
+                log.Warn("Error updating state", ex);
             }
         }
 
@@ -60,6 +75,7 @@ namespace RightpointLabs.ConferenceRoom.StatusMonitorService
         {
             var c = new HttpClient();
             var uri = new Uri(new Uri(Config.ApiServer), "room/" + Config.RoomAddress + "/status");
+            log.DebugFormat("Fetching status from {0}", uri);
             var data = c.GetStringAsync(uri).Result;
             var status = JsonConvert.DeserializeObject<RoomStatusInfo>(data);
             return status;
