@@ -195,8 +195,10 @@ gulp.task('server-release', ['index-release'], function() {
         root: 'dist',
         middleware: function(c, opt) {
             return [
-                c().use('/api', proxy(url.parse('http://localhost:63915/api'))),
-                c().use('/signalr', proxy(url.parse('http://localhost:63915/signalr')))
+                //c().use('/api', proxy(url.parse('http://localhost:63915/api'))),
+                //c().use('/signalr', proxy(url.parse('http://localhost:63915/signalr')))
+                c().use('/api', proxy(url.parse('http://rooms.labs.rightpoint.com/api'))),
+                c().use('/signalr', proxy(url.parse('http://rooms.labs.rightpoint.com/signalr')))
             ];
         }
     });
