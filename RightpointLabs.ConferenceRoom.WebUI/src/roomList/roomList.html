@@ -2,6 +2,7 @@
     <div role="tabpanel">
         <ul class="nav nav-pills">
             <li role="presentation" ng-if="c.hasDefaultRoom"><a ui-sref="home"><span class="glyphicon glyphicon-home"></span></a></li>
+            <li role="presentation"><a ui-sref="settings"><span class="glyphicon glyphicon-cog"></span></a></li>
             <li role="presentation" ng-repeat="roomList in c.roomLists" ui-sref-active="active"><a ui-sref="roomList.details({ roomListAddress: roomList.Address })">{{::roomList.Name}}</a></li>
         </ul>
     </div>

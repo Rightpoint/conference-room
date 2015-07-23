@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', 'localStorageService', '$scope', 'matchmedia', 'UpdateHub', 'smallScreenService', 'timelineService', '$state', function(Restangular, $stateParams, $timeout, $interval, $q, localStorageService, $scope, matchmedia, UpdateHub, smallScreenService, timelineService, $state) {
+    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', '$scope', 'matchmedia', 'UpdateHub', 'settings', 'timelineService', '$state', function(Restangular, $stateParams, $timeout, $interval, $q, $scope, matchmedia, UpdateHub, settings, timelineService, $state) {
         var self = this;
 
         self.Free = 0;
@@ -16,8 +16,8 @@
         self.displayName = 'Loading...';
         self.roomAddress = $stateParams.roomAddress;
         var room = Restangular.one('room', self.roomAddress);
-        var securityKey = localStorageService.get('room_' + self.roomAddress) || '';
-        var defaultRoom = localStorageService.get('defaultRoom');
+        var securityKey = settings.securityKey || '';
+        var defaultRoom = settings.defaultRoom;
         self.isDefaultRoom = defaultRoom == self.roomAddress;
         self.hasSecurityRights = false;
 
@@ -224,8 +224,7 @@
         };
         self.requestControl = function() {
             if(!securityKey) {
-                securityKey = (''+Math.random()).replace('.','');
-                localStorageService.set('room_' + self.roomAddress, securityKey);
+                securityKey = settings.securityKey = (''+Math.random()).replace('.','');
             }
             var p = room.post('requestAccess', {}, { securityKey: securityKey }).then(function() {
                 return loadStatus();
@@ -233,8 +232,8 @@
             showIndicator(p);
         };
         self.setDefaultRoom = function() {
-            localStorageService.set('defaultRoom', self.roomAddress);
-            self.isDefaultRoom = localStorageService.get('defaultRoom') == self.roomAddress;
+            settings.defaultRoom = self.roomAddress;
+            self.isDefaultRoom = settings.defaultRoom == self.roomAddress;
         };
         self.refresh = function() {
             var p = $q.all([loadInfo(), loadStatus()]);
@@ -262,10 +261,10 @@
         self.isSmallScreen = false;
         var smallScreenMediaQuery = '(max-width: 320px) and (max-height: 240px)';
         $scope.$on('$destroy', matchmedia.on(smallScreenMediaQuery, function(mql) {
-            self.isSmallScreen = mql.matches || smallScreenService.get();
+            self.isSmallScreen = mql.matches || settings.isSmallScreen;
         }));
-        $scope.$on('smallScreenChanged', function() {
-            self.isSmallScreen = matchmedia.is(smallScreenMediaQuery) || smallScreenService.get();
+        $scope.$on('settingChanged.isSmallScreen', function() {
+            self.isSmallScreen = matchmedia.is(smallScreenMediaQuery) || settings.isSmallScreen;
         });
 
         var infoInterval = $interval(loadInfo, 60 * 60 * 1000);

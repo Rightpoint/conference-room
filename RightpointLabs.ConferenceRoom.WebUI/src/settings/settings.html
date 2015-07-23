@@ -1,0 +1,16 @@
+<div class="settings">
+    <ul class="list-group">
+        <li class="list-group-item">
+            <label>Small screen mode: 
+                <button class="btn" ng-click="c.settings.isSmallScreen = !c.settings.isSmallScreen">{{ c.settings.isSmallScreen ? 'Enabled' : 'Disabled' }}</button>
+            </label>
+        </li>
+        <li class="list-group-item">
+            <label>Default room:
+                <span ng-if="!!c.settings.defaultRoom"><span>{{ c.settings.defaultRoom}}</span> <button class="btn" ng-click="c.settings.defaultRoom = null">Clear</button></span>
+                <span ng-if="!c.settings.defaultRoom">Not set</span>
+            </label>
+        </li>
+    </ul>
+    <a ui-sref="home"><span class="glyphicon glyphicon-home"></span> Home</a>
+</div>

@@ -20,6 +20,7 @@
                     <button class="btn btn-primary" ng-click="c.refresh()"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
                     <button class="btn btn-primary" ng-if="!c.hasSecurityRights" ng-click="c.requestControl()">Request Control</button>
                     <button class="btn btn-primary" ng-if="c.hasSecurityRights && !c.isDefaultRoom" ng-click="c.setDefaultRoom()">Set as Default</button>
+                    <button class="btn btn-primary" ui-sref="settings">Settings</button>
                 </div>
             </div>
         </div>

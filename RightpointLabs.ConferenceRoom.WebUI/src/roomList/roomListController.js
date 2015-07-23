@@ -1,14 +1,14 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('RoomListController', ['Restangular', 'localStorageService', '$scope', '$state', '$timeout', function(Restangular, localStorageService, $scope, $state, $timeout) {
+    angular.module('app').controller('RoomListController', ['Restangular', 'settings', '$scope', '$state', '$timeout', function(Restangular, settings, $scope, $state, $timeout) {
         var self = this;
         self.roomLists = [];
         Restangular.all('roomList').getList().then(function(data) {
             self.roomLists = data;
         });
 
-        var defaultRoom = localStorageService.get('defaultRoom');
+        var defaultRoom = settings.defaultRoom;
         self.hasDefaultRoom = !!defaultRoom;
         if(self.hasDefaultRoom) {
             // we have a default room we're supposed to be managing - time out and go there after 60 seconds
