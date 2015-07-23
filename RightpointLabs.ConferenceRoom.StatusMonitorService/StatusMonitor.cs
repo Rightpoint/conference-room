@@ -33,7 +33,7 @@ namespace RightpointLabs.ConferenceRoom.StatusMonitorService
 
         private void ConnectionOnError(Exception ex)
         {
-            log.InfoFormat("SignalR connection error", ex);
+            log.Info("SignalR connection error", ex);
         }
 
         public void Start()
@@ -43,6 +43,7 @@ namespace RightpointLabs.ConferenceRoom.StatusMonitorService
 
         public void Stop()
         {
+            _sender.SetColor(Color.Black);
             _timer.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
@@ -51,14 +52,12 @@ namespace RightpointLabs.ConferenceRoom.StatusMonitorService
             try
             {
                 var status = GetStatus();
-                if (status.Status == RoomStatus.Free)
-                {
-                    _sender.SetColor(Color.FromArgb(255, 255, 255, 255));
-                }
-                else
-                {
-                    _sender.SetColor(Color.Red);
-                }
+                var color = 
+                    status.Status == RoomStatus.Free ? Color.FromArgb(255, 0, 255, 0) :
+                    status.Status == RoomStatus.BusyNotConfirmed ? Color.Orange :
+                    status.Status == RoomStatus.Busy ? Color.Red :
+                        Color.Black;
+                _sender.SetColor(color);
 
                 if (status.NextChangeSeconds.HasValue && status.NextChangeSeconds.Value < _statusInterval.TotalSeconds)
                 {
