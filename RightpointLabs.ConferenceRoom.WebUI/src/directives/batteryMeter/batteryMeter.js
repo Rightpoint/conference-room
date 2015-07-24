@@ -10,6 +10,9 @@
                 scope.loaded = false;
                 if(navigator.getBattery) {
                     navigator.getBattery().then(function(b) {
+                        if(!b) {
+                            return;
+                        }
                         function applyUpdate() {
                             scope.$apply(function() {
                                 scope.loaded = true;
