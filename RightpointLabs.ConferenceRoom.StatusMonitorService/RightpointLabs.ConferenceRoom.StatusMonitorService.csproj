@@ -44,8 +44,10 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -57,6 +59,12 @@
   <ItemGroup>
     <Compile Include="ArduinoSender.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="ProjectInstaller.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ProjectInstaller.Designer.cs">
+      <DependentUpon>ProjectInstaller.cs</DependentUpon>
+    </Compile>
     <Compile Include="StatusMonitor.cs" />
     <Compile Include="StatusMonitorServiceWrapper.cs">
       <SubType>Component</SubType>
@@ -79,6 +87,14 @@
       <Project>{AD5CB851-8AAD-4C68-832C-810E2C383EA6}</Project>
       <Name>RightpointLabs.ConferenceRoom.Domain</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ProjectInstaller.resx">
+      <DependentUpon>ProjectInstaller.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="StatusMonitorServiceWrapper.resx">
+      <DependentUpon>StatusMonitorServiceWrapper.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

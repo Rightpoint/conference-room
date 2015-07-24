@@ -12,7 +12,7 @@ namespace RightpointLabs.ConferenceRoom.StatusMonitorService
 {
     public partial class StatusMonitorServiceWrapper : ServiceBase
     {
-        StatusMonitor _statusMonitor = new StatusMonitor();
+        private StatusMonitor _statusMonitor;
         public StatusMonitorServiceWrapper()
         {
             InitializeComponent();
@@ -20,12 +20,14 @@ namespace RightpointLabs.ConferenceRoom.StatusMonitorService
 
         protected override void OnStart(string[] args)
         {
+            _statusMonitor = new StatusMonitor();
             _statusMonitor.Start();
         }
 
         protected override void OnStop()
         {
             _statusMonitor.Stop();
+            _statusMonitor = null;
         }
     }
 }
