@@ -29,6 +29,7 @@ var ngAnnotate = require('gulp-ng-annotate');
 var uglify = require('gulp-uglify');
 var minifyCss = require('gulp-minify-css');
 
+var RESOURCE_SOURCE = 'src/resources/**';
 var JS_SCRIPT_SOURCE = 'src/**/*.js';
 var TS_SCRIPT_SOURCE = 'src/**/*.ts';
 var STYLE_SOURCE = 'src/**/*.less';
@@ -58,6 +59,10 @@ function scripts() {
     ];
 }
 
+gulp.task('resources', [], function() {
+    return gulp.src(RESOURCE_SOURCE)
+        .pipe(gulp.dest('dist/resources'));
+});
 gulp.task('scripts', [], function() {
     var r = scripts();
     return merge([
@@ -160,7 +165,7 @@ gulp.task('fonts', [], function() {
         .pipe(gulp.dest('dist/fonts'));
 });
 
-gulp.task('index', ['scripts', 'styles', 'templates'], function() {
+gulp.task('index', ['scripts', 'styles', 'templates', 'resources'], function() {
     return gulp.src(INDEX_SOURCE)
         .pipe(plumber())
         .pipe(wiredep.stream())
@@ -168,7 +173,7 @@ gulp.task('index', ['scripts', 'styles', 'templates'], function() {
         .pipe(gulp.dest('./dist'));
 });
 
-gulp.task('index-release', ['scripts-release', 'styles-release'], function() {
+gulp.task('index-release', ['scripts-release', 'styles-release', 'resources'], function() {
     return gulp.src(INDEX_SOURCE)
         .pipe(plumber())
         .pipe(inject(gulp.src(['dist/scripts/**/scripts-*.js', 'dist/styles/**/styles-*.css'], { read: false}), { ignorePath: 'dist' }))
@@ -219,6 +224,7 @@ gulp.task('watch', ['scripts'], function() {
     gulp.watch([TS_SCRIPT_SOURCE, JS_SCRIPT_SOURCE], function() { runSequence('scripts', 'index', 'reload'); });
     gulp.watch(STYLE_SOURCE, function() { runSequence('styles', 'index', 'reload'); });
     gulp.watch(TEMPLATES_SOURCE, function() { runSequence('templates', 'reload'); });
+    gulp.watch(RESOURCE_SOURCE, function() { runSequence('resources', 'reload'); });
     gulp.watch(INDEX_SOURCE, function() { runSequence('index', 'reload'); });
 });
 

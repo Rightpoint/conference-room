@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', '$scope', 'matchmedia', 'UpdateHub', 'settings', 'timelineService', '$state', function(Restangular, $stateParams, $timeout, $interval, $q, $scope, matchmedia, UpdateHub, settings, timelineService, $state) {
+    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', '$scope', 'matchmedia', 'UpdateHub', 'settings', 'timelineService', '$state', 'soundService', function(Restangular, $stateParams, $timeout, $interval, $q, $scope, matchmedia, UpdateHub, settings, timelineService, $state, soundService) {
         var self = this;
 
         self.Free = 0;
@@ -132,13 +132,14 @@
                 warnTime = moment(current.Start).add(4, 'minute');
                 if(!warnTime.isAfter(now)) {
                     // whoops, we should have done that already.... let's do it now.
-                    room.one('meeting').post('warnAbandon', {}, { securityKey: securityKey, uniqueId: current.UniqueId }).then(function() {
+                    room.one('meeting').post('warnAbandon', {}, { securityKey: securityKey, uniqueId: current.UniqueId }).then(function () {
                         // ok, we've told people, just remember what time it is so we give them a minute to start the meeting
                         warnings[current.UniqueId] = self.currentTime();
                         if(cancelTimeout) {
                             $timeout.cancel(cancelTimeout);
                         }
                         cancelTimeout = $timeout(scheduleCancel, 61 * 1000);
+                        soundService.play('resources/warn.mp3');
                     }, function() {
                         // well, the warning failed... maybe the item was deleted?  In any case, reloading the status will re-run us
                         $timeout(loadStatus, 1000);
@@ -158,6 +159,7 @@
                     // ok, meeting is cancelled.  Just refresh
                     cancels[current.UniqueId] = self.currentTime();
                     loadStatus();
+                    soundService.play('resources/cancel.mp3');
                 }, function() {
                     // well, the cancel failed... maybe the item was deleted?  In any case, reloading the status will re-run us
                     $timeout(loadStatus, 1000);
@@ -198,25 +200,30 @@
 
         self.start = function(item) {
             var p = room.one('meeting').post('start', {}, { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
+                soundService.play('resources/start.mp3');
                 return loadStatus();
             });
             showIndicator(p);
         };
         self.cancel = function(item) {
             var p = room.one('meeting').post('abandon', {}, { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
+                soundService.play('resources/cancel.mp3');
                 return loadStatus();
             });
             showIndicator(p);
         };
         self.end = function(item) {
             var p = room.one('meeting').post('end', {}, { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
+                soundService.play('resources/end.mp3');
                 return loadStatus();
             });
             showIndicator(p);
         };
         self.endAndStartNext = function(item, next) {
             var p = room.one('meeting').post('end', {}, { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
+                soundService.play('resources/end.mp3');
                 return room.one('meeting').post('start', {}, { securityKey: securityKey, uniqueId: next.UniqueId }).then(function() {
+                    soundService.play('resources/start.mp3');
                     return loadStatus();
                 });
             });
@@ -243,6 +250,7 @@
         self.newMeetingTime = 15;
         self.createNewMeeting = function newMeeting() {
             var p = room.one('meeting').post('startNew', {}, { securityKey: securityKey, title: 'New Meeting', minutes: self.newMeetingTime }).then(function() {
+                soundService.play('resources/new.mp3');
                 return loadStatus();
             });
             showIndicator(p);
