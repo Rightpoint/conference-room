@@ -26,10 +26,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly IDateTimeService _dateTimeService;
         private readonly IMeetingCacheService _meetingCacheService;
         private readonly IChangeNotificationService _changeNotificationService;
+        private readonly IConcurrencyLimiter _concurrencyLimiter;
         private readonly bool _ignoreFree;
         private readonly bool _useChangeNotification;
 
-        public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService)
+        public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService, IConcurrencyLimiter concurrencyLimiter)
         {
             _exchangeService = exchangeService;
             _meetingRepository = meetingRepository;
@@ -38,6 +39,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _dateTimeService = dateTimeService;
             _meetingCacheService = meetingCacheService;
             _changeNotificationService = changeNotificationService;
+            _concurrencyLimiter = concurrencyLimiter;
             _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
             _useChangeNotification = bool.Parse(ConfigurationManager.AppSettings["useChangeNotification"] ?? "true");
         }
@@ -48,7 +50,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         /// <returns></returns>
         public IEnumerable<RoomList> GetRoomLists()
         {
-            return _exchangeService.GetRoomLists().Select(i => new RoomList { Address = i.Address, Name = i.Name }).ToList();
+            using (_concurrencyLimiter.StartOperation())
+            {
+                return _exchangeService.GetRoomLists().Select(i => new RoomList { Address = i.Address, Name = i.Name }).ToList();
+            }
         }
 
         /// <summary>
@@ -58,12 +63,20 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         /// <returns></returns>
         public IEnumerable<Room> GetRoomsFromRoomList(string roomListAddress)
         {
-            return _exchangeService.GetRooms(roomListAddress).Select(i => new Room { Address = i.Address, Name = i.Name }).ToList();
+            using (_concurrencyLimiter.StartOperation())
+            {
+                return _exchangeService.GetRooms(roomListAddress).Select(i => new Room { Address = i.Address, Name = i.Name }).ToList();
+            }
         }
 
         public object GetInfo(string roomAddress, string securityKey = null)
         {
-            var room = _exchangeService.ResolveName(roomAddress).SingleOrDefault();
+            NameResolution room;
+            using (_concurrencyLimiter.StartOperation())
+            {
+                room = _exchangeService.ResolveName(roomAddress).SingleOrDefault();
+            }
+
             if (null == room)
             {
                 return null;
@@ -92,35 +105,38 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         public IEnumerable<Meeting> GetUpcomingAppointmentsForRoom(string roomAddress)
         {
             var isTracked = _changeNotificationService.IsTrackedForChanges(roomAddress);
-            return _meetingCacheService.GetUpcomingAppointmentsForRoom(roomAddress, isTracked, () =>
-            {
-                return Task.Run(() =>
+            using (_concurrencyLimiter.StartOperation())
+            { 
+                return _meetingCacheService.GetUpcomingAppointmentsForRoom(roomAddress, isTracked, () =>
                 {
-                    try
+                    return Task.Run(() =>
                     {
-                        var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
-                        var cal = CalendarFolder.Bind(_exchangeService, calId);
-                        var apt = cal.FindAppointments(new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))).ToList();
-                        log.DebugFormat("Got {0} appointments for {1} via {2} with {3}", apt.Count, roomAddress, _exchangeService.GetHashCode(), _exchangeService.CookieContainer.GetCookieHeader(_exchangeService.Url));
-                        if (_ignoreFree)
+                        try
                         {
-                            apt = apt.Where(i => i.LegacyFreeBusyStatus != LegacyFreeBusyStatus.Free).ToList();
+                            var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
+                            var cal = CalendarFolder.Bind(_exchangeService, calId);
+                            var apt = cal.FindAppointments(new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))).ToList();
+                            log.DebugFormat("Got {0} appointments for {1} via {2} with {3}", apt.Count, roomAddress, _exchangeService.GetHashCode(), _exchangeService.CookieContainer.GetCookieHeader(_exchangeService.Url));
+                            if (_ignoreFree)
+                            {
+                                apt = apt.Where(i => i.LegacyFreeBusyStatus != LegacyFreeBusyStatus.Free).ToList();
+                            }
+                            var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
+                            return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
                         }
-                        var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
-                        return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
-                    }
-                    catch (ServiceResponseException ex)
-                    {
-                        if (ex.ErrorCode == ServiceError.ErrorFolderNotFound || ex.ErrorCode == ServiceError.ErrorNonExistentMailbox || ex.ErrorCode == ServiceError.ErrorAccessDenied)
+                        catch (ServiceResponseException ex)
                         {
-                            log.DebugFormat("Access denied ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
-                            throw new AccessDeniedException("Folder/mailbox not found or access denied", ex);
+                            if (ex.ErrorCode == ServiceError.ErrorFolderNotFound || ex.ErrorCode == ServiceError.ErrorNonExistentMailbox || ex.ErrorCode == ServiceError.ErrorAccessDenied)
+                            {
+                                log.DebugFormat("Access denied ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
+                                throw new AccessDeniedException("Folder/mailbox not found or access denied", ex);
+                            }
+                            log.DebugFormat("Unexpected error ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
+                            throw;
                         }
-                        log.DebugFormat("Unexpected error ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
-                        throw;
-                    }
-                });
-            }).Result;
+                    });
+                }).Result;
+            }
         }
 
         public RoomStatusInfo GetStatus(string roomAddress)
@@ -184,10 +200,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 throw new Exception("Cannot manage this meeting");
             }
-            var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
-            var cal = CalendarFolder.Bind(_exchangeService, calId);
-            var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
-            SendEmail(item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "Use the conference room management device to start the meeting ASAP.");
+            using (_concurrencyLimiter.StartOperation())
+            {
+                var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
+                var cal = CalendarFolder.Bind(_exchangeService, calId);
+                var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
+                SendEmail(item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "Use the conference room management device to start the meeting ASAP.");
+            }
         }
 
         public void CancelMeeting(string roomAddress, string uniqueId, string securityKey)
@@ -199,21 +218,24 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             }
             _meetingRepository.CancelMeeting(uniqueId);
 
-            var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
-            var now = _dateTimeService.Now.TruncateToTheMinute();
-            if (now >= item.Start)
+            using (_concurrencyLimiter.StartOperation())
             {
-                item.End = now;
-            }
-            else
-            {
-                item.End = item.Start;
-            }
-            item.Update(ConflictResolutionMode.AlwaysOverwrite, SendInvitationsOrCancellationsMode.SendToNone);
+                var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
+                var now = _dateTimeService.Now.TruncateToTheMinute();
+                if (now >= item.Start)
+                {
+                    item.End = now;
+                }
+                else
+                {
+                    item.End = item.Start;
+                }
+                item.Update(ConflictResolutionMode.AlwaysOverwrite, SendInvitationsOrCancellationsMode.SendToNone);
 
-            SendEmail(item, string.Format("Your meeting '{0}' in {1} has been cancelled.", item.Subject, item.Location), "If you want to keep the room, use the conference room management device to start a new meeting ASAP.");
+                SendEmail(item, string.Format("Your meeting '{0}' in {1} has been cancelled.", item.Subject, item.Location), "If you want to keep the room, use the conference room management device to start a new meeting ASAP.");
 
-            BroadcastUpdate(roomAddress);
+                BroadcastUpdate(roomAddress);
+            }
         }
 
         public void EndMeeting(string roomAddress, string uniqueId, string securityKey)
@@ -226,20 +248,24 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _meetingRepository.EndMeeting(uniqueId);
 
             var now = _dateTimeService.Now.TruncateToTheMinute();
-            var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
-            var cal = CalendarFolder.Bind(_exchangeService, calId);
-            var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
-            if (now >= item.Start)
-            {
-                item.End = now;
-            }
-            else
-            {
-                item.End = item.Start;
-            }
-            item.Update(ConflictResolutionMode.AlwaysOverwrite, SendInvitationsOrCancellationsMode.SendToNone);
 
-            BroadcastUpdate(roomAddress);
+            using (_concurrencyLimiter.StartOperation())
+            {
+                var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
+                var cal = CalendarFolder.Bind(_exchangeService, calId);
+                var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
+                if (now >= item.Start)
+                {
+                    item.End = now;
+                }
+                else
+                {
+                    item.End = item.Start;
+                }
+                item.Update(ConflictResolutionMode.AlwaysOverwrite, SendInvitationsOrCancellationsMode.SendToNone);
+
+                BroadcastUpdate(roomAddress);
+            }
         }
 
         public void StartNewMeeting(string roomAddress, string securityKey, string title, int minutes)
@@ -253,20 +279,24 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 throw new Exception("Room is not free");
             }
-            var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
 
-            var now = _dateTimeService.Now.TruncateToTheMinute();
-            minutes = Math.Max(0, Math.Min(minutes, Math.Min(120, status.NextMeeting.ChainIfNotNull(m => (int?)m.Start.Subtract(now).TotalMinutes) ?? 120)));
+            using (_concurrencyLimiter.StartOperation())
+            {
+                var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
 
-            var appt = new Appointment(_exchangeService);
-            appt.Start = now;
-            appt.End = now.AddMinutes(minutes);
-            appt.Subject = title;
-            appt.Body = "Scheduled via conference room management system";
-            appt.Save(calId, SendInvitationsMode.SendToNone);
+                var now = _dateTimeService.Now.TruncateToTheMinute();
+                minutes = Math.Max(0, Math.Min(minutes, Math.Min(120, status.NextMeeting.ChainIfNotNull(m => (int?)m.Start.Subtract(now).TotalMinutes) ?? 120)));
 
-            _meetingRepository.StartMeeting(appt.Id.UniqueId);
-            BroadcastUpdate(roomAddress);
+                var appt = new Appointment(_exchangeService);
+                appt.Start = now;
+                appt.End = now.AddMinutes(minutes);
+                appt.Subject = title;
+                appt.Body = "Scheduled via conference room management system";
+                appt.Save(calId, SendInvitationsMode.SendToNone);
+
+                _meetingRepository.StartMeeting(appt.Id.UniqueId);
+                BroadcastUpdate(roomAddress);
+            }
         }
 
         private void BroadcastUpdate(string roomAddress)
