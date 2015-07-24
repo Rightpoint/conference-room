@@ -133,11 +133,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     .Take(2)
                     .ToList();
             var current = meetings.FirstOrDefault();
+            var isTracked = _changeNotificationService.IsTrackedForChanges(roomAddress);
 
             if (null == current)
             {
                 return new RoomStatusInfo
                 {
+                    IsTrackingChanges = isTracked,
                     Status = RoomStatus.Free,
                     NearTermMeetings = allMeetings.ToArray(),
                 };
@@ -146,6 +148,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 return new RoomStatusInfo
                 {
+                    IsTrackingChanges = isTracked,
                     Status = current.IsStarted ? RoomStatus.Busy : RoomStatus.Free,
                     NextChangeSeconds = current.Start.Subtract(now).TotalSeconds,
                     CurrentMeeting = current,
@@ -157,6 +160,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 return new RoomStatusInfo
                 {
+                    IsTrackingChanges = isTracked,
                     Status = current.IsStarted ? RoomStatus.Busy : RoomStatus.BusyNotConfirmed,
                     NextChangeSeconds = current.End.Subtract(now).TotalSeconds,
                     CurrentMeeting = current,
