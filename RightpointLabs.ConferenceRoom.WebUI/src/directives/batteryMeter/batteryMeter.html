@@ -1,0 +1,7 @@
+<span class="battery-meter">
+	<span>{{ level }}%</span>
+    <span class="progress">
+		<span class="progress-bar" ng-class="{ 'progress-bar-success': !!charging, 'progress-bar-warning': !charging }" ng-style="{ width: (level + '%') }">
+		</span>
+	</span>
+</span>
