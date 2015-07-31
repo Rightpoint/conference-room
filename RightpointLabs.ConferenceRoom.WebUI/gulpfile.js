@@ -1,6 +1,8 @@
+var Stream = require('stream')
+var PassThrough = Stream.PassThrough
+var fs = require('fs');
 var gulp = require('gulp');
 var wiredep = require('wiredep');
-var merge = require('gulp-merge');
 var sourcemaps = require('gulp-sourcemaps');
 var ts = require('gulp-typescript');
 var runSequence = require('run-sequence');
@@ -42,6 +44,36 @@ var tsProject = ts.createProject({
     noExternalResolve: true,
     sortProject: true
 });
+
+// clean/prep dist directory when starting
+console.log('removing dist directory....');
+if (fs.existsSync('dist')) {
+    rimraf.sync('dist');
+}
+fs.mkdirSync('dist');
+
+// serial merge call that actually works - merge2 drops data, and es.merge is parallel
+function merge(args) {
+    // accept either an array of streams, or just a bunch of streams
+    if (!Array.isArray(args)) {
+        args = Array.prototype.slice.call(arguments);
+    }
+    
+    var result = PassThrough({ objectMode: true, highWaterMark: 16 });
+    function processNext() {
+        if (args.length == 0) {
+            return result.end();
+        }
+        var arg = args.shift();
+        arg.on('end', processNext);
+        arg.pipe(result, {end: false})
+    }
+    
+    processNext();
+    
+    return result;
+}
+
 
 function scripts() {
     var tsResult = gulp.src(TS_SCRIPT_SOURCE)
