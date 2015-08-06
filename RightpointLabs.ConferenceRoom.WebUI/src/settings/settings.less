@@ -3,29 +3,37 @@
 .settings {
   margin-top: 10px;
   .battery-meter {
-	  .progress {
-		  width: 200px;
-	  }
+    .progress {
+      width: 200px;
+    }
   }
   .settings-body {
     position: relative;
     .locked {
-  	  position: absolute;
-  	  top: 0;
-  	  bottom: 0;
-  	  left: 0;
-  	  right: 0;
-  	  background: rgba(0, 0, 0, 50%);
-  	  z-index: 1;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 50%);
+      z-index: 1;
       border-radius: 5px;
-  	  .btn {
-  		  position: absolute;
-  		  top: 50%;
-  		  left: 50%;
-          transform: translate(-50%,-50%);
-  		  font-size: 300%;
-  		  border-radius: 20px;
-  	  }
+      & > * {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+        font-size: 300%;
+        border-radius: 20px;
+      }
+      span span {
+        color: white;
+        animation: spin 1s infinite linear;
+      }
+      @keyframes spin {
+          0%   {transform: rotate(0deg)}
+          100% {transform: rotate(360deg)}
+      }
     }
   }
 }
