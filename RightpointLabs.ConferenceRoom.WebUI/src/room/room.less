@@ -1,5 +1,8 @@
 // bower-refonly:less
 // endbower
+
+@import "../variables.less";
+
 .room {
   .loading-background, .loading-foreground {
     position: fixed;
@@ -185,4 +188,37 @@
     font-size: 28px;
   }
 
+  @media screen and (min-width: @highDpiMinW) and (min-height: @highDpiMinH) {
+    .small-screen & {
+      padding: 50px;
+      .btn {
+        font-size: 48px;
+        padding: 35px 45px;
+      }
+      .timeline {
+        padding-top: 70px;
+        padding-bottom: 30px;
+        .progress {
+          height: 40px;
+        }
+        .marker {
+          font-size: 28px;
+          &.now {
+            font-size: 48px;
+          }
+        }
+      }
+      h3{
+        font-size: 70px;
+      }
+      h4 {
+        font-size: 60px;
+      }
+      h5 {
+        font-size: 48px;
+      }
+      font-size: 48px;
+      
+    }
+  }
 }
