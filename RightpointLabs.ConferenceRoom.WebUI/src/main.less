@@ -19,6 +19,8 @@
 @navbar-default-link-active-color: lighten(@navbar-default-link-color, 20%);
 @navbar-default-link-active-bg: darken(@navbar-default-bg, 6.5%);
 
+@import "variables.less";
+
 // pull in the rest of our bower components
 // bower-novariables:less
 // endbower
@@ -64,3 +66,10 @@
   .small-screen-basics();
 }
 
+@media screen and (min-width: @highDpiMinW) and (min-height: @highDpiMinH) {
+  .small-screen {
+    .main-content {
+      padding: 50px;
+    }
+  }
+}

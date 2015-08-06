@@ -1,5 +1,6 @@
 // bower-refonly:less
 // endbower
+@import "../variables.less";
 .settings {
   margin-top: 10px;
   .battery-meter {
@@ -23,7 +24,7 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%,-50%);
-        font-size: 300%;
+        font-size: 200%;
         border-radius: 20px;
       }
       span span {
@@ -36,10 +37,15 @@
       }
     }
   }
+  @media screen and (min-width: @highDpiMinW) and (min-height: @highDpiMinH) {
+    .small-screen & {
+      font-size: 200%;
+    }
+  }
 }
 .unlock-body {
-    .row .btn {
-        width: 100%;
-        margin-top: 20px;
-    }
+  .row .btn {
+      width: 100%;
+      margin-top: 20px;
+  }
 }
