@@ -7,6 +7,10 @@
         self.isLocked = true;
         self.settings = settings;
         
+        self.reload = function () {
+            window.location.reload();
+        };
+        
         self.unlock = function () {
             $modal.open({
                 templateUrl: 'settings/modal.html'
