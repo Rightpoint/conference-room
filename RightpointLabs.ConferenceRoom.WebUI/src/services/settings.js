@@ -7,7 +7,6 @@
         
         var obj = {};
         obj.onChange = function (key, newValue, oldValue) {
-            console.log(key, newValue, oldValue);
             if (key == 'isSmallScreen') {
                 if(!!newValue) {
                     $("html").addClass('small-screen');

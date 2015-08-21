@@ -10,16 +10,16 @@
             var sending = pending.slice();
             activeCall = $http.post('/api/clientLog/messages', { messages: sending }, { logFailure: false }).then(function() {
                 activeCall = null;
-                console.log('before', 'sending', sending.length, 'pending', pending.length);
                 pending = _.reject(pending, function(i) {
                     return _.some(sending, function(j) { return i.id == j.id; });
                 });
-                console.log('after', 'sending', sending.length, 'pending', pending.length);
                 if(pending.length) {
                     startCall();
                 }
             }, function() {
-                console.log('failed to send - waiting a bit and trying again');
+                if(window.console && console.log) {
+                    console.log('failed to send - waiting a bit and trying again');
+                }
                 activeCall = $timeout(function() {
                     activeCall = null;
                     startCall();

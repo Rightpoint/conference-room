@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').factory('soundService', [function () {
+    angular.module('app').factory('soundService', ['$log', function ($log) {
         function play(file) {
             try {
                 if ("Audio" in window) {
@@ -11,7 +11,7 @@
                     return;
                 }
             } catch (e){
-                console.log('Cannot play', file, e);
+                $log.warn('Cannot play', file, e);
             }
         }
         

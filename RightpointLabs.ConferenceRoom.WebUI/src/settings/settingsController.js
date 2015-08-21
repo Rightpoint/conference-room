@@ -18,7 +18,6 @@
                 self.isUnlocking = true;
                 Restangular.one('settings').post('checkCode', {}, { code: data }).then(function (result) {
                     self.isUnlocking = false;
-                    console.log(result);
                     if (result) {
                         self.isLocked = false;
                     }
