@@ -8,7 +8,7 @@
             if(activeCall)
                 return;
             var sending = pending.slice();
-            activeCall = $http.post('/api/clientLog/messages', { messages: sending }).then(function() {
+            activeCall = $http.post('/api/clientLog/messages', { messages: sending }, { logFailure: false }).then(function() {
                 activeCall = null;
                 console.log('before', 'sending', sending.length, 'pending', pending.length);
                 pending = _.reject(pending, function(i) {

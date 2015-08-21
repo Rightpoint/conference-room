@@ -11,10 +11,13 @@
         }
         function endReject(arg) {
             endRequest();
-            if(arg){
-                logger.error(arg.data || "Unknown error communicating with server", arg.statusText || "Unknown error");
-            } else{
-                logger.error("Unknown error communicating with server", "Unknown error");
+            var logIt = (arg.config || { logFailure: true }).logFailure !== false;
+            if(logIt) {
+                if(arg){
+                    logger.error(arg.data || "Unknown error communicating with server", arg.statusText || "Unknown error");
+                } else{
+                    logger.error("Unknown error communicating with server", "Unknown error");
+                }
             }
             return $q.reject(arg);
         }
