@@ -189,6 +189,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         public void StartMeeting(string roomAddress, string uniqueId, string securityKey)
         {
             SecurityCheck(roomAddress, uniqueId, securityKey);
+            log.DebugFormat("Starting {0} for {1}", uniqueId, roomAddress);
             _meetingRepository.StartMeeting(uniqueId);
             BroadcastUpdate(roomAddress);
         }
@@ -202,9 +203,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             }
             using (_concurrencyLimiter.StartOperation())
             {
-                var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
-                var cal = CalendarFolder.Bind(_exchangeService, calId);
                 var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
+                log.DebugFormat("Warning {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
                 SendEmail(item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "Use the conference room management device to start the meeting ASAP.");
             }
         }
@@ -221,6 +221,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             using (_concurrencyLimiter.StartOperation())
             {
                 var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
+                log.DebugFormat("Cancelling {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
                 var now = _dateTimeService.Now.TruncateToTheMinute();
                 if (now >= item.Start)
                 {
@@ -251,9 +252,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             using (_concurrencyLimiter.StartOperation())
             {
-                var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
-                var cal = CalendarFolder.Bind(_exchangeService, calId);
                 var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
+                log.DebugFormat("Ending {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
                 if (now >= item.Start)
                 {
                     item.End = now;
@@ -293,6 +293,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 appt.Subject = title;
                 appt.Body = "Scheduled via conference room management system";
                 appt.Save(calId, SendInvitationsMode.SendToNone);
+                log.DebugFormat("Created {0} for {1}", appt.Id.UniqueId, roomAddress);
 
                 _meetingRepository.StartMeeting(appt.Id.UniqueId);
                 BroadcastUpdate(roomAddress);
