@@ -26,11 +26,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly IDateTimeService _dateTimeService;
         private readonly IMeetingCacheService _meetingCacheService;
         private readonly IChangeNotificationService _changeNotificationService;
-        private readonly IConcurrencyLimiter _concurrencyLimiter;
+        private readonly INamedConcurrencyLimiter _namedConcurrencyLimiter;
+        private readonly Func<ExchangeService> _exchangeServiceBuilder;
         private readonly bool _ignoreFree;
         private readonly bool _useChangeNotification;
+        private bool _impersonateForAllCalls;
 
-        public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService, IConcurrencyLimiter concurrencyLimiter)
+        public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService, INamedConcurrencyLimiter namedConcurrencyLimiter, Func<ExchangeService> exchangeServiceBuilder)
         {
             _exchangeService = exchangeService;
             _meetingRepository = meetingRepository;
@@ -39,9 +41,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _dateTimeService = dateTimeService;
             _meetingCacheService = meetingCacheService;
             _changeNotificationService = changeNotificationService;
-            _concurrencyLimiter = concurrencyLimiter;
+            _namedConcurrencyLimiter = namedConcurrencyLimiter;
+            _exchangeServiceBuilder = exchangeServiceBuilder;
             _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
             _useChangeNotification = bool.Parse(ConfigurationManager.AppSettings["useChangeNotification"] ?? "true");
+            _impersonateForAllCalls = bool.Parse(ConfigurationManager.AppSettings["impersonateForAllCalls"] ?? "true");
         }
 
         /// <summary>
@@ -50,7 +54,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         /// <returns></returns>
         public IEnumerable<RoomList> GetRoomLists()
         {
-            using (_concurrencyLimiter.StartOperation())
+            using (_namedConcurrencyLimiter.StartOperation(""))
             {
                 return _exchangeService.GetRoomLists().Select(i => new RoomList { Address = i.Address, Name = i.Name }).ToList();
             }
@@ -63,7 +67,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         /// <returns></returns>
         public IEnumerable<Room> GetRoomsFromRoomList(string roomListAddress)
         {
-            using (_concurrencyLimiter.StartOperation())
+            using (_namedConcurrencyLimiter.StartOperation(""))
             {
                 return _exchangeService.GetRooms(roomListAddress).Select(i => new Room { Address = i.Address, Name = i.Name }).ToList();
             }
@@ -72,9 +76,15 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         public object GetInfo(string roomAddress, string securityKey = null)
         {
             NameResolution room;
-            using (_concurrencyLimiter.StartOperation())
+            using (_namedConcurrencyLimiter.StartOperation(_impersonateForAllCalls ? roomAddress : ""))
             {
-                room = _exchangeService.ResolveName(roomAddress).SingleOrDefault();
+                var svc = _exchangeService;
+                if (_impersonateForAllCalls)
+                {
+                    svc = _exchangeServiceBuilder();
+                    svc.ImpersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, roomAddress);
+                }
+                room = svc.ResolveName(roomAddress).SingleOrDefault();
             }
 
             if (null == room)
@@ -105,7 +115,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         public IEnumerable<Meeting> GetUpcomingAppointmentsForRoom(string roomAddress)
         {
             var isTracked = _changeNotificationService.IsTrackedForChanges(roomAddress);
-            using (_concurrencyLimiter.StartOperation())
+            using (_namedConcurrencyLimiter.StartOperation(_impersonateForAllCalls ? roomAddress : ""))
             { 
                 return _meetingCacheService.GetUpcomingAppointmentsForRoom(roomAddress, isTracked, () =>
                 {
@@ -113,10 +123,17 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     {
                         try
                         {
+                            var svc = _exchangeService;
+                            if (_impersonateForAllCalls)
+                            {
+                                svc = _exchangeServiceBuilder();
+                                svc.ImpersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, roomAddress);
+                            }
+
                             var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
-                            var cal = CalendarFolder.Bind(_exchangeService, calId);
+                            var cal = CalendarFolder.Bind(svc, calId);
                             var apt = cal.FindAppointments(new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))).ToList();
-                            log.DebugFormat("Got {0} appointments for {1} via {2} with {3}", apt.Count, roomAddress, _exchangeService.GetHashCode(), _exchangeService.CookieContainer.GetCookieHeader(_exchangeService.Url));
+                            log.DebugFormat("Got {0} appointments for {1} via {2} with {3}", apt.Count, roomAddress, svc.GetHashCode(), svc.CookieContainer.GetCookieHeader(svc.Url));
                             if (_ignoreFree)
                             {
                                 apt = apt.Where(i => i.LegacyFreeBusyStatus != LegacyFreeBusyStatus.Free).ToList();
@@ -201,9 +218,15 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 throw new Exception("Cannot manage this meeting");
             }
-            using (_concurrencyLimiter.StartOperation())
+            using (_namedConcurrencyLimiter.StartOperation(_impersonateForAllCalls ? roomAddress : ""))
             {
-                var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
+                var svc = _exchangeService;
+                if (_impersonateForAllCalls)
+                {
+                    svc = _exchangeServiceBuilder();
+                    svc.ImpersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, roomAddress);
+                }
+                var item = Appointment.Bind(svc, new ItemId(uniqueId));
                 log.DebugFormat("Warning {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
                 SendEmail(item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "Use the conference room management device to start the meeting ASAP.");
             }
@@ -218,9 +241,15 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             }
             _meetingRepository.CancelMeeting(uniqueId);
 
-            using (_concurrencyLimiter.StartOperation())
+            using (_namedConcurrencyLimiter.StartOperation(_impersonateForAllCalls ? roomAddress : ""))
             {
-                var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
+                var svc = _exchangeService;
+                if (_impersonateForAllCalls)
+                {
+                    svc = _exchangeServiceBuilder();
+                    svc.ImpersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, roomAddress);
+                }
+                var item = Appointment.Bind(svc, new ItemId(uniqueId));
                 log.DebugFormat("Cancelling {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
                 var now = _dateTimeService.Now.TruncateToTheMinute();
                 if (now >= item.Start)
@@ -250,9 +279,15 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             var now = _dateTimeService.Now.TruncateToTheMinute();
 
-            using (_concurrencyLimiter.StartOperation())
+            using (_namedConcurrencyLimiter.StartOperation(_impersonateForAllCalls ? roomAddress : ""))
             {
-                var item = Appointment.Bind(_exchangeService, new ItemId(uniqueId));
+                var svc = _exchangeService;
+                if (_impersonateForAllCalls)
+                {
+                    svc = _exchangeServiceBuilder();
+                    svc.ImpersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, roomAddress);
+                }
+                var item = Appointment.Bind(svc, new ItemId(uniqueId));
                 log.DebugFormat("Ending {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
                 if (now >= item.Start)
                 {
@@ -280,14 +315,20 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 throw new Exception("Room is not free");
             }
 
-            using (_concurrencyLimiter.StartOperation())
+            using (_namedConcurrencyLimiter.StartOperation(_impersonateForAllCalls ? roomAddress : ""))
             {
+                var svc = _exchangeService;
+                if (_impersonateForAllCalls)
+                {
+                    svc = _exchangeServiceBuilder();
+                    svc.ImpersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, roomAddress);
+                }
                 var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
 
                 var now = _dateTimeService.Now.TruncateToTheMinute();
                 minutes = Math.Max(0, Math.Min(minutes, Math.Min(120, status.NextMeeting.ChainIfNotNull(m => (int?)m.Start.Subtract(now).TotalMinutes) ?? 120)));
 
-                var appt = new Appointment(_exchangeService);
+                var appt = new Appointment(svc);
                 appt.Start = now;
                 appt.End = now.AddMinutes(minutes);
                 appt.Subject = title;
