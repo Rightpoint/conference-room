@@ -28,11 +28,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly IChangeNotificationService _changeNotificationService;
         private readonly INamedConcurrencyLimiter _namedConcurrencyLimiter;
         private readonly Func<ExchangeService> _exchangeServiceBuilder;
+        private readonly ISimpleTimedCache _simpleTimedCache;
         private readonly bool _ignoreFree;
         private readonly bool _useChangeNotification;
         private bool _impersonateForAllCalls;
 
-        public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService, INamedConcurrencyLimiter namedConcurrencyLimiter, Func<ExchangeService> exchangeServiceBuilder)
+        public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService, INamedConcurrencyLimiter namedConcurrencyLimiter, Func<ExchangeService> exchangeServiceBuilder, ISimpleTimedCache simpleTimedCache)
         {
             _exchangeService = exchangeService;
             _meetingRepository = meetingRepository;
@@ -43,6 +44,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _changeNotificationService = changeNotificationService;
             _namedConcurrencyLimiter = namedConcurrencyLimiter;
             _exchangeServiceBuilder = exchangeServiceBuilder;
+            _simpleTimedCache = simpleTimedCache;
             _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
             _useChangeNotification = bool.Parse(ConfigurationManager.AppSettings["useChangeNotification"] ?? "true");
             _impersonateForAllCalls = bool.Parse(ConfigurationManager.AppSettings["impersonateForAllCalls"] ?? "true");
@@ -56,7 +58,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         {
             using (_namedConcurrencyLimiter.StartOperation(""))
             {
-                return _exchangeService.GetRoomLists().Select(i => new RoomList { Address = i.Address, Name = i.Name }).ToList();
+                return _simpleTimedCache.GetCachedValue("RoomLists", TimeSpan.FromHours(24), 
+                    () => Task.FromResult(_exchangeService.GetRoomLists().Select(i => new RoomList { Address = i.Address, Name = i.Name }).ToArray())).Result;
             }
         }
 
@@ -69,7 +72,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         {
             using (_namedConcurrencyLimiter.StartOperation(""))
             {
-                return _exchangeService.GetRooms(roomListAddress).Select(i => new Room { Address = i.Address, Name = i.Name }).ToList();
+                return _simpleTimedCache.GetCachedValue("Rooms_" + roomListAddress, TimeSpan.FromHours(24), 
+                    () => Task.FromResult(_exchangeService.GetRooms(roomListAddress).Select(i => new Room { Address = i.Address, Name = i.Name }).ToArray())).Result;
             }
         }
 

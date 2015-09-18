@@ -78,6 +78,7 @@
     <Compile Include="Services\ExchangeConferenceRoomService.cs" />
     <Compile Include="Services\MeetingCacheService.cs" />
     <Compile Include="Services\NamedConcurrencyLimiter.cs" />
+    <Compile Include="Services\SimpleTimedCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

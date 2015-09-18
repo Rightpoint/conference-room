@@ -59,6 +59,7 @@
     <Compile Include="Services\IDateTimeService.cs" />
     <Compile Include="Services\IMeetingCacheService.cs" />
     <Compile Include="Services\INamedConcurrencyLimiter.cs" />
+    <Compile Include="Services\ISimpleTimedCache.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
