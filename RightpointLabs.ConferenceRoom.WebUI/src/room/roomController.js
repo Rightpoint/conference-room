@@ -3,6 +3,7 @@
 
     angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', '$scope', 'matchmedia', 'UpdateHub', 'settings', 'timelineService', '$state', 'soundService', function(Restangular, $stateParams, $timeout, $interval, $q, $scope, matchmedia, UpdateHub, settings, timelineService, $state, soundService) {
         var self = this;
+        self.isLoading = 0;
 
         self.Free = 0;
         self.Busy = 1;
@@ -258,9 +259,9 @@
         };
 
         function showIndicator(loadPromise) {
-            self.isLoading = true;
-            loadPromise.then(function() {
-                self.isLoading = false;
+            self.isLoading++;
+            loadPromise.finally(function() {
+                self.isLoading--;
             });
         }
 

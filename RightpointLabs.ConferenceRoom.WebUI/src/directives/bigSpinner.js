@@ -17,7 +17,7 @@
                    width: 15
                });
                scope.$watch('active', function(val) {
-                   if(val) {
+                   if(!!val) {
                        spin.spin(element[0]);
                    } else {
                        spin.stop();
