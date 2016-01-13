@@ -39,27 +39,51 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         [Route("messages")]
         public void PostMessages([FromBody]ClientMessagesMessage message)
         {
+            var ip = GetClientIp(Request);
             foreach (var msg in message.Messages)
             {
                 switch (msg.Level)
                 {
                     case "log":
                     case "debug":
-                        log.DebugFormat("Time: {0}, Message: ({1}x) {2}", msg.Time, msg.Count, msg.Message);
+                        log.DebugFormat("[{3}] Time: {0}, Message: ({1}x) {2}", msg.Time, msg.Count, msg.Message, ip);
                         break;
                     case "info":
-                        log.InfoFormat("Time: {0}, Message: ({1}x) {2}", msg.Time, msg.Count, msg.Message);
+                        log.InfoFormat("[{3}] Time: {0}, Message: ({1}x) {2}", msg.Time, msg.Count, msg.Message, ip);
                         break;
                     case "warn":
-                        log.WarnFormat("Time: {0}, Message: ({1}x) {2}", msg.Time, msg.Count, msg.Message);
+                        log.WarnFormat("[{3}] Time: {0}, Message: ({1}x) {2}", msg.Time, msg.Count, msg.Message, ip);
                         break;
                     case "error":
-                        log.ErrorFormat("Time: {0}, Message: ({1}x) {2}", msg.Time, msg.Count, msg.Message);
+                        log.ErrorFormat("[{3}] Time: {0}, Message: ({1}x) {2}", msg.Time, msg.Count, msg.Message, ip);
                         break;
                     default:
-                        log.DebugFormat("Time: {0}, Level: {1}, Message: ({2}x) {3}", msg.Time, msg.Level, msg.Count, msg.Message);
+                        log.DebugFormat("[{4}] Time: {0}, Level: {1}, Message: ({2}x) {3}", msg.Time, msg.Level, msg.Count, msg.Message, ip);
                         break;
                 }
+            }
+        }
+
+
+        private static string GetClientIp(HttpRequestMessage request)
+        {
+            // from https://trikks.wordpress.com/2013/06/27/getting-the-client-ip-via-asp-net-web-api/
+            if (request.Properties.ContainsKey("MS_HttpContext"))
+            {
+                return ((HttpContextWrapper)request.Properties["MS_HttpContext"]).Request.UserHostAddress;
+            }
+            else if (request.Properties.ContainsKey(RemoteEndpointMessageProperty.Name))
+            {
+                RemoteEndpointMessageProperty prop = (RemoteEndpointMessageProperty)request.Properties[RemoteEndpointMessageProperty.Name];
+                return prop.Address;
+            }
+            else if (HttpContext.Current != null)
+            {
+                return HttpContext.Current.Request.UserHostAddress;
+            }
+            else
+            {
+                return null;
             }
         }
     }
