@@ -39,13 +39,55 @@
             return moment().add(-timeDelta, 'milliseconds').second(0).millisecond(0);
         };
 
+        self.minutesUntil = function (value) {
+            return moment(value).diff(self.currentTime(), 'minutes');
+        }
+
         self.freeMinutes = function() {
             if(!self.current) {
                 return null;
             }
-            return self.moment(self.current.Start).diff(self.currentTime(), 'minutes');
+            return self.minutesUntil(self.current.Start);
         };
-
+        
+        var early = 10;
+        
+        self.formatHour = function formatHour(time) {
+            return moment(time).format('h');
+        };
+        
+        self.formatTime = function formatTime(time) {
+            return moment(time).format('h:mm a');
+        };
+        
+        self.canManageCurrent = function canManageCurrent() {
+            return self.current && !self.current.IsNotManaged && self.hasSecurityRights;
+        };
+        
+        self.showStartEarly = function showStartEarly() {
+            return self.showCancel() && !self.showStart();
+        };
+        
+        self.showStart = function showStart() {
+            return self.canManageCurrent() && !self.current.IsStarted && self.freeMinutes() <= 0;
+        };
+        
+        self.showCancel = function showCancel() {
+            return self.canManageCurrent() && !self.current.IsStarted && self.freeMinutes() <= early;
+        };
+        
+        self.showEndEarly = function showEndEarly() {
+            return self.canManageCurrent() && self.current.IsStarted;
+        };
+        
+        self.showEndAndStartNext = function showEndAndStartNext() {
+            return self.showEndEarly() && self.next && !self.next.IsNotManaged && self.minutesUntil(self.next.Start) <= early;
+        };
+        
+        self.showAddNew = function showAddNew() {
+            return self.hasSecurityRights && (!self.current || self.freeMinutes() > early);
+        };
+        
         function updateTimeline() {
             var now = self.currentTime();
             var day = now.clone().startOf('day');
