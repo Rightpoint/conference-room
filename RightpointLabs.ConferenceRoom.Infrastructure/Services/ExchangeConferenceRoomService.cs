@@ -118,9 +118,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     {
                         return _exchangeServiceManager.Execute(_impersonateForAllCalls ? roomAddress : "", svc =>
                         {
-                            var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
-                            var cal = CalendarFolder.Bind(svc, calId, PropertySet.IdOnly);
-                            var apt = cal.FindAppointments(new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))).ToList();
+                            var apt = svc.FindAppointments(WellKnownFolderName.Calendar, new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))).ToList();
                             log.DebugFormat("Got {0} appointments for {1} via {2} with {3}", apt.Count, roomAddress, svc.GetHashCode(), svc.CookieContainer.GetCookieHeader(svc.Url));
                             if (_ignoreFree)
                             {
