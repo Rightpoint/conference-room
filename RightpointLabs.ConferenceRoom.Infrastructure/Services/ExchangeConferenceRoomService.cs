@@ -20,30 +20,26 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
     public class ExchangeConferenceRoomService : IConferenceRoomService
     {
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        private readonly ExchangeService _exchangeService;
         private readonly IMeetingRepository _meetingRepository;
         private readonly ISecurityRepository _securityRepository;
         private readonly IBroadcastService _broadcastService;
         private readonly IDateTimeService _dateTimeService;
         private readonly IMeetingCacheService _meetingCacheService;
         private readonly IChangeNotificationService _changeNotificationService;
-        private readonly INamedConcurrencyLimiter _namedConcurrencyLimiter;
         private readonly IExchangeServiceManager _exchangeServiceManager;
         private readonly ISimpleTimedCache _simpleTimedCache;
         private readonly bool _ignoreFree;
         private readonly bool _useChangeNotification;
         private bool _impersonateForAllCalls;
 
-        public ExchangeConferenceRoomService(ExchangeService exchangeService, IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService, INamedConcurrencyLimiter namedConcurrencyLimiter, IExchangeServiceManager exchangeServiceManager, ISimpleTimedCache simpleTimedCache)
+        public ExchangeConferenceRoomService(IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService, IExchangeServiceManager exchangeServiceManager, ISimpleTimedCache simpleTimedCache)
         {
-            _exchangeService = exchangeService;
             _meetingRepository = meetingRepository;
             _securityRepository = securityRepository;
             _broadcastService = broadcastService;
             _dateTimeService = dateTimeService;
             _meetingCacheService = meetingCacheService;
             _changeNotificationService = changeNotificationService;
-            _namedConcurrencyLimiter = namedConcurrencyLimiter;
             _exchangeServiceManager = exchangeServiceManager;
             _simpleTimedCache = simpleTimedCache;
             _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
@@ -57,11 +53,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         /// <returns></returns>
         public IEnumerable<RoomList> GetRoomLists()
         {
-            using (_namedConcurrencyLimiter.StartOperation(""))
-            {
-                return _simpleTimedCache.GetCachedValue("RoomLists", TimeSpan.FromHours(24), 
-                    () => Task.FromResult(_exchangeService.GetRoomLists().Select(i => new RoomList { Address = i.Address, Name = i.Name }).ToArray())).Result;
-            }
+            return _simpleTimedCache.GetCachedValue("RoomLists", TimeSpan.FromHours(24),
+                () => Task.FromResult(_exchangeServiceManager.Execute("", svc => svc.GetRoomLists().Select(i => new RoomList { Address = i.Address, Name = i.Name }).ToArray()))).Result;
         }
 
         /// <summary>
@@ -71,11 +64,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         /// <returns></returns>
         public IEnumerable<Room> GetRoomsFromRoomList(string roomListAddress)
         {
-            using (_namedConcurrencyLimiter.StartOperation(""))
-            {
-                return _simpleTimedCache.GetCachedValue("Rooms_" + roomListAddress, TimeSpan.FromHours(24), 
-                    () => Task.FromResult(_exchangeService.GetRooms(roomListAddress).Select(i => new Room { Address = i.Address, Name = i.Name }).ToArray())).Result;
-            }
+            return _simpleTimedCache.GetCachedValue("Rooms_" + roomListAddress, TimeSpan.FromHours(24), 
+                () => Task.FromResult(_exchangeServiceManager.Execute("", svc => svc.GetRooms(roomListAddress).Select(i => new Room { Address = i.Address, Name = i.Name }).ToArray()))).Result;
         }
 
         public object GetInfo(string roomAddress, string securityKey = null)
@@ -314,24 +304,27 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         private void SendEmail(Appointment item, string subject, string body)
         {
-            var msg = new EmailMessage(_exchangeService);
-            msg.Subject = subject;
-            msg.Body = body;
-            log.DebugFormat("Address: {0}, MailboxType: {1}", item.Organizer.Address, item.Organizer.MailboxType);
-            if (item.Organizer.MailboxType == MailboxType.Mailbox)
+            _exchangeServiceManager.Execute("", svc =>
             {
-                msg.ToRecipients.Add(item.Organizer);
-            }
-            foreach (var x in item.RequiredAttendees.Concat(item.OptionalAttendees))
-            {
-                log.DebugFormat("Address: {0}, MailboxType: {1}, RoutingType: {2}", x.Address, x.MailboxType, x.RoutingType);
-                if (x.RoutingType == "SMTP" && x.Address.EndsWith("@rightpoint.com"))
+                var msg = new EmailMessage(svc);
+                msg.Subject = subject;
+                msg.Body = body;
+                log.DebugFormat("Address: {0}, MailboxType: {1}", item.Organizer.Address, item.Organizer.MailboxType);
+                if (item.Organizer.MailboxType == MailboxType.Mailbox)
                 {
-                    log.DebugFormat("Also sending to {0} @ {1}", x.Name, x.Address);
-                    msg.CcRecipients.Add(x.Name, x.Address);
+                    msg.ToRecipients.Add(item.Organizer);
                 }
-            }
-            msg.Send();
+                foreach (var x in item.RequiredAttendees.Concat(item.OptionalAttendees))
+                {
+                    log.DebugFormat("Address: {0}, MailboxType: {1}, RoutingType: {2}", x.Address, x.MailboxType, x.RoutingType);
+                    if (x.RoutingType == "SMTP" && x.Address.EndsWith("@rightpoint.com"))
+                    {
+                        log.DebugFormat("Also sending to {0} @ {1}", x.Name, x.Address);
+                        msg.CcRecipients.Add(x.Name, x.Address);
+                    }
+                }
+                msg.Send();
+            });
         }
 
         private Meeting SecurityCheck(string roomAddress, string uniqueId, string securityKey)

@@ -37,7 +37,6 @@ namespace RightpointLabs.ConferenceRoom.Services
                     ConfigurationManager.AppSettings["password"],
                     ConfigurationManager.AppSettings["serviceUrl"]);
 
-            container.RegisterType<ExchangeService>(new HierarchicalLifetimeManager(), new InjectionFactory(c => serviceBuilder()));
             container.RegisterType<Func<ExchangeService>>(new HierarchicalLifetimeManager(), new InjectionFactory(c => serviceBuilder));
             container.RegisterType<IBroadcastService, SignalrBroadcastService>(new HierarchicalLifetimeManager());
             container.RegisterType<IConferenceRoomService, ExchangeConferenceRoomService>(new HierarchicalLifetimeManager());
@@ -48,7 +47,6 @@ namespace RightpointLabs.ConferenceRoom.Services
             container.RegisterType<IDateTimeService>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => new DateTimeService(TimeSpan.FromHours(0))));
             container.RegisterType<IMeetingCacheService, MeetingCacheService>(new ContainerControlledLifetimeManager()); // singleton cache
             container.RegisterType<ISimpleTimedCache, SimpleTimedCache>(new ContainerControlledLifetimeManager()); // singleton cache
-            container.RegisterInstance(typeof(INamedConcurrencyLimiter), new NamedConcurrencyLimiter(int.Parse(ConfigurationManager.AppSettings["concurrencyLimit"] ?? "1")), new ContainerControlledLifetimeManager());
 
             // create change notifier in a child container and register as a singleton with the main container (avoids creating it's dependencies in the global container)
             var child = container.CreateChildContainer();
