@@ -44,6 +44,7 @@ namespace RightpointLabs.ConferenceRoom.Services
             container.RegisterType<IMeetingRepository, MeetingRepository>(new HierarchicalLifetimeManager());
             container.RegisterType<ISecurityRepository, SecurityRepository>(new HierarchicalLifetimeManager());
             container.RegisterType<IConnectionManager>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => GlobalHost.ConnectionManager));
+            container.RegisterType<IExchangeServiceManager, ExchangeServiceManager>(new ContainerControlledLifetimeManager());
             container.RegisterType<IDateTimeService>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => new DateTimeService(TimeSpan.FromHours(0))));
             container.RegisterType<IMeetingCacheService, MeetingCacheService>(new ContainerControlledLifetimeManager()); // singleton cache
             container.RegisterType<ISimpleTimedCache, SimpleTimedCache>(new ContainerControlledLifetimeManager()); // singleton cache
