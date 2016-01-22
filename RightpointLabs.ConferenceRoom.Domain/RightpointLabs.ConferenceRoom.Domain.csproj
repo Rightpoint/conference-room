@@ -80,6 +80,7 @@
     <Compile Include="Services\IMeetingCacheService.cs" />
     <Compile Include="Services\INamedConcurrencyLimiter.cs" />
     <Compile Include="Services\InstantMessagePriority.cs" />
+    <Compile Include="Services\ISignatureService.cs" />
     <Compile Include="Services\ISimpleTimedCache.cs" />
     <Compile Include="Services\ISmsMessagingService.cs" />
   </ItemGroup>
