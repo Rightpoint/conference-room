@@ -1,5 +1,7 @@
 ﻿using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
+using log4net;
 using Microsoft.Exchange.WebServices.Data;
 using RightpointLabs.ConferenceRoom.Domain;
 
@@ -11,6 +13,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
     /// </summary>
     public class SmsAddressLookupService : ISmsAddressLookupService
     {
+        private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private readonly IExchangeServiceManager _exchangeServiceManager;
 
         public SmsAddressLookupService(IExchangeServiceManager exchangeServiceManager)
@@ -33,6 +36,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     .Select(i => i.Length == 9 ? "1" + i : i)
                     .ToArray();
             });
+
+            // HACK: let me test it out with my account
+            if (emailAddresses.Contains("jrupp@rightpoint.com"))
+            {
+                phoneNumbers = phoneNumbers.Concat(new[] {"18477363461"}).Distinct().ToArray();
+            }
+
+            log.DebugFormat("Looked up {0} into {1}", string.Join(", ", emailAddresses), string.Join(", ", phoneNumbers));
 
             return phoneNumbers;
         }
