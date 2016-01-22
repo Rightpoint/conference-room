@@ -8,6 +8,7 @@
         <button class="btn btn-primary" ng-click="c.cancel(c.current)" ng-if="c.showCancel()">Cancel</button>
         <button class="btn btn-primary" ng-click="c.end(c.current)" ng-if="c.showEndEarly()">End early</button>
         <button class="btn btn-primary" ng-click="c.endAndStartNext(c.current, c.next)" ng-if="c.showEndAndStartNext()">End early &<br/>start next</button>
+        <button class="btn btn-primary" ng-click="c.message(c.prev)" ng-if="c.showMessagePrev()">Tell previous<br/>"Time is Up"</button>
         <button class="btn btn-primary" ng-if="c.showAddNew()" data-toggle="modal" data-target="#addMeetingModal">New meeting</button>
         <div class="btn-group">
             <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">

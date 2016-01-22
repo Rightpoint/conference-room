@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using log4net;
 using Microsoft.Exchange.WebServices.Data;
+using Microsoft.Rtc.Collaboration;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
@@ -28,11 +29,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly IChangeNotificationService _changeNotificationService;
         private readonly IExchangeServiceManager _exchangeServiceManager;
         private readonly ISimpleTimedCache _simpleTimedCache;
+        private readonly IInstantMessagingService _instantMessagingService;
         private readonly bool _ignoreFree;
         private readonly bool _useChangeNotification;
         private bool _impersonateForAllCalls;
 
-        public ExchangeConferenceRoomService(IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService, IExchangeServiceManager exchangeServiceManager, ISimpleTimedCache simpleTimedCache)
+        public ExchangeConferenceRoomService(IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService, IExchangeServiceManager exchangeServiceManager, ISimpleTimedCache simpleTimedCache, IInstantMessagingService instantMessagingService)
         {
             _meetingRepository = meetingRepository;
             _securityRepository = securityRepository;
@@ -42,6 +44,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _changeNotificationService = changeNotificationService;
             _exchangeServiceManager = exchangeServiceManager;
             _simpleTimedCache = simpleTimedCache;
+            _instantMessagingService = instantMessagingService;
             _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
             _useChangeNotification = bool.Parse(ConfigurationManager.AppSettings["useChangeNotification"] ?? "true");
             _impersonateForAllCalls = bool.Parse(ConfigurationManager.AppSettings["impersonateForAllCalls"] ?? "true");
@@ -154,42 +157,35 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     .Where(i => !i.IsCancelled && !i.IsEndedEarly && i.End > now)
                     .Take(2)
                     .ToList();
+
+            var prev = allMeetings.LastOrDefault(i => i.End < now);
             var current = meetings.FirstOrDefault();
             var isTracked = _changeNotificationService.IsTrackedForChanges(roomAddress);
 
+            var info = new RoomStatusInfo
+            {
+                IsTrackingChanges = isTracked,
+                NearTermMeetings = allMeetings.ToArray(),
+                PreviousMeeting = prev,
+                CurrentMeeting = current,
+                NextMeeting = meetings.Skip(1).FirstOrDefault(),
+            };
             if (null == current)
             {
-                return new RoomStatusInfo
-                {
-                    IsTrackingChanges = isTracked,
-                    Status = RoomStatus.Free,
-                    NearTermMeetings = allMeetings.ToArray(),
-                };
+                info.Status = RoomStatus.Free;
             }
             else if (now < current.Start)
             {
-                return new RoomStatusInfo
-                {
-                    IsTrackingChanges = isTracked,
-                    Status = current.IsStarted ? RoomStatus.Busy : RoomStatus.Free,
-                    NextChangeSeconds = current.Start.Subtract(now).TotalSeconds,
-                    CurrentMeeting = current,
-                    NextMeeting = meetings.Skip(1).FirstOrDefault(),
-                    NearTermMeetings = allMeetings.ToArray(),
-                };
+                info.Status = current.IsStarted ? RoomStatus.Busy : RoomStatus.Free;
+                info.NextChangeSeconds = current.Start.Subtract(now).TotalSeconds;
             }
             else
             {
-                return new RoomStatusInfo
-                {
-                    IsTrackingChanges = isTracked,
-                    Status = current.IsStarted ? RoomStatus.Busy : RoomStatus.BusyNotConfirmed,
-                    NextChangeSeconds = current.End.Subtract(now).TotalSeconds,
-                    CurrentMeeting = current,
-                    NextMeeting = meetings.Skip(1).FirstOrDefault(),
-                    NearTermMeetings = allMeetings.ToArray(),
-                };
+                info.Status = current.IsStarted ? RoomStatus.Busy : RoomStatus.BusyNotConfirmed;
+                info.NextChangeSeconds = current.End.Subtract(now).TotalSeconds;
             }
+
+            return info;
         }
 
         public void StartMeeting(string roomAddress, string uniqueId, string securityKey)
@@ -208,12 +204,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 throw new Exception("Cannot manage this meeting");
             }
 
-            _exchangeServiceManager.Execute(_impersonateForAllCalls ? roomAddress : "", svc =>
-            {
-                var item = Appointment.Bind(svc, new ItemId(uniqueId));
-                log.DebugFormat("Warning {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
-                SendEmail(item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "Use the conference room management device to start the meeting ASAP.");
-            });
+            var item = _exchangeServiceManager.Execute(_impersonateForAllCalls ? roomAddress : "", svc => Appointment.Bind(svc, new ItemId(uniqueId)));
+            log.DebugFormat("Warning {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
+            SendEmail(item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "Use the conference room management device to start the meeting ASAP.");
         }
 
         public void CancelMeeting(string roomAddress, string uniqueId, string securityKey)
@@ -274,6 +267,19 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             });
 
             BroadcastUpdate(roomAddress);
+        }
+
+        public void MessageMeeting(string roomAddress, string uniqueId, string securityKey)
+        {
+            var meeting = SecurityCheck(roomAddress, uniqueId, securityKey);
+            if (meeting.IsNotManaged)
+            {
+                throw new Exception("Cannot manage this meeting");
+            }
+
+            var item = _exchangeServiceManager.Execute(_impersonateForAllCalls ? roomAddress : "", svc => Appointment.Bind(svc, new ItemId(uniqueId), new PropertySet(AppointmentSchema.RequiredAttendees, AppointmentSchema.OptionalAttendees, AppointmentSchema.Location)));
+            var addresses = item.RequiredAttendees.Concat(item.OptionalAttendees).Select(i => i.Address).Where(i => i != null && i.ToLower().EndsWith("@rightpoint.com")).ToArray();
+            _instantMessagingService.SendMessage(addresses, string.Format("Meeting in {0} is over", item.Location), string.Format("Your meeting in {0} is over - people for the next meeting are patiently waiting at the door. Please wrap up ASAP.", item.Location), InstantMessagePriority.Urgent);
         }
 
         public void StartNewMeeting(string roomAddress, string securityKey, string title, int minutes)

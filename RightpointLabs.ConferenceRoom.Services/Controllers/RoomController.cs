@@ -140,6 +140,12 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             _conferenceRoomService.EndMeeting(roomAddress, uniqueId, securityKey);
         }
 
+        [Route("{roomAddress}/meeting/message")]
+        public void PostMessageMeeting(string roomAddress, string securityKey, string uniqueId)
+        {
+            _conferenceRoomService.MessageMeeting(roomAddress, uniqueId, securityKey);
+        }
+
         private string GetClientIp(HttpRequestMessage request = null)
         {
             request = request ?? Request;
