@@ -75,6 +75,12 @@
     <Reference Include="MongoDB.Driver.Legacy">
       <HintPath>..\packages\mongocsharpdriver.2.0.0\lib\net45\MongoDB.Driver.Legacy.dll</HintPath>
     </Reference>
+    <Reference Include="Plivo">
+      <HintPath>..\packages\Plivo.3.0.2\lib\net40\Plivo.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp">
+      <HintPath>..\packages\RestSharpSigned.105.1.0\lib\net45\RestSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -103,6 +109,8 @@
     <Compile Include="Services\MeetingCacheService.cs" />
     <Compile Include="Services\InstantMessagingService.cs" />
     <Compile Include="Services\SimpleTimedCache.cs" />
+    <Compile Include="Services\SmsAddressLookupService.cs" />
+    <Compile Include="Services\SmsMessagingService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

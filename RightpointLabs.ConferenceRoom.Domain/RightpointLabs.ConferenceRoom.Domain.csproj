@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions.cs" />
+    <Compile Include="ISmsAddressLookupService.cs" />
     <Compile Include="Models\AccessDeniedException.cs" />
     <Compile Include="Models\BaseObject.cs" />
     <Compile Include="Models\Entity.cs" />
@@ -80,6 +81,7 @@
     <Compile Include="Services\INamedConcurrencyLimiter.cs" />
     <Compile Include="Services\InstantMessagePriority.cs" />
     <Compile Include="Services\ISimpleTimedCache.cs" />
+    <Compile Include="Services\ISmsMessagingService.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

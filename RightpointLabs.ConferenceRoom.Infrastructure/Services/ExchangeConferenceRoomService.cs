@@ -30,11 +30,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly IExchangeServiceManager _exchangeServiceManager;
         private readonly ISimpleTimedCache _simpleTimedCache;
         private readonly IInstantMessagingService _instantMessagingService;
+        private readonly ISmsMessagingService _smsMessagingService;
+        private readonly ISmsAddressLookupService _smsAddressLookupService;
         private readonly bool _ignoreFree;
         private readonly bool _useChangeNotification;
         private bool _impersonateForAllCalls;
 
-        public ExchangeConferenceRoomService(IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService, IExchangeServiceManager exchangeServiceManager, ISimpleTimedCache simpleTimedCache, IInstantMessagingService instantMessagingService)
+        public ExchangeConferenceRoomService(IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService, IExchangeServiceManager exchangeServiceManager, ISimpleTimedCache simpleTimedCache, IInstantMessagingService instantMessagingService, ISmsMessagingService smsMessagingService, ISmsAddressLookupService smsAddressLookupService)
         {
             _meetingRepository = meetingRepository;
             _securityRepository = securityRepository;
@@ -45,6 +47,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _exchangeServiceManager = exchangeServiceManager;
             _simpleTimedCache = simpleTimedCache;
             _instantMessagingService = instantMessagingService;
+            _smsMessagingService = smsMessagingService;
+            _smsAddressLookupService = smsAddressLookupService;
             _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
             _useChangeNotification = bool.Parse(ConfigurationManager.AppSettings["useChangeNotification"] ?? "true");
             _impersonateForAllCalls = bool.Parse(ConfigurationManager.AppSettings["impersonateForAllCalls"] ?? "true");
@@ -279,6 +283,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             var item = _exchangeServiceManager.Execute(_impersonateForAllCalls ? roomAddress : "", svc => Appointment.Bind(svc, new ItemId(uniqueId), new PropertySet(AppointmentSchema.RequiredAttendees, AppointmentSchema.OptionalAttendees, AppointmentSchema.Location)));
             var addresses = item.RequiredAttendees.Concat(item.OptionalAttendees).Select(i => i.Address).Where(i => i != null && i.ToLower().EndsWith("@rightpoint.com")).ToArray();
+
+            var smsAddresses = _smsAddressLookupService.LookupAddresses(addresses);
+
+            _smsMessagingService.Send(smsAddresses, string.Format("Your meeting in {0} is over - please finish up ASAP - others are waiting outside.", item.Location));
             _instantMessagingService.SendMessage(addresses, string.Format("Meeting in {0} is over", item.Location), string.Format("Your meeting in {0} is over - people for the next meeting are patiently waiting at the door. Please wrap up ASAP.", item.Location), InstantMessagePriority.Urgent);
         }
 
