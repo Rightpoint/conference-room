@@ -8,6 +8,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.Exchange.WebServices.Data;
 using Microsoft.Practices.Unity;
 using System.Web.Http;
+using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence;
@@ -42,6 +43,12 @@ namespace RightpointLabs.ConferenceRoom.Services
                 ConfigurationManager.AppSettings["username"],
                 ConfigurationManager.AppSettings["password"])));
 
+            container.RegisterType<ISmsMessagingService>(new HierarchicalLifetimeManager(), new InjectionFactory(c => new SmsMessagingService(
+                ConfigurationManager.AppSettings["plivoAuthId"],
+                ConfigurationManager.AppSettings["plivoAuthToken"],
+                ConfigurationManager.AppSettings["plivoFrom"])));
+
+            container.RegisterType<ISmsAddressLookupService, SmsAddressLookupService>(new HierarchicalLifetimeManager());
             container.RegisterType<Func<ExchangeService>>(new HierarchicalLifetimeManager(), new InjectionFactory(c => serviceBuilder));
             container.RegisterType<IBroadcastService, SignalrBroadcastService>(new HierarchicalLifetimeManager());
             container.RegisterType<IConferenceRoomService, ExchangeConferenceRoomService>(new HierarchicalLifetimeManager());
