@@ -24,7 +24,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _password = password;
         }
 
-        public void SendMessage(string[] targets, string subject, string message)
+        public void SendMessage(string[] targets, string subject, string message, InstantMessagePriority priority)
         {
             var cps = new ClientPlatformSettings(null, SipTransportType.Tls);
             var cp = new CollaborationPlatform(cps);
@@ -77,7 +77,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                             });
                 });
 
-                var c = new Conversation(ue, new ConversationSettings() {Priority = ConversationPriority.Urgent});
+                var p = priority == InstantMessagePriority.Emergency
+                    ? ConversationPriority.Emergency
+                    : priority == InstantMessagePriority.Urgent
+                        ? ConversationPriority.Urgent
+                        : priority == InstantMessagePriority.NonUrgent
+                            ? ConversationPriority.NonUrgent
+                            : ConversationPriority.Normal;
+                var c = new Conversation(ue, new ConversationSettings() {Priority = p });
                 var im = new InstantMessagingCall(c);
                 im.InstantMessagingFlowConfigurationRequested += (sender, args) =>
                 {
