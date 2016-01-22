@@ -32,11 +32,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly IInstantMessagingService _instantMessagingService;
         private readonly ISmsMessagingService _smsMessagingService;
         private readonly ISmsAddressLookupService _smsAddressLookupService;
+        private readonly ISignatureService _signatureService;
         private readonly bool _ignoreFree;
         private readonly bool _useChangeNotification;
         private bool _impersonateForAllCalls;
 
-        public ExchangeConferenceRoomService(IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService, IExchangeServiceManager exchangeServiceManager, ISimpleTimedCache simpleTimedCache, IInstantMessagingService instantMessagingService, ISmsMessagingService smsMessagingService, ISmsAddressLookupService smsAddressLookupService)
+        public ExchangeConferenceRoomService(IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService, IExchangeServiceManager exchangeServiceManager, ISimpleTimedCache simpleTimedCache, IInstantMessagingService instantMessagingService, ISmsMessagingService smsMessagingService, ISmsAddressLookupService smsAddressLookupService, ISignatureService signatureService)
         {
             _meetingRepository = meetingRepository;
             _securityRepository = securityRepository;
@@ -49,6 +50,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _instantMessagingService = instantMessagingService;
             _smsMessagingService = smsMessagingService;
             _smsAddressLookupService = smsAddressLookupService;
+            _signatureService = signatureService;
             _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
             _useChangeNotification = bool.Parse(ConfigurationManager.AppSettings["useChangeNotification"] ?? "true");
             _impersonateForAllCalls = bool.Parse(ConfigurationManager.AppSettings["impersonateForAllCalls"] ?? "true");
@@ -200,7 +202,20 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             BroadcastUpdate(roomAddress);
         }
 
-        public void WarnMeeting(string roomAddress, string uniqueId, string securityKey)
+        public bool StartMeetingFromClient(string roomAddress, string uniqueId, string signature)
+        {
+            if (!_signatureService.VerifySignature(uniqueId, signature))
+            {
+                log.ErrorFormat("Invalid signature: {0} for {1}", signature, uniqueId);
+                return false;
+            }
+            log.DebugFormat("Starting {0} for {1}", uniqueId, roomAddress);
+            _meetingRepository.StartMeeting(uniqueId);
+            BroadcastUpdate(roomAddress);
+            return true;
+        }
+
+        public void WarnMeeting(string roomAddress, string uniqueId, string securityKey, Func<string, string> buildUrl)
         {
             var meeting = SecurityCheck(roomAddress, uniqueId, securityKey);
             if (meeting.IsNotManaged)
@@ -210,7 +225,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             var item = _exchangeServiceManager.Execute(_impersonateForAllCalls ? roomAddress : "", svc => Appointment.Bind(svc, new ItemId(uniqueId)));
             log.DebugFormat("Warning {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
-            SendEmail(item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "Use the conference room management device to start the meeting ASAP.");
+            var startUrl = buildUrl(_signatureService.GetSignature(uniqueId));
+            SendEmail(item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "Use the conference room management device to start the meeting ASAP, or go to " + startUrl + " .");
         }
 
         public void CancelMeeting(string roomAddress, string uniqueId, string securityKey)
@@ -286,8 +302,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             var smsAddresses = _smsAddressLookupService.LookupAddresses(addresses);
 
-            _smsMessagingService.Send(smsAddresses, string.Format("Your meeting in {0} is over - please finish up ASAP - others are waiting outside.", item.Location));
-            _instantMessagingService.SendMessage(addresses, string.Format("Meeting in {0} is over", item.Location), string.Format("Your meeting in {0} is over - people for the next meeting are patiently waiting at the door. Please wrap up ASAP.", item.Location), InstantMessagePriority.Urgent);
+            if (smsAddresses.Any())
+            {
+                _smsMessagingService.Send(smsAddresses, string.Format("Your meeting in {0} is over - please finish up ASAP - others are waiting outside.", item.Location));
+            }
+            if (addresses.Any())
+            {
+                _instantMessagingService.SendMessage(addresses, string.Format("Meeting in {0} is over", item.Location), string.Format("Your meeting in {0} is over - people for the next meeting are patiently waiting at the door. Please wrap up ASAP.", item.Location), InstantMessagePriority.Urgent);
+            }
         }
 
         public void StartNewMeeting(string roomAddress, string securityKey, string title, int minutes)

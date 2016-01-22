@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 
 namespace RightpointLabs.ConferenceRoom.Domain.Services
@@ -22,7 +23,8 @@ namespace RightpointLabs.ConferenceRoom.Domain.Services
 
         RoomStatusInfo GetStatus(string roomAddress);
         void StartMeeting(string roomAddress, string uniqueId, string securityKey);
-        void WarnMeeting(string roomAddress, string uniqueId, string securityKey);
+        bool StartMeetingFromClient(string roomAddress, string uniqueId, string signature);
+        void WarnMeeting(string roomAddress, string uniqueId, string securityKey, Func<string, string> buildUrl);
         void CancelMeeting(string roomAddress, string uniqueId, string securityKey);
         void EndMeeting(string roomAddress, string uniqueId, string securityKey);
         void StartNewMeeting(string roomAddress, string securityKey, string title, int minutes);
