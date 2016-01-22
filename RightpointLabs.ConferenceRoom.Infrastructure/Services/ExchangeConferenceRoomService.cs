@@ -108,12 +108,25 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     {
                         return _exchangeServiceManager.Execute(_impersonateForAllCalls ? roomAddress : "", svc =>
                         {
-                            var apt = svc.FindAppointments(WellKnownFolderName.Calendar, new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))).ToList();
+                            var apt = svc.FindAppointments(WellKnownFolderName.Calendar, new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2)) { PropertySet = new PropertySet(AppointmentSchema.Id, AppointmentSchema.LegacyFreeBusyStatus)}).ToList();
                             log.DebugFormat("Got {0} appointments for {1} via {2} with {3}", apt.Count, roomAddress, svc.GetHashCode(), svc.CookieContainer.GetCookieHeader(svc.Url));
                             if (_ignoreFree)
                             {
                                 apt = apt.Where(i => i.LegacyFreeBusyStatus != LegacyFreeBusyStatus.Free).ToList();
                             }
+
+                            // now that we have the items, load the data (can't load attendees in the FindAppointments call...)
+                            svc.LoadPropertiesForItems(apt, new PropertySet(
+                                AppointmentSchema.Id,
+                                AppointmentSchema.Subject,
+                                AppointmentSchema.Sensitivity,
+                                AppointmentSchema.Organizer,
+                                AppointmentSchema.Start,
+                                AppointmentSchema.End,
+                                AppointmentSchema.IsAllDayEvent,
+                                AppointmentSchema.RequiredAttendees, 
+                                AppointmentSchema.OptionalAttendees));
+
                             var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
                             return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
                         });
@@ -343,14 +356,21 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         private static Meeting BuildMeeting(Appointment i, MeetingInfo meetingInfo)
         {
+            var externalAttendees =
+                i.RequiredAttendees.Concat(i.OptionalAttendees)
+                    .Count(ii => null == ii.Address || !ii.Address.ToLower().EndsWith("@rightpoint.com"));
+
             return new Meeting
             {
                 UniqueId = i.Id.UniqueId,
                 Subject = i.Sensitivity != Sensitivity.Normal ? i.Sensitivity.ToString() :
-                    i.Subject.Trim() == i.Organizer.Name.Trim() ? null : i.Subject,
+                    i.Subject != null && i.Subject.Trim() == i.Organizer.Name.Trim() ? null : i.Subject,
                 Start = i.Start,
                 End = i.End,
                 Organizer = i.Organizer.Name,
+                RequiredAttendees = i.RequiredAttendees.Count,
+                OptionalAttendees = i.OptionalAttendees.Count,
+                ExternalAttendees = externalAttendees,
                 IsStarted = meetingInfo.IsStarted,
                 IsEndedEarly = meetingInfo.IsEndedEarly,
                 IsCancelled = meetingInfo.IsCancelled,

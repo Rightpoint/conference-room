@@ -41,6 +41,7 @@
             <h4>{{ ( c.freeMinutes() > 10 ? 'Next: ' : '' ) + (c.current.Subject || c.current.Organizer)}}</h4>
             <h5 ng-show="c.current.Subject">{{c.current.Organizer}}</h5>
             <p>{{ c.formatTime(c.current.Start) }} - {{ c.formatTime(c.current.End) }}</p>
+            <p>{{ c.current.RequiredAttendees }} <span ng-if="c.current.OptionalAttendees > 0">- {{ c.current.RequiredAttendees + c.current.OptionalAttendees }}</span> {{ c.current.RequiredAttendees + c.current.OptionalAttendees > 1 ? 'attendees' : 'attendee' }} ({{ c.current.ExternalAttendees }} external)</p>
         </div>
     </div>
     <div class="timeline" ng-show="c.timeline">
