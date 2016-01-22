@@ -2,6 +2,7 @@ using System;
 using System.Configuration;
 using System.Data;
 using System.Reflection;
+using System.ServiceModel.Dispatcher;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.Exchange.WebServices.Data;
@@ -36,6 +37,10 @@ namespace RightpointLabs.ConferenceRoom.Services
                     ConfigurationManager.AppSettings["username"],
                     ConfigurationManager.AppSettings["password"],
                     ConfigurationManager.AppSettings["serviceUrl"]);
+
+            container.RegisterType<IInstantMessagingService>(new HierarchicalLifetimeManager(), new InjectionFactory(c => new InstantMessagingService(
+                ConfigurationManager.AppSettings["username"],
+                ConfigurationManager.AppSettings["password"])));
 
             container.RegisterType<Func<ExchangeService>>(new HierarchicalLifetimeManager(), new InjectionFactory(c => serviceBuilder));
             container.RegisterType<IBroadcastService, SignalrBroadcastService>(new HierarchicalLifetimeManager());
