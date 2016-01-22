@@ -84,6 +84,14 @@
             return self.showEndEarly() && self.next && !self.next.IsNotManaged && self.minutesUntil(self.next.Start) <= early;
         };
         
+        self.canManagePrev = function canManagePrev() {
+            return self.prev && !self.prev.IsNotManaged && self.hasSecurityRights;
+        };
+        
+        self.showMessagePrev = function showMessagePrev() {
+            return self.canManagePrev() && self.minutesUntil(self.prev.End) > -10 && self.minutesUntil(self.prev.End) <= 0;
+        };
+        
         self.showAddNew = function showAddNew() {
             return self.hasSecurityRights && (!self.current || self.freeMinutes() > early);
         };
@@ -224,6 +232,7 @@
                     self.appointments = [];
                     self.current = null;
                     self.next = null;
+                    self.prev = null;
                     return;
                 }
 
@@ -231,6 +240,7 @@
                 self.appointments = _.sortBy(data.NearTermMeetings, 'Start');
                 self.current = data.CurrentMeeting;
                 self.next = data.NextMeeting;
+                self.prev = data.PreviousMeeting;
                 updateTimeline();
                 scheduleCancel();
 
@@ -270,6 +280,10 @@
                     return loadStatus();
                 });
             });
+            showIndicator(p);
+        };
+        self.message = function(item) {
+            var p = room.one('meeting').post('message', {}, { securityKey: securityKey, uniqueId: item.UniqueId });
             showIndicator(p);
         };
         self.requestControl = function() {

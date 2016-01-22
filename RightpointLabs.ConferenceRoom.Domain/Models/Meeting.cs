@@ -13,5 +13,8 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models
         public bool IsEndedEarly { get; set; }
         public bool IsCancelled { get; set; }
         public bool IsNotManaged { get; set; }
+        public int RequiredAttendees { get; set; }
+        public int OptionalAttendees { get; set; }
+        public int ExternalAttendees { get; set; }
     }
 }
