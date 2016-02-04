@@ -124,6 +124,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                                 apt = apt.Where(i => i.LegacyFreeBusyStatus != LegacyFreeBusyStatus.Free).ToList();
                             }
 
+                            // short-circuit if we don't have any meetings
+                            if (!apt.Any())
+                            {
+                                return new Meeting[] {};
+                            }
+
                             // now that we have the items, load the data (can't load attendees in the FindAppointments call...)
                             svc.LoadPropertiesForItems(apt, new PropertySet(
                                 AppointmentSchema.Id,
