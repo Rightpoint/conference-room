@@ -37,12 +37,6 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     .ToArray();
             });
 
-            // HACK: let me test it out with my account
-            if (emailAddresses.Contains("jrupp@rightpoint.com"))
-            {
-                phoneNumbers = phoneNumbers.Concat(new[] {"18477363461"}).Distinct().ToArray();
-            }
-
             log.DebugFormat("Looked up {0} into {1}", string.Join(", ", emailAddresses), string.Join(", ", phoneNumbers));
 
             return phoneNumbers;
