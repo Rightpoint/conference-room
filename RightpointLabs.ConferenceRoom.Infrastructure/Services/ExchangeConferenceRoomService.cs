@@ -36,6 +36,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly bool _ignoreFree;
         private readonly bool _useChangeNotification;
         private bool _impersonateForAllCalls;
+        private string[] _emailDomains;
 
         public ExchangeConferenceRoomService(IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService, IExchangeServiceManager exchangeServiceManager, ISimpleTimedCache simpleTimedCache, IInstantMessagingService instantMessagingService, ISmsMessagingService smsMessagingService, ISmsAddressLookupService smsAddressLookupService, ISignatureService signatureService)
         {
@@ -54,6 +55,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
             _useChangeNotification = bool.Parse(ConfigurationManager.AppSettings["useChangeNotification"] ?? "true");
             _impersonateForAllCalls = bool.Parse(ConfigurationManager.AppSettings["impersonateForAllCalls"] ?? "true");
+            _emailDomains = ConfigurationManager.AppSettings["emailDomains"]
+                .Split(';')
+                .Select(_ => _.StartsWith("@") ? _.ToLowerInvariant() : "@" + _.ToLowerInvariant())
+                .ToArray();
         }
 
         /// <summary>
@@ -393,13 +398,30 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             return meeting;
         }
 
-        private static Meeting BuildMeeting(Appointment i, MeetingInfo meetingInfo)
+        private bool IsExternalAttendee(Attendee attendee)
         {
-            var externalAttendees =
-                i.RequiredAttendees.Concat(i.OptionalAttendees)
-                    .Count(ii => null == ii.Address || !ii.Address.ToLower().EndsWith("@rightpoint.com"));
+            if (attendee.Address == null)
+            {
+                return true;
+            }
+            else
+            {
+                foreach (var emailDomain in _emailDomains)
+                {
+                    if (attendee.Address.ToLowerInvariant().EndsWith(emailDomain))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
 
-            return new Meeting
+        private Meeting BuildMeeting(Appointment i, MeetingInfo meetingInfo)
+        {
+            var externalAttendees = i.RequiredAttendees.Concat(i.OptionalAttendees).Count(IsExternalAttendee);
+
+            return new Meeting()
             {
                 UniqueId = i.Id.UniqueId,
                 Subject = i.Sensitivity != Sensitivity.Normal ? i.Sensitivity.ToString() :
