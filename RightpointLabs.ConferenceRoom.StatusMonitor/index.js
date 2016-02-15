@@ -2,41 +2,29 @@ var fs = require('fs');
 var http = require('http');
 var url = require('url');
 var Promise = require('promise');
-var Gpio = require('onoff').Gpio;
-var async = require('async');
 var signalR = require('signalr-client');
 var path = require('path');
-var Gpio = require('onoff').Gpio,
-	sleep = require('sleep');
+var pwm = require('pi-blaster.js');
 
 var configFile = path.join(__dirname, 'config.json');
 console.log('Loading configuration from ' + configFile);
 var config = JSON.parse(fs.readFileSync(configFile));
 
-var redLed = new Gpio(config.redPin, 'out');
-var greenLed = new Gpio(config.greenPin, 'out');
-var speakerPin = new Gpio(config.speakerPin, 'out');
-
+// test colors
 setPins(false, false, false);
-doBeep(speakerPin, 1046, 0.04); // High C
-sleep.usleep(1000000 * 0.01);
-doBeep(speakerPin, 1046, 0.04); // High C
-sleep.usleep(1000000 * 0.01);
-doBeep(speakerPin, 1318.51, 0.08); // E
-sleep.usleep(1000000 * 0.01);
-doBeep(speakerPin, 1318.51, 0.08); // E
-
-// test red
 setPins(true, false, false);
-sleep.usleep(1000000 * 0.3);
-
-// test green
-setPins(false, true, false);
-sleep.usleep(1000000 * 0.3);
-
-// and start
-setPins(false, false, false);
-updateIn(1);
+setTimeout(function() {
+    setPins(false, true, false);
+    setTimeout(function() {
+        setPins(false, false, true);
+        setTimeout(function() {
+            // and start
+            setPins(false, false, false);
+            updateIn(1);
+            start();
+        }, 500);
+    }, 500);
+}, 500);
 
 function getStatus() {
     return new Promise(function(resolve, reject) {
@@ -82,48 +70,36 @@ function updateIn(delay) {
 
 function red() {
     console.log('red');
-    setPins(true, false, true);
+    setPins(true, false, false);
 }
 function green() {
     console.log('green');
-    setPins(false, true, true);
+    setPins(false, true, false);
 }
-function doBeep(pin, hz, duration) {
-	var d = Math.floor( 1000000 / hz);
-	var c = Math.floor((duration * hz) / 2);
-	for(var i=0; i<c; i++) {
-		pin.writeSync(0);
-		sleep.usleep( d );
-		pin.writeSync(1);
-		sleep.usleep( d );
-	}	
-}
-function setPins(red, green, canBeep) {
-	var beep = canBeep && (redLed.readSync() != red || greenLed.readSync() != green);
-	redLed.writeSync(red ? 1 : 0);
-	greenLed.writeSync(green ? 1 : 0);
-	console.log('set pins');
-	if(beep)
-	{
-		doBeep(speakerPin, 1046, 0.04); // High C
-		sleep.usleep(1000000 * 0.01);
-		doBeep(speakerPin, 1318.51, 0.08); // E
-	}
+function setPins(red, green, blue) {
+    pwm.setPwm(config.red.pin, 0);
+    pwm.setPwm(config.green.pin, 0);
+    pwm.setPwm(config.blue.pin, 0);
+    pwm.setPwm(config.red.pin, red ? config.red.brightness : 0);
+    pwm.setPwm(config.green.pin, green ? config.green.brightness : 0);
+    pwm.setPwm(config.blue.pin, blue ? config.blue.brightness : 0);
+    console.log('set pins');
 }
 
-setInterval(function() {
-    updateIn(5000);
-}, 5 * 60 * 1000);
+function start() {
+    setInterval(function() {
+        updateIn(5000);
+    }, 5 * 60 * 1000);
 
-var client  = new signalR.client(
-    config.signalRServer,
-    ['UpdateHub']
-);
-client.on('UpdateHub', 'Update', function(room) {
-    console.log('got notification of change to ' + room);
-    if(config.room == room) {
-        updateIn(1);
-    }
-});
-
+    var client  = new signalR.client(
+        config.signalRServer,
+        ['UpdateHub']
+    );
+    client.on('UpdateHub', 'Update', function(room) {
+        console.log('got notification of change to ' + room);
+        if(config.room == room) {
+            updateIn(1);
+        }
+    });
+}
 // wait
