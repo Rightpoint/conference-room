@@ -165,8 +165,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             var now = _dateTimeService.Now;
             var allMeetings = GetUpcomingAppointmentsForRoom(roomAddress)
                 .OrderBy(i => i.Start).ToList();
-            var meetings = allMeetings
-                    .Where(i => !i.IsCancelled && !i.IsEndedEarly && i.End > now)
+            var upcomingMeetings = allMeetings.Where(i => !i.IsCancelled && !i.IsEndedEarly && i.End > now);
+            var meetings = upcomingMeetings
                     .Take(2)
                     .ToList();
 
@@ -195,6 +195,24 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 info.Status = current.IsStarted ? RoomStatus.Busy : RoomStatus.BusyNotConfirmed;
                 info.NextChangeSeconds = current.End.Subtract(now).TotalSeconds;
+            }
+
+            if (info.Status == RoomStatus.Free)
+            {
+                info.RoomNextFreeInSeconds = 0;
+            }
+            else
+            {
+                var nextFree = now;
+                foreach (var meeting in upcomingMeetings)
+                {
+                    if (nextFree < meeting.Start)
+                    {
+                        break;
+                    }
+                    nextFree = meeting.End;
+                }
+                info.RoomNextFreeInSeconds = nextFree.Subtract(now).TotalSeconds;
             }
 
             return info;
