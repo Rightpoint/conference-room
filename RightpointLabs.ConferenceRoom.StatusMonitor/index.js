@@ -11,15 +11,15 @@ console.log('Loading configuration from ' + configFile);
 var config = JSON.parse(fs.readFileSync(configFile));
 
 // test colors
-setPins(false, false, false);
-setPins(true, false, false);
+setPins(0, 0, 0);
+setPins(1, 0, 0);
 setTimeout(function() {
-    setPins(false, true, false);
+    setPins(0, 1, 0);
     setTimeout(function() {
-        setPins(false, false, true);
+        setPins(0, 0, 1);
         setTimeout(function() {
             // and start
-            setPins(false, false, false);
+            setPins(0, 0, 0);
             updateIn(1);
             start();
         }, 500);
@@ -52,10 +52,14 @@ function updateIn(delay) {
                     green();
                     break;
                 case 1:
-                    red();
+                    if(obj.RoomNextFreeInSeconds && obj.RoomNextFreeInSeconds < 600) {
+                        orange();
+                    } else {
+                        red();
+                    }
                     break;
                 case 2:
-                    red();
+                    purple();
                     break;
                 default:
                     console.log('invalid status: ' + status);
@@ -68,21 +72,31 @@ function updateIn(delay) {
     }, delay);
 }
 
+function purple() {
+    console.log('purple');
+    setPins(0.625, 0.125, 0.9375);
+}
+
+function orange() {
+    console.log('orange');
+    setPins(1, 0.5, 0);
+}
+
 function red() {
     console.log('red');
-    setPins(true, false, false);
+    setPins(1, 0, 0);
 }
 function green() {
     console.log('green');
-    setPins(false, true, false);
+    setPins(0, 1, 0);
 }
 function setPins(red, green, blue) {
     pwm.setPwm(config.red.pin, 0);
     pwm.setPwm(config.green.pin, 0);
     pwm.setPwm(config.blue.pin, 0);
-    pwm.setPwm(config.red.pin, red ? config.red.brightness : 0);
-    pwm.setPwm(config.green.pin, green ? config.green.brightness : 0);
-    pwm.setPwm(config.blue.pin, blue ? config.blue.brightness : 0);
+    pwm.setPwm(config.red.pin, red * config.red.brightness);
+    pwm.setPwm(config.green.pin, green * config.green.brightness);
+    pwm.setPwm(config.blue.pin, blue * config.blue.brightness);
     console.log('set pins');
 }
 
