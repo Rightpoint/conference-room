@@ -107,10 +107,25 @@ function green() {
     console.log('green');
     setPins(0, 1, 0);
 }
+
+var lastRed = null;
+var lastGreen = null;
+var lastBlue = null;
 function setPins(red, green, blue) {
-    pwm.setPwm(config.red.pin, red * config.red.brightness);
-    pwm.setPwm(config.green.pin, green * config.green.brightness);
-    pwm.setPwm(config.blue.pin, blue * config.blue.brightness);
+    var toSet = [
+        { pin: config.red.pin, last: lastRed, now: red },
+        { pin: config.green.pin, last: lastGreen, now: green },
+        { pin: config.blue.pin, last: lastBlue, now: blue },
+    ];
+
+    // make sure we set the ones with the largest decrease in power first, largest increase in power last (to avoid over-driving our power supply due to the transition)
+    toSet.each(function(i) { i.delta = i.now - (i.last || 0); });
+    toSet.sort(function(a,b) { return a.delta < b.delta ? -1 : a.delta > b.delta : 1 : 0; });
+    toSet.each(function(i) { pwm.setPwm(i.pin, i.now); });
+
+    lastRed = red;
+    lastGreen = green;
+    lastBlue = blue;
     console.log('set pins');
 }
 
