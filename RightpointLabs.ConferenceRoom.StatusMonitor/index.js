@@ -66,7 +66,7 @@ function updateIn(delay) {
                     break;
             }
             if(obj.NextChangeSeconds) {
-                updateIn((obj.NextChangeSeconds + 1) * 1000); // server advises us to check back at this time
+                updateIn(Math.min(60000, (obj.NextChangeSeconds + 1) * 1000)); // server advises us to check back at this time
             }
         });
     }, delay);
