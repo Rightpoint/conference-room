@@ -38,6 +38,7 @@ function getStatus() {
     })
 }
 
+var applyInterval = null;
 var updateTimeout = null;
 function updateIn(delay) {
     if(null != updateTimeout){
@@ -47,26 +48,42 @@ function updateIn(delay) {
         getStatus().then(function(data) {
             var obj = JSON.parse(data);
             var status = obj.Status;
-            switch(status) {
-                case 0:
-                    green();
-                    break;
-                case 1:
-                    if(obj.RoomNextFreeInSeconds && obj.RoomNextFreeInSeconds < 600) {
-                        orange();
-                    } else {
-                        red();
-                    }
-                    break;
-                case 2:
-                    purple();
-                    break;
-                default:
-                    console.log('invalid status: ' + status);
-                    break;
+            if(null != applyInterval) {
+                clearInterval(applyInterval);
+                applyInterval = null;
             }
+            var lastApply = new Date().getTime();
+            function apply() {
+                var thisApply = new Date().getTime();
+                obj.RoomNextFreeInSeconds -= (thisApply - lastApply) / 1000;
+                lastApply = thisApply;
+                switch(status) {
+                    case 0:
+                        green();
+                        break;
+                    case 1:
+                        // gradually fade to orange as we approach the time
+                        if(obj.RoomNextFreeInSeconds < 600) {
+                            orange( 1 - Math.max(obj.RoomNextFreeInSeconds, 0) / 600 );
+                        } else {
+                            red();
+                        }
+                        break;
+                    case 2:
+                        purple();
+                        break;
+                    default:
+                        console.log('invalid status: ' + status);
+                        break;
+                }
+            }
+            apply();
+            if(status == 1) {
+                setInterval(apply, 1000);
+            }
+
             if(obj.NextChangeSeconds) {
-                updateIn(Math.min(60000, (obj.NextChangeSeconds + 1) * 1000)); // server advises us to check back at this time
+                updateIn((obj.NextChangeSeconds + 1) * 1000); // server advises us to check back at this time
             }
         });
     }, delay);
@@ -77,9 +94,9 @@ function purple() {
     setPins(0.625, 0.125, 0.9375);
 }
 
-function orange() {
-    console.log('orange');
-    setPins(1, 0.5, 0);
+function orange(pct) {
+    console.log('orange - ' + pct);
+    setPins(1, 0.5 * pct, 0);
 }
 
 function red() {
@@ -91,9 +108,6 @@ function green() {
     setPins(0, 1, 0);
 }
 function setPins(red, green, blue) {
-    pwm.setPwm(config.red.pin, 0);
-    pwm.setPwm(config.green.pin, 0);
-    pwm.setPwm(config.blue.pin, 0);
     pwm.setPwm(config.red.pin, red * config.red.brightness);
     pwm.setPwm(config.green.pin, green * config.green.brightness);
     pwm.setPwm(config.blue.pin, blue * config.blue.brightness);
