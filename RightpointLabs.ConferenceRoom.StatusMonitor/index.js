@@ -62,9 +62,8 @@ function updateIn(delay) {
                         green();
                         break;
                     case 1:
-                        // gradually fade to orange as we approach the time
                         if(obj.RoomNextFreeInSeconds < 600) {
-                            orange( 1 - Math.max(obj.RoomNextFreeInSeconds, 0) / 600 );
+                            orange();
                         } else {
                             red();
                         }
@@ -79,7 +78,7 @@ function updateIn(delay) {
             }
             apply();
             if(status == 1) {
-                setInterval(apply, 1000);
+                setInterval(apply, 10000);
             }
 
             if(obj.NextChangeSeconds) {
@@ -94,9 +93,9 @@ function purple() {
     setPins(0.625, 0.125, 0.9375);
 }
 
-function orange(pct) {
-    console.log('orange - ' + pct);
-    setPins(1, 0.5 * pct, 0);
+function orange() {
+    console.log('orange');
+    setPins(1, 0.5, 0);
 }
 
 function red() {
