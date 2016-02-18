@@ -118,9 +118,9 @@ function setPins(red, green, blue) {
     ];
 
     // make sure we set the ones with the largest decrease in power first, largest increase in power last (to avoid over-driving our power supply due to the transition)
-    toSet.each(function(i) { i.delta = i.now - (i.last || 0); });
-    toSet.sort(function(a,b) { return a.delta < b.delta ? -1 : a.delta > b.delta : 1 : 0; });
-    toSet.each(function(i) { pwm.setPwm(i.pin, i.now); });
+    toSet.forEach(function(i) { i.delta = i.now - (i.last || 0); });
+    toSet.sort(function(a,b) { return a.delta < b.delta ? -1 : a.delta > b.delta ? 1 : 0; });
+    toSet.forEach(function(i) { pwm.setPwm(i.pin, i.now); });
 
     lastRed = red;
     lastGreen = green;
