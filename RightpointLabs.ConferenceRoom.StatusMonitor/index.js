@@ -78,7 +78,7 @@ function updateIn(delay) {
             }
             apply();
             if(status == 1) {
-                setInterval(apply, 10000);
+                applyInterval = setInterval(apply, 10000);
             }
 
             if(obj.NextChangeSeconds) {
