@@ -28,12 +28,9 @@ namespace RightpointLabs.ConferenceRoom.Services.Attributes
             base.OnException(actionExecutedContext);
 
             var log = __log;
-            var ip = string.Empty;
-            var time = DateTime.UtcNow;
 
             try
             {
-                ip = GetClientIp(actionExecutedContext.Request);
                 var baseController = actionExecutedContext.ActionContext.ControllerContext.Controller as BaseController;
 
                 if (baseController != null)
@@ -41,35 +38,17 @@ namespace RightpointLabs.ConferenceRoom.Services.Attributes
                     log = baseController.Log;
                 }
 
-                if (actionExecutedContext.Exception != null)
+                if (actionExecutedContext.Exception != null &&
+                    IsAccessDeniedException(actionExecutedContext.Exception))
                 {
-                    var ex = actionExecutedContext.Exception;
-                    log.ErrorFormat("[{3}] Time: {0}, Message: ({1}x) {2}", time, 1, ex, ip);
-                    if (IsAccessDeniedException(ex))
-                    {
-                        actionExecutedContext.Response = actionExecutedContext.Request
-                            .CreateResponse(HttpStatusCode.OK, new { error = "Access Denied", });
-                    }
-                    else
-                    {
-                        actionExecutedContext.Response = actionExecutedContext.Request
-                            .CreateResponse(HttpStatusCode.InternalServerError, ex);
-                    }
-                }
-                else
-                {
-                    //The Exception filter was activated but the Exception is not set...
-                    log.ErrorFormat("[{3}] Time: {0}, Message: ({1}x) {2}", time, 1, "Unknown Error", ip);
                     actionExecutedContext.Response = actionExecutedContext.Request
-                        .CreateResponse(HttpStatusCode.InternalServerError, new Exception("Unknown Error"));
+                        .CreateResponse(HttpStatusCode.OK, new { error = "Access Denied", });
                 }
             }
             catch (Exception ex)
             {
                 //We had an error handling the error...
-                log.ErrorFormat("[{3}] Time: {0}, Message: ({1}x) {2}", time, 1, ex, ip);
-                actionExecutedContext.Response = actionExecutedContext.Request
-                    .CreateResponse(HttpStatusCode.InternalServerError, ex);
+                log.ErrorFormat("Time: {0}, Message: {1}", DateTime.Now, ex);
             }
         }
 

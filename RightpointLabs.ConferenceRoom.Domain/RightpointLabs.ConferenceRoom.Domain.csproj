@@ -48,6 +48,10 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -64,10 +68,13 @@
     <Compile Include="Models\Entity.cs" />
     <Compile Include="Models\Meeting.cs" />
     <Compile Include="Models\MeetingInfo.cs" />
+    <Compile Include="Models\RoomInfo.cs" />
+    <Compile Include="Models\RoomMetadata.cs" />
     <Compile Include="Models\RoomStatus.cs" />
     <Compile Include="Models\RoomStatusInfo.cs" />
     <Compile Include="Models\SecurityStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\IRoomRepository.cs" />
     <Compile Include="Repositories\IMeetingRepository.cs" />
     <Compile Include="Repositories\ISecurityRepository.cs" />
     <Compile Include="Services\DateTimeService.cs" />
@@ -83,6 +90,9 @@
     <Compile Include="Services\ISignatureService.cs" />
     <Compile Include="Services\ISimpleTimedCache.cs" />
     <Compile Include="Services\ISmsMessagingService.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

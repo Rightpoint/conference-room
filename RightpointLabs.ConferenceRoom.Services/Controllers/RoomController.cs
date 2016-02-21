@@ -40,6 +40,18 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         }
 
         /// <summary>
+        /// Sets the info metadata for a single room.
+        /// </summary>
+        /// <param name="roomAddress">The room address returned from <see cref="RoomListController.GetRooms"/></param>
+        /// <param name="roomMetadata">The metadata associated with the room.</param>
+        /// <returns></returns>
+        [Route("{roomAddress}/info")]
+        public void PostInfo(string roomAddress, string securityKey, RoomMetadata roomMetadata)
+        {
+            _conferenceRoomService.SetInfo(roomAddress, roomMetadata, securityKey);
+        }
+
+        /// <summary>
         /// Gets the status for a single room.
         /// </summary>
         /// <param name="roomAddress">The room address returned from <see cref="RoomListController.GetRooms"/></param>
