@@ -5,6 +5,7 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models
         public bool IsTrackingChanges { get; set; }
         public RoomStatus Status { get; set; }
         public double? NextChangeSeconds { get; set; }
+        public double? RoomNextFreeInSeconds { get; set; }
         public Meeting CurrentMeeting { get; set; }
         public Meeting NextMeeting { get; set; }
         public Meeting PreviousMeeting { get; set; }

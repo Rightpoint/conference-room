@@ -129,20 +129,23 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                                 apt = apt.Where(i => i.LegacyFreeBusyStatus != LegacyFreeBusyStatus.Free).ToList();
                             }
 
-                            if (apt.Any()) //LoadPropertiesForItems throws an error if there are no appointments
+                            // short-circuit if we don't have any meetings
+                            if (!apt.Any())
                             {
-                                // now that we have the items, load the data (can't load attendees in the FindAppointments call...)
-                                svc.LoadPropertiesForItems(apt, new PropertySet(
-                                    AppointmentSchema.Id,
-                                    AppointmentSchema.Subject,
-                                    AppointmentSchema.Sensitivity,
-                                    AppointmentSchema.Organizer,
-                                    AppointmentSchema.Start,
-                                    AppointmentSchema.End,
-                                    AppointmentSchema.IsAllDayEvent,
-                                    AppointmentSchema.RequiredAttendees,
-                                    AppointmentSchema.OptionalAttendees));
+                                return new Meeting[] {};
                             }
+
+                            // now that we have the items, load the data (can't load attendees in the FindAppointments call...)
+                            svc.LoadPropertiesForItems(apt, new PropertySet(
+                                AppointmentSchema.Id,
+                                AppointmentSchema.Subject,
+                                AppointmentSchema.Sensitivity,
+                                AppointmentSchema.Organizer,
+                                AppointmentSchema.Start,
+                                AppointmentSchema.End,
+                                AppointmentSchema.IsAllDayEvent,
+                                AppointmentSchema.RequiredAttendees, 
+                                AppointmentSchema.OptionalAttendees));
 
                             var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
                             return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
@@ -167,8 +170,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             var now = _dateTimeService.Now;
             var allMeetings = GetUpcomingAppointmentsForRoom(roomAddress)
                 .OrderBy(i => i.Start).ToList();
-            var meetings = allMeetings
-                    .Where(i => !i.IsCancelled && !i.IsEndedEarly && i.End > now)
+            var upcomingMeetings = allMeetings.Where(i => !i.IsCancelled && !i.IsEndedEarly && i.End > now);
+            var meetings = upcomingMeetings
                     .Take(2)
                     .ToList();
 
@@ -197,6 +200,24 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 info.Status = current.IsStarted ? RoomStatus.Busy : RoomStatus.BusyNotConfirmed;
                 info.NextChangeSeconds = current.End.Subtract(now).TotalSeconds;
+            }
+
+            if (info.Status == RoomStatus.Free)
+            {
+                info.RoomNextFreeInSeconds = 0;
+            }
+            else
+            {
+                var nextFree = now;
+                foreach (var meeting in upcomingMeetings)
+                {
+                    if (nextFree < meeting.Start)
+                    {
+                        break;
+                    }
+                    nextFree = meeting.End;
+                }
+                info.RoomNextFreeInSeconds = nextFree.Subtract(now).TotalSeconds;
             }
 
             return info;
