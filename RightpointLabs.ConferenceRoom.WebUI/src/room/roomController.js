@@ -4,6 +4,7 @@
     angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', '$scope', 'matchmedia', 'UpdateHub', 'settings', 'timelineService', '$state', 'soundService', function(Restangular, $stateParams, $timeout, $interval, $q, $scope, matchmedia, UpdateHub, settings, timelineService, $state, soundService) {
         var self = this;
         self.isLoading = 0;
+        self.meetNowTime = 30;
 
         self.Free = 0;
         self.Busy = 1;
@@ -66,7 +67,7 @@
         };
         
         self.showMeetNow = function showMeetNow() {
-            return self.canManageCurrent() && self.minutesUntil() >= 15;
+            return (true || self.hasSecurityRights) && (!self.current || self.freeMinutes() > 0);
         }
         
         self.isCurrentInFuture = function isCurrentInFuture() {
@@ -306,14 +307,13 @@
             showIndicator(p);
         };
 
-        self.newMeetingTime = 15;
-        self.createNewMeeting = function newMeeting() {
-            var p = room.one('meeting').post('startNew', {}, { securityKey: securityKey, title: 'New Meeting', minutes: self.newMeetingTime }).then(function() {
+        self.meetNow = function meetNow() {
+            var p = room.one('meeting').post('startNew', {}, { securityKey: securityKey, title: 'New Meeting', minutes: self.meetNowTime }).then(function() {
                 soundService.play('resources/new.mp3');
+                self.meetNowTime = 30;
                 return loadStatus();
             });
             showIndicator(p);
-            self.newMeetingTime = 15;
         };
 
         function showIndicator(loadPromise) {

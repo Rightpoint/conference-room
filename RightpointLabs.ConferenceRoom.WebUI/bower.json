@@ -27,7 +27,8 @@
     "spin.js": "~2.1.0",
     "angular-signalr-hub": "~1.5.0",
     "angular-bootstrap": "~0.13.2",
-    "d3": "~3.5.16"
+    "d3": "~3.5.16",
+    "angular-touch": "~1.4"
   },
   "overrides": {
     "bootstrap-less": {
