@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').directive('calendar', ['$timeout', function($timeout) {
+    angular.module('app').directive('calendar', ['$timeout', '$interval', function($timeout, $interval) {
         return {
             restrict: 'E',
             templateUrl: 'directives/calendar/calendar.html',
@@ -11,6 +11,7 @@
             },
             link: function (scope, element, attr) {
                 var yScale, rawYScale;
+                var interval;
                 
                 function update(data) {
                     var h = element[0].clientHeight;
@@ -40,6 +41,16 @@
                     }
                     
                     function render() {
+                        now = moment();
+                        today = moment(now).startOf('day');
+                        startOfHour = moment(now).add(-15, 'minutes').startOf('hour');
+                        rawYScale = d3.scale.linear().domain([startOfHour.toDate(), moment(startOfHour).add(5, 'hours').toDate()]).range([margin.top, h - margin.bottom]);
+                        minH = rawYScale(today.toDate());
+                        maxH = rawYScale(moment(today).add(3, 'days').toDate());
+                        if(!yScale) {
+                            yScale = rawYScale.copy();
+                        }
+
                         var bg = e.selectAll('rect.background').data([0])
                             .attr('transform', 'translate(0,' + minH +')').attr('height', maxH-minH).attr('width', w)
                             .enter().append('rect').attr('class', 'background');
@@ -81,7 +92,7 @@
                         meetings.selectAll('text').text(function(d) { return d.Organizer; }).transition().attr('dy', function(d) {
                             var mh = yScale(d.Start);
                             if(mh < 0 && mh + meetingHeight(d) > 0) {
-                                return 5 - mh;
+                                return Math.min(5 - mh, meetingHeight(d) - 17);
                             }
                             return 5;
                         });;
@@ -128,6 +139,12 @@
                         }, 10000);
                     });
                     e.call(zoom);
+
+                    // make sure we run a digest cycle at least once a minute so we can update the 'current' bar and status
+                    if(interval) {
+                        $interval.cancel(interval);
+                        interval = $interval(update, 60000);
+                    }
                 }
                 
                 scope.$watch('data', function(data) {
