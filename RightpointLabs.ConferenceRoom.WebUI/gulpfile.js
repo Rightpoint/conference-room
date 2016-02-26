@@ -30,6 +30,7 @@ var concat = require('gulp-concat');
 var ngAnnotate = require('gulp-ng-annotate');
 var uglify = require('gulp-uglify');
 var minifyCss = require('gulp-minify-css');
+var args = require('yargs').argv;
 
 var RESOURCE_SOURCE = 'src/resources/**';
 var JS_SCRIPT_SOURCE = 'src/**/*.js';
@@ -212,6 +213,8 @@ gulp.task('index-release', ['scripts-release', 'styles-release', 'resources'], f
         .pipe(gulp.dest('./dist'));
 });
 
+var server = args.live ? 'http://rooms.labs.rightpoint.com' : 'http://localhost:63915'; 
+
 gulp.task('server', ['index'], function() {
     connect.server({ 
         livereload: { port: 8785 },
@@ -220,8 +223,8 @@ gulp.task('server', ['index'], function() {
         middleware: function(c, opt) {
             return [
                 c().use('/bower_components', c.static('./bower_components')),
-                c().use('/api', proxy(url.parse('http://localhost:63915/api'))),
-                c().use('/signalr', proxy(url.parse('http://localhost:63915/signalr')))
+                c().use('/api', proxy(url.parse(server + '/api'))),
+                c().use('/signalr', proxy(url.parse(server + '/signalr')))
             ];
         }
     });
@@ -232,8 +235,8 @@ gulp.task('server-release', ['index-release'], function() {
         root: 'dist',
         middleware: function(c, opt) {
             return [
-                c().use('/api', proxy(url.parse('http://localhost:63915/api'))),
-                c().use('/signalr', proxy(url.parse('http://localhost:63915/signalr')))
+                c().use('/api', proxy(url.parse(server + '/api'))),
+                c().use('/signalr', proxy(url.parse(server + '/signalr')))
             ];
         }
     });
