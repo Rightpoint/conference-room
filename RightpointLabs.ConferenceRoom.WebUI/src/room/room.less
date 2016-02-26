@@ -27,7 +27,7 @@
           float: left;
       }
       .navigation {
-          padding-top: 5px;
+          padding-top: 15px;
           font-size: 18px;
           font-weight: bold;
           float: right;
@@ -57,7 +57,7 @@
       }
       .actions {
           right: 65%;
-          background: blue;
+          background: @midBlue;
 
           a {
               position: absolute;
@@ -97,11 +97,11 @@
                 margin: 15px;
             }
             .meet-now a {
-                background: green;
+                background: @darkBlue;
             }
             .current-meeting, .next-meeting {
                 a {
-                    background: purple;
+                    background: @lightPurple;
                 }
             }
             .time {
@@ -115,10 +115,26 @@
       }
       .calendar-area {
           left: 35%;
-          background: black;
+          background: @darkBlue;
+          .status {
+              text-align: center;
+              font-size: 16px;
+              margin: 10px 35px;
+              margin-left: 55px;
+              padding: 3px;
+              
+              &.free {
+                  background: @teal;
+                  color: black;
+              }
+              &.busy {
+                  background: @red;
+                  color: white;
+              }
+          }
           .calendar {
               position: absolute;
-              top: 30px;
+              top: 45px;
               right: 15px;
               bottom: 15px;
               left: 15px;

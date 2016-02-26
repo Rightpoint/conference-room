@@ -78,7 +78,13 @@
                         });
                         meetings.transition().attr('transform', meetingTransform);
                         meetings.selectAll('rect').transition().attr('height', meetingHeight);
-                        meetings.selectAll('text').text(function(d) { return d.Organizer; });
+                        meetings.selectAll('text').text(function(d) { return d.Organizer; }).attr('dy', function(d) {
+                            var mh = yScale(d.Start);
+                            if(mh < 0 && mh + meetingHeight(d) > 0) {
+                                return 5 - mh;
+                            }
+                            return 5;
+                        });;
                     }
                     
                     render();
@@ -115,6 +121,10 @@
                             resetTimeout = null;
                             lastY = 0;
                             lastScale = null;
+                            if(resetTimeout) {
+                                $timeout.cancel(resetTimeout);
+                                resetTimeout = null;
+                            }
                         }, 10000);
                     });
                     e.call(zoom);

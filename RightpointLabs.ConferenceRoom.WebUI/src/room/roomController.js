@@ -104,7 +104,7 @@
             return self.hasSecurityRights && (!self.current || self.freeMinutes() > early);
         };
         
-        self.status = function status() {
+        self.getStatus = function getStatus() {
             if (!self.current) {
                 return 'Free';
             }
@@ -117,7 +117,7 @@
                     until = a.End;
                 }
             });
-            return 'Busy until ' + self.formatTime(until.End);
+            return 'Busy until ' + self.formatTime(until);
         };
 
         var infoTimeout = null;

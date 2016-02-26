@@ -40,8 +40,8 @@
             </h2>
         </div>
         <div class="calendar-area">
-            <div class="status">
-                {{ status() }}
+            <div class="status" ng-class=" { free: (c.freeMinutes() > 0) || !c.current, busy: c.current && (c.freeMinutes() <= 0) }">
+                {{ c.getStatus() }}
             </div>
             <calendar data="c.appointments"></calendar>
         </div>

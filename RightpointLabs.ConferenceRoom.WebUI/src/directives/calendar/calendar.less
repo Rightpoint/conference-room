@@ -1,6 +1,8 @@
+@import "../../variables.less";
+
 .calendar {
     rect.background {
-        fill: black;
+        fill: @darkBlue;
     }
     text.hour {
         fill: white;
@@ -8,25 +10,25 @@
         alignment-baseline: middle; 
     }   
     path.hour {
-        stroke: orange;
+        stroke: @hourLine;
     }
     path.current {
-        stroke: green;
+        stroke: @teal;
         stroke-width: 5px;
     }
     .meeting {
         text {
-            fill: white;
+            fill: black;
             alignment-baseline: text-before-edge; 
         }
         &.meeting-past rect {
-            fill: green;
+            fill: @pastMeeting;
         }
         &.meeting-now rect {
-            fill: red;
+            fill: @teal;
         }
         &.meeting-future rect {
-            fill: purple;
+            fill: white;
         }
     }
 }
