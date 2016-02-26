@@ -19,213 +19,111 @@
   .loading-foreground {
   
   }
-  .buttons {
-    //.btn-group(); - this doesn't fully work (child rules like .btn-group .btn don't get set up :(
-    float: right;
-    clear: right;
-
-    .dropdown-menu {
-      top: 0;
-      right: 101%;
-      left: initial;
-      bottom: initial;
-      background: none;
-      border-shadow: none;
-      border-radius: 0;
-      padding: 0;
-      margin: 0;
-      border: none;
-      .btn-group-vertical {
-        width: 100%;
+  
+  .header {
+      overflow: auto;
+      .room-name {
+          font-size: 30px;
+          float: left;
       }
-    }
-  }
-
-  @media screen and (max-width: 320px) and (max-height: 240px) {
-    .btn {
-      padding: 20px 25px;
-    }
-    .buttons {
-      .dropdown-menu {
-        position: fixed;
-        top: 10px;
-        right: initial;
-        left: 10px;
-        .btn {
-          padding: 15px 20px;
-        }
-      }
-    }
-  }
-  .small-screen & {
-    .btn {
-      padding: 20px 25px;
-      font-size: 28px;
-    }
-    .buttons {
-      .dropdown-menu {
-        position: fixed;
-        top: 20px;
-        right: 270px;
-        a {
-          font-size: 20px;
-          padding: 20px 30px;
-        }
-        @media screen and (min-width: 1400px) {
-          left: 50%;
-          right: auto;
-        }
-      }
-    }
-  }
-
-  .date {
-    float: right;
-    margin-top: 0;
-  }
-  .current-appointment {
-    min-height: 100px;
-  }
-  .timeline {
-    position: relative;
-    padding-top: 30px;
-    padding-bottom: 20px;
-    .marker {
-      padding-left: 2px;
-      padding-top: 8px;
-      position: absolute;
-      top: 10px;
-      bottom: -0px;
-      border-left: solid 1px red;
-      z-index: -1;
-      color: red;
-      font-size: 8px;
-    }
-    .marker.now {
-      border-left: none;
-      z-index: 1;
-      top: 0;
-      color: black;
-      padding-top: 0;
-      font-size: 14px;
-      padding-left: 4px;
-    }
-    @nowColor: black;
-    .marker.now.now-left {
-      border-left: solid 3px @nowColor;
-      padding-left: 4px;
-      text-align: left;
-    }
-    .marker.now.now-right {
-      border-right: solid 3px @nowColor;
-      padding-right: 4px;
-      text-align: right;
-    }
-
-    .progress {
-      margin-bottom: 0;
-    }
-    .progress-bar {
-      border-radius: 8px;
-    }
-
-    .small-screen-1 {
-      .marker {
-        padding-top: 0;
-      }
-      .marker.now {
-        top: -7px;
-      }
-      position: fixed;
-      bottom: 0;
-      left: 5px;
-      right: 5px;
-      padding-top: 20px;
-      padding-bottom: 10px;
-    }
-
-    @media screen and (max-width: 320px) and (max-height: 240px) {
-      .small-screen-1();
-    }
-    .small-screen & {
-      .small-screen-1();
-
-      padding-top: 50px;
-      padding-bottom: 20px;
-
-      .marker {
-        top: 30px;
-        font-size: 16px;
-      }
-      .marker.now {
-        top: 0;
-        padding-left: 8px;
-        font-size: 28px;
-      }
-    }
-  }
-
-  .add-meeting-body {
-    .btn-group {
-      display: inline-block;
-      margin-left: 5px;
-      .small-screen & {
-        margin-left: 30px;
-      }
-    }
-  }
-
-  .small-screen & {
-    h3{
-      font-size: 48px;
-    }
-    h4 {
-      font-size: 36px;
-    }
-    h5 {
-      font-size: 28px;
-    }
-    font-size: 28px;
-  }
-
-  @media screen and (min-width: @highDpiMinW) and (min-height: @highDpiMinH) {
-    .small-screen & {
-      .buttons {
-        margin-top: 20px;
-       .dropdown-menu {
-         left: 33%;
-         right: auto;
-       }
-     }
-      .btn {
-        font-size: 48px;
-        padding: 35px 45px;
-      }
-      .timeline {
-        padding-top: 70px;
-        padding-bottom: 30px;
-        .progress {
-          height: 40px;
-        }
-        .marker {
-          font-size: 28px;
-          &.now {
-            font-size: 48px;
-            top: -20px;
+      .navigation {
+          padding-top: 5px;
+          font-size: 18px;
+          font-weight: bold;
+          float: right;
+          ul, li {
+              display: inline-block;
           }
-        }
+          a {
+              margin-left: 5px;
+              margin-right: 5px;
+              border-bottom: 6px solid transparent;
+          }
+          .active a {
+              border-bottom: 6px solid black;
+          }
       }
-      h3{
-        font-size: 70px;
+  }
+  .content {
+      &, .actions, .calendar-area {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
       }
-      h4 {
-        font-size: 60px;
+      body & {
+        top: 55px;
       }
-      h5 {
-        font-size: 48px;
+      .actions {
+          right: 65%;
+          background: blue;
+
+          a {
+              position: absolute;
+              display: block;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              text-transform: uppercase;
+              color: white;
+              text-align: center;
+              padding: 10px;
+              font-size: 16px;
+              font-weight: bold;
+          }
+            .meet-now, .current-meeting, .next-meeting {
+                padding: 15px;
+                h2 {
+                    margin-top: 0;
+                    font-size: 16px;
+                    font-weight: bold;
+                    text-align: center;
+                    color: black;
+                }
+                h3 {
+                    font-size: 14px;
+                    font-weight: normal;
+                    color: black;
+                }
+                h4 {
+                    font-size: 12px;
+                    font-weight: bold;
+                    color: black;
+                }
+                position: relative;
+                height: 150px;
+                background: white;
+                margin: 15px;
+            }
+            .meet-now a {
+                background: green;
+            }
+            .current-meeting, .next-meeting {
+                a {
+                    background: purple;
+                }
+            }
+            .time {
+                position: absolute;
+                bottom: 0;
+                left: 15px;
+                color: white;
+                font-size: 16px;
+                font-weight: normal;
+            }
       }
-      font-size: 48px;
+      .calendar-area {
+          left: 35%;
+          background: black;
+          .calendar {
+              position: absolute;
+              top: 30px;
+              right: 15px;
+              bottom: 15px;
+              left: 15px;
+          }
+      }
       
-    }
   }
 }

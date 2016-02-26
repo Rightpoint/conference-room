@@ -64,6 +64,14 @@
             return self.current && !self.current.IsNotManaged && self.hasSecurityRights;
         };
         
+        self.showMeetNow = function showMeetNow() {
+            return self.canManageCurrent() && self.minutesUntil() >= 15;
+        }
+        
+        self.isCurrentInFuture = function isCurrentInFuture() {
+            return self.current && self.minutesUntil(self.current.Start) > 0;
+        };
+        
         self.showStartEarly = function showStartEarly() {
             return self.showCancel() && !self.showStart();
         };
@@ -96,26 +104,21 @@
             return self.hasSecurityRights && (!self.current || self.freeMinutes() > early);
         };
         
-        function updateTimeline() {
-            var now = self.currentTime();
-            var day = now.clone().startOf('day');
-            var start = day.clone().add(7, 'hours');
-            var end = day.clone().add(18, 'hours');
-            var totalMinutes = end.diff(start, 'minute', true);
-
-            var marker = start;
-            var markers = [];
-            while(!marker.isAfter(end)) {
-                markers.push({ position: marker.diff(start, 'minute', true) / totalMinutes, time: marker.isBefore(end) ? marker : null });
-                marker = marker.clone().add(1, 'hour');
+        self.status = function status() {
+            if (!self.current) {
+                return 'Free';
             }
-
-            self.timeline = {
-                now: { position: Math.min(1.01, Math.max(-0.01, now.diff(start, 'minute', true) / totalMinutes)), time: now },
-                markers: markers,
-                ranges: timelineService.build(start, end, self.appointments)
-            };
-        }
+            if (self.freeMinutes() > 0) {
+                return 'Free until ' + self.formatTime(self.current.Start);
+            }
+            var until = self.current.End;
+            self.appointments.forEach(function (a) {
+                if (a.Start == until) {
+                    until = a.End;
+                }
+            });
+            return 'Busy until ' + self.formatTime(until.End);
+        };
 
         var infoTimeout = null;
         function loadInfo() {
@@ -132,7 +135,6 @@
                 timeDelta = moment().diff(moment(data.CurrentTime));
                 self.displayName = data.DisplayName;
                 self.hasSecurityRights = data.SecurityStatus == 3; // granted
-                updateTimeline();
                 scheduleCancel();
 
                 if(!self.roomListAddress) {
@@ -241,7 +243,6 @@
                 self.current = data.CurrentMeeting;
                 self.next = data.NextMeeting;
                 self.prev = data.PreviousMeeting;
-                updateTimeline();
                 scheduleCancel();
 
                 var waitTime = data.NextChangeSeconds ? Math.min(5 * 60, data.NextChangeSeconds + 1) : (5 * 60);

@@ -1,8 +1,52 @@
 <div class="room">
-    <h3 class="date">
-        {{ c.currentTime().format('ddd M/DD') }}
-    </h3>
-    <div class="buttons btn-group-vertical dropup" ng-class="{ 'btn-group-lg': c.isSmallScreen }">
+    <div class="header">
+        <h1 class="room-name">{{c.displayName}}</h3>
+        <ul class="navigation">
+            <li ui-sref-active="active"><a href ui-sref="room">Home</a></li>
+            <li ui-sref-active="active"><a href ui-sref="find-room">Find a Room</a></li>
+            <li ui-sref-active="active"><a href ui-sref="settings">Settings</a></li>
+        <ul>
+    </div>
+    <div class="content">
+        <div class="actions">
+            <div class="meet-now" ng-if="c.showMeetNow()">
+                <h2>Book For</h2>
+                <div>15 - 30 - 45</div>
+                <a href ng-click="c.meetNow()">Meet Now</a>
+            </div>
+            <div class="current-meeting" ng-if="c.current && !c.isCurrentInFuture()">
+                <h2>Current Meeting</h2>
+                <h3>{{ c.current.Organizer }}</h3>
+                <h4>{{ c.current.Subject }}</h4>
+                <a href ng-if="c.showStartEarly()" ng-click="c.start(c.current)">Start Early</a>
+                <a href ng-if="c.showStart()" ng-click="c.start(c.current)">Start</a>
+                <a href ng-if="c.showCancel()" ng-click="c.cancel(c.current)">Start</a>
+                <a href ng-if="c.showEndEarly()" ng-click="c.end(c.current)">Start</a>
+            </div>
+            <div class="next-meeting" ng-if="c.current && c.isCurrentInFuture()">
+                <h2>Next Meeting</h2>
+                <h3>{{ c.current.Organizer }}</h3>
+                <h4>{{ c.current.Subject }}</h4>
+                <a href ng-if="c.showStartEarly()" ng-click="c.startEarly()">Start Early</a>
+            </div>
+            <div class="next-meeting" ng-if="c.next && !c.isCurrentInFuture()">
+                <h2>Next Meeting</h2>
+                <h3>{{ c.next.Organizer }}</h3>
+                <h4>{{ c.next.Subject }}</h4>
+                <a href ng-if="c.showEndAndStartNext()" ng-click="c.endAndStartNext(c.current, c.next)">Start Early</a>
+            </div>
+            <h2 class="time">
+                {{ c.currentTime().format('h:mm A') }}
+            </h2>
+        </div>
+        <div class="calendar-area">
+            <div class="status">
+                {{ status() }}
+            </div>
+            <calendar data="c.appointments"></calendar>
+        </div>
+    </div>
+    <div class="buttons btn-group-vertical dropup" ng-class="{ 'btn-group-lg': c.isSmallScreen }" ng-if="false">
         <button class="btn btn-primary" ng-click="c.start(c.current)" ng-if="c.showStartEarly()">Start Early</button>
         <button class="btn btn-primary" ng-click="c.start(c.current)" ng-if="c.showStart()">Start</button>
         <button class="btn btn-primary" ng-click="c.cancel(c.current)" ng-if="c.showCancel()">Cancel</button>
@@ -27,67 +71,6 @@
             </div>
         </div>
     </div>
-    <h3 class="room-name">{{c.displayName}}</h3>
-    <div class="current-appointment">
-        <div ng-if="!c.current && !c.isLoading">
-            <p>No meetings found</p>
-        </div>
-        <div ng-if="c.current && c.freeMinutes() > 60">
-            <p>Free for more than an hour</p>
-        </div>
-        <div ng-if="c.current && c.freeMinutes() <= 60 && c.freeMinutes() > 10">
-            <p>Free for {{ c.freeMinutes() }} minutes</p>
-        </div>
-        <div ng-if="c.current">
-            <h4>{{ ( c.freeMinutes() > 10 ? 'Next: ' : '' ) + (c.current.Subject || c.current.Organizer)}}</h4>
-            <h5 ng-show="c.current.Subject">{{c.current.Organizer}}</h5>
-            <p>{{ c.formatTime(c.current.Start) }} - {{ c.formatTime(c.current.End) }}</p>
-            <p>{{ c.current.RequiredAttendees }} <span ng-if="c.current.OptionalAttendees > 0">- {{ c.current.RequiredAttendees + c.current.OptionalAttendees }}</span> {{ c.current.RequiredAttendees + c.current.OptionalAttendees > 1 ? 'attendees' : 'attendee' }} ({{ c.current.ExternalAttendees }} external)</p>
-        </div>
-    </div>
-    <div class="timeline" ng-show="c.timeline">
-        <div class="marker" style="left: {{ marker.position * 100 }}%" ng-repeat="marker in c.timeline.markers">{{ marker.time ? c.formatHour(marker.time) : '' }}</div>
-        <div class="progress">
-            <div ng-repeat="range in c.timeline.ranges track by $index"
-                 title="{{ range.appointment ? ((range.appointment.Subject || range.appointment.Organizer) + ': ' + c.formatTime(range.appointment.Start) + ' - ' + c.formatTime(range.appointment.End) ) : range.isLoading ? 'Loading' : 'Free' }}"
-                 class="progress-bar"
-                 ng-class="{ 'progress-bar-success': !range.appointment && !range.isLoading, 'progress-bar-warning': range.isLoading, 'progress-bar-danger': !!range.appointment, 'progress-bar-striped' : ((range.appointment && range.appointment.IsStarted) || range.isLoading || range.isHovered), active: range.isLoading || range.isHovered }"
-                 ng-mouseenter="range.isHovered = true"
-                 ng-mouseleave="range.isHovered = false"
-                 style="width: {{ range.size * 100}}%">
-                <span class="sr-only"></span>
-            </div>
-        </div>
-        <div class="marker now"
-             ng-class="c.timeline.now.position <= 0.5 ? 'now-left' : 'now-right' "
-             ng-style="{ left: c.timeline.now.position <= 0.5 ? (c.timeline.now.position * 100) + '%' : 'auto', right: c.timeline.now.position <= 0.5 ? 'auto' : ((1-c.timeline.now.position) * 100) + '%' } " 
-        >
-            {{ c.formatTime(c.currentTime()) }}
-        </div>
-    </div>
-    <div class="modal fade" role="dialog" aria-labelledby="addMeetingTitle" aria-hidden="true" id="addMeetingModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="addMeetingTitle">Schedule New Meeting</h4>
-                </div>
-                <div class="modal-body add-meeting-body">
-                    <p>
-                        Duration: {{ c.newMeetingTime }} minutes
-                        <span class="btn-group">
-                            <button class="btn btn-primary" ng-disabled="c.newMeetingTime <= 15" ng-click="c.newMeetingTime = c.newMeetingTime - 15"><span class="glyphicon glyphicon-minus-sign"></span></button>
-                            <button class="btn btn-primary" ng-disabled="c.newMeetingTime >= 120" ng-click="c.newMeetingTime = c.newMeetingTime + 15"><span class="glyphicon glyphicon-plus-sign"></span></button>
-                        </span>
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="c.createNewMeeting()">Create Meeting</button>
-                </div>
-            </div><!-- /.modal-content -->
-        </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
     <div class="loading-background" ng-if="c.isLoading"></div>
     <div class="loading-foreground" ng-if="c.isLoading">
         <big-spinner active="true"></big-spinner>

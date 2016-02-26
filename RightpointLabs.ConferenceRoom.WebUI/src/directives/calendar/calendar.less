@@ -1,0 +1,32 @@
+.calendar {
+    rect.background {
+        fill: black;
+    }
+    text.hour {
+        fill: white;
+        font-size: 12px;
+        alignment-baseline: middle; 
+    }   
+    path.hour {
+        stroke: orange;
+    }
+    path.current {
+        stroke: green;
+        stroke-width: 5px;
+    }
+    .meeting {
+        text {
+            fill: white;
+            alignment-baseline: text-before-edge; 
+        }
+        &.meeting-past rect {
+            fill: green;
+        }
+        &.meeting-now rect {
+            fill: red;
+        }
+        &.meeting-future rect {
+            fill: purple;
+        }
+    }
+}
