@@ -61,6 +61,7 @@
         };
         
         self.canManageCurrent = function canManageCurrent() {
+            return true;
             return self.current && !self.current.IsNotManaged && self.hasSecurityRights;
         };
         
