@@ -13,26 +13,26 @@
                 <time-slider selected-time="c.meetNowTime" max-time="c.freeMinutes() || 240"></time-slider>
                 <a href ng-click="c.meetNow()">Meet Now</a>
             </div>
-            <div class="current-meeting" ng-if="c.current && !c.isCurrentInFuture()">
+            <div class="current-meeting" ng-if="c.current && (!c.isCurrentInFuture() || c.current.IsStarted)">
                 <h2>Current Meeting</h2>
                 <h3>{{ c.current.Organizer }}</h3>
                 <h4>{{ c.current.Subject }}</h4>
-                <a href ng-if="c.showStartEarly()" ng-click="c.start(c.current)">Start Early</a>
-                <a href ng-if="c.showStart()" ng-click="c.start(c.current)">Start</a>
-                <a href ng-if="c.showCancel()" ng-click="c.cancel(c.current)">Start</a>
-                <a href ng-if="c.showEndEarly()" ng-click="c.end(c.current)">Start</a>
+                <a href class="start" ng-if="c.showStartEarly()" ng-click="c.start(c.current)">Start Early</a>
+                <a href class="start" ng-if="c.showStart()" ng-click="c.start(c.current)">Start</a>
+                <a href class="end"  ng-if="c.showCancel()" ng-click="c.cancel(c.current)">Cancel</a>
+                <a href class="end"  ng-if="c.showEndEarly()" ng-click="c.end(c.current)">End Early</a>
             </div>
-            <div class="next-meeting" ng-if="c.current && c.isCurrentInFuture()">
-                <h2>Next Meeting</h2>
+            <div class="next-meeting" ng-if="c.current && c.isCurrentInFuture() && !c.current.IsStarted">
+                <h2>Next Meeting <span class="meeting-time">({{ c.formatTime(c.current.Start) }})</span></h2>
                 <h3>{{ c.current.Organizer }}</h3>
                 <h4>{{ c.current.Subject }}</h4>
-                <a href ng-if="c.showStartEarly()" ng-click="c.startEarly()">Start Early</a>
+                <a href class="start" ng-if="c.showStartEarly()" ng-click="c.start(c.current)">Start Early</a>
             </div>
             <div class="next-meeting" ng-if="c.next && !c.isCurrentInFuture()">
-                <h2>Next Meeting</h2>
+                <h2>Next Meeting <span class="meeting-time">({{ c.formatTime(c.next.Start) }})</span></h2>
                 <h3>{{ c.next.Organizer }}</h3>
                 <h4>{{ c.next.Subject }}</h4>
-                <a href ng-if="c.showEndAndStartNext()" ng-click="c.endAndStartNext(c.current, c.next)">Start Early</a>
+                <a href class="start" ng-if="c.showEndAndStartNext()" ng-click="c.endAndStartNext(c.current, c.next)">Start Early</a>
             </div>
             <h2 class="time" ui-sref="settings">
                 {{ c.currentTime().format('h:mm A') }}

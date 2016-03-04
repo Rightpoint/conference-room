@@ -38,6 +38,9 @@
             if(!self.current) {
                 return null;
             }
+            if (self.current.IsStarted) {
+                return 0;
+            }
             return self.minutesUntil(self.current.Start);
         };
         
@@ -57,7 +60,7 @@
         };
         
         self.showMeetNow = function showMeetNow() {
-            return !self.current || self.freeMinutes() > 0;
+            return !self.current || self.freeMinutes() > 15;
         }
         
         self.isCurrentInFuture = function isCurrentInFuture() {
