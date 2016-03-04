@@ -4,7 +4,6 @@
         <ul class="navigation">
             <li ui-sref-active="active"><a href ui-sref="room">Home</a></li>
             <li ui-sref-active="active"><a href ui-sref="find-room">Find a Room</a></li>
-            <li ui-sref-active="active"><a href ui-sref="settings">Settings</a></li>
         <ul>
     </div>
     <div class="content">
@@ -35,7 +34,7 @@
                 <h4>{{ c.next.Subject }}</h4>
                 <a href ng-if="c.showEndAndStartNext()" ng-click="c.endAndStartNext(c.current, c.next)">Start Early</a>
             </div>
-            <h2 class="time">
+            <h2 class="time" ui-sref="settings">
                 {{ c.currentTime().format('h:mm A') }}
             </h2>
         </div>
@@ -60,13 +59,7 @@
             </button>
             <div class="dropdown-menu" role="menu">
                 <div class="btn-group-vertical">
-                    <button class="btn btn-primary" ng-if="c.roomListAddress" ui-sref="roomList.details({ roomListAddress: c.roomListAddress })">Browse Rooms</button>
-                    <button class="btn btn-primary" ng-if="!c.roomListAddress" ui-sref="roomList">Browse Rooms</button>
-                    <button class="btn btn-primary" ng-if="!c.isDefaultRoom" ui-sref="home"><span class="glyphicon glyphicon-home"></span> Home</button>
                     <button class="btn btn-primary" ng-click="c.refresh()"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
-                    <button class="btn btn-primary" ng-if="!c.hasSecurityRights" ng-click="c.requestControl()">Request Control</button>
-                    <button class="btn btn-primary" ng-if="c.hasSecurityRights && !c.isDefaultRoom" ng-click="c.setDefaultRoom()">Set as Default</button>
-                    <button class="btn btn-primary" ui-sref="settings">Settings</button>
                 </div>
             </div>
         </div>

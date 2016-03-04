@@ -1,7 +1,12 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('RoomController', ['Restangular', '$stateParams', '$timeout', '$interval', '$q', '$scope', 'matchmedia', 'UpdateHub', 'settings', 'timelineService', '$state', 'soundService', function(Restangular, $stateParams, $timeout, $interval, $q, $scope, matchmedia, UpdateHub, settings, timelineService, $state, soundService) {
+    angular.module('app').controller('RoomController', ['Restangular', '$timeout', '$interval', '$q', '$scope', 'matchmedia', 'UpdateHub', 'settings', 'timelineService', '$state', 'soundService', function(Restangular, $timeout, $interval, $q, $scope, matchmedia, UpdateHub, settings, timelineService, $state, soundService) {
+        if (!settings.defaultRoom) {
+            $state.go('settings');
+            return;
+        }
+
         var self = this;
         self.isLoading = 0;
         self.meetNowTime = 30;
@@ -16,24 +21,9 @@
 
         self.moment = window.moment;
         self.displayName = 'Loading...';
-        self.roomAddress = $stateParams.roomAddress;
+        self.roomAddress = settings.defaultRoom;
         var room = Restangular.one('room', self.roomAddress);
         var securityKey = settings.securityKey || '';
-        var defaultRoom = settings.defaultRoom;
-        self.isDefaultRoom = defaultRoom == self.roomAddress;
-        self.hasSecurityRights = false;
-
-        if(defaultRoom && !self.isDefaultRoom) {
-            // we have a default room we're supposed to be managing - time out and go there after 60 seconds
-            var defaultRoomTimeout = $timeout(function() {
-                if(!self.isDefaultRoom) {
-                    $state.go('home'); // double-check before we leave in case this was recently marked as default
-                }
-            }, 60000);
-            $scope.$on('$destroy', function() {
-                $timeout.cancel(defaultRoomTimeout);
-            });
-        }
 
         var timeDelta = moment().diff(moment());
         self.currentTime = function currentTime() {
@@ -63,11 +53,11 @@
         
         self.canManageCurrent = function canManageCurrent() {
             return true;
-            return self.current && !self.current.IsNotManaged && self.hasSecurityRights;
+            return self.current && !self.current.IsNotManaged;
         };
         
         self.showMeetNow = function showMeetNow() {
-            return (true || self.hasSecurityRights) && (!self.current || self.freeMinutes() > 0);
+            return !self.current || self.freeMinutes() > 0;
         }
         
         self.isCurrentInFuture = function isCurrentInFuture() {
@@ -95,7 +85,7 @@
         };
         
         self.canManagePrev = function canManagePrev() {
-            return self.prev && !self.prev.IsNotManaged && self.hasSecurityRights;
+            return self.prev && !self.prev.IsNotManaged;
         };
         
         self.showMessagePrev = function showMessagePrev() {
@@ -103,7 +93,7 @@
         };
         
         self.showAddNew = function showAddNew() {
-            return self.hasSecurityRights && (!self.current || self.freeMinutes() > early);
+            return !self.current || self.freeMinutes() > early;
         };
         
         self.getStatus = function getStatus() {
@@ -128,15 +118,13 @@
                 $timeout.cancel(infoTimeout);
             }
             return $q.when(room.one('info').get({ securityKey: securityKey })).then(function(data) {
-                if(!data || data.error) {
-                    timeDelta = 0;
-                    self.displayName = "Access Denied";
-                    self.hasSecurityRights = false;
+                if (!data || data.error || data.SecurityStatus !== 3 /** granted **/) {
+                    $state.go('settings');
                     return;
                 }
+
                 timeDelta = moment().diff(moment(data.CurrentTime));
                 self.displayName = data.DisplayName;
-                self.hasSecurityRights = data.SecurityStatus == 3; // granted
                 scheduleCancel();
 
                 if(!self.roomListAddress) {
@@ -164,15 +152,18 @@
 
         function scheduleCancel() {
             var current = self.current;
-            if(!self.hasSecurityRights) {
-                return;
-            }
             if(cancelTimeout) {
                 $timeout.cancel(cancelTimeout);
+            }
+            if ($state.current.name != 'room') {
+                return; // already left this page - orphaned event
             }
             if(!current || current.IsStarted) {
                 return;
             }
+            if (self.displayName === 'Loading...') {
+                return; // not done loading yet
+            } 
             if(current.IsNotManaged) {
                 return; // unmanaged meeting
             }
@@ -288,19 +279,6 @@
         self.message = function(item) {
             var p = room.one('meeting').post('message', {}, { securityKey: securityKey, uniqueId: item.UniqueId });
             showIndicator(p);
-        };
-        self.requestControl = function() {
-            if(!securityKey) {
-                securityKey = settings.securityKey = (''+Math.random()).replace('.','');
-            }
-            var p = room.post('requestAccess', {}, { securityKey: securityKey }).then(function() {
-                return loadStatus();
-            });
-            showIndicator(p);
-        };
-        self.setDefaultRoom = function() {
-            settings.defaultRoom = self.roomAddress;
-            self.isDefaultRoom = settings.defaultRoom == self.roomAddress;
         };
         self.refresh = function() {
             var p = $q.all([loadInfo(), loadStatus()]);

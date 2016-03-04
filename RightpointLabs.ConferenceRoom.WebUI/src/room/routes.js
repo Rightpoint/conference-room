@@ -4,7 +4,7 @@
     angular.module('app').config(['$stateProvider', function($stateProvider) {
         $stateProvider
             .state('room', {
-                url: '/room/:roomAddress',
+                url: '/',
                 templateUrl: 'room/room.html',
                 controller: 'RoomController',
                 controllerAs: 'c'

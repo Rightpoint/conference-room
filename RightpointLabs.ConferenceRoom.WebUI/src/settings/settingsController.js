@@ -4,7 +4,7 @@
     angular.module('app').controller('SettingsController', ['settings', '$modal', 'Restangular', '$interval', function(settings, $modal, Restangular, $interval) {
         var self = this;
         
-        self.isLocked = true;
+        self.isLocked = false;
         self.settings = settings;
         self.isAuthorized = false;
         
