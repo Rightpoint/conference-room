@@ -1,0 +1,15 @@
+<div class="modal-header">
+    <h3 class="modal-title">Choose room</h3>
+</div>
+<div class="modal-body pick-room-body">
+    <div ng-repeat="l in c.lists" class="panel panel-default">
+        <h4 class="panel-heading">{{ l.Name }}</h4>
+        <div class="list-group">
+            <a ng-repeat="r in l.rooms" href class="list-group-item" ng-class="{ selected: c.selected == r.Address }" ng-click="$close(r.Address)">{{ r.Name }}</a>
+        </div>
+    </ul>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary btn-lg" ng-click="$close(code)">OK</button>
+    <button class="btn btn-warning btn-lg" ng-click="$dismiss()">Cancel</button>
+</div>
