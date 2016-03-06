@@ -2,10 +2,12 @@
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 using System;
+using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.ServiceModel.Channels;
+using System.Threading;
 using System.Web;
 using System.Web.Http;
 
@@ -46,9 +48,16 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         /// <param name="roomMetadata">The metadata associated with the room.</param>
         /// <returns></returns>
         [Route("{roomAddress}/info")]
-        public void PostInfo(string roomAddress, string securityKey, RoomMetadata roomMetadata)
+        public void PostInfo(string roomAddress, PostRoomMetadata roomMetadata)
         {
-            _conferenceRoomService.SetInfo(roomAddress, roomMetadata, securityKey);
+            var realCode = ConfigurationManager.AppSettings["settingsSecurityCode"];
+            if (roomMetadata.Code == realCode)
+            {
+                Thread.Sleep(1000);
+                throw new AccessDeniedException("Access denied", null);
+            }
+
+            _conferenceRoomService.SetInfo(roomAddress, roomMetadata);
         }
 
         /// <summary>

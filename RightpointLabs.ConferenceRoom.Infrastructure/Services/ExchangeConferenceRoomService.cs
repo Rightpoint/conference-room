@@ -134,7 +134,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             };
         }
 
-        public void SetInfo(string roomAddress, RoomMetadata roomMetadata, string securityKey = null)
+        public void SetInfo(string roomAddress, RoomMetadata roomMetadata)
         {
             var targetUser = _impersonateForAllCalls
                 ? roomAddress

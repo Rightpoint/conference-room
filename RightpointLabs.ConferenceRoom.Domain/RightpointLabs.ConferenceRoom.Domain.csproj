@@ -69,6 +69,7 @@
     <Compile Include="Models\Meeting.cs" />
     <Compile Include="Models\MeetingInfo.cs" />
     <Compile Include="Models\RoomInfo.cs" />
+    <Compile Include="Models\PostRoomMetadata.cs" />
     <Compile Include="Models\RoomMetadata.cs" />
     <Compile Include="Models\RoomStatus.cs" />
     <Compile Include="Models\RoomStatusInfo.cs" />
