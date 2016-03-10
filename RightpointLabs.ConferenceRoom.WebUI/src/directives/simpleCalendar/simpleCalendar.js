@@ -38,6 +38,10 @@
                     }
                     if(!current.IsStarted && moment(current.Start).isAfter(scope.now))
                     {
+                        if(moment(scope.now).startOf('day').add(1, 'days').isBefore(moment(current.Start))) {
+                            // nothing else today
+                            return 'Free';
+                        }
                         return 'Free until ' + scope.formatTime(current.Start);
                     }
                     var until = current.End;
@@ -46,6 +50,10 @@
                             until = a.End;
                         }
                     });
+                    if(moment(scope.now).startOf('day').add(1, 'days').isBefore(moment(until))) {
+                        // nothing else today
+                        return 'Busy';
+                    }
                     return 'Busy until ' + scope.formatTime(until);
                 };
                 scope.freeBusy = function freeBusy(calendar) {
