@@ -99,22 +99,6 @@
             return !self.current || self.freeMinutes() > early;
         };
         
-        self.getStatus = function getStatus() {
-            if (!self.current) {
-                return 'Free';
-            }
-            if (self.freeMinutes() > 0) {
-                return 'Free until ' + self.formatTime(self.current.Start);
-            }
-            var until = self.current.End;
-            self.appointments.forEach(function (a) {
-                if (a.Start == until) {
-                    until = a.End;
-                }
-            });
-            return 'Busy until ' + self.formatTime(until);
-        };
-
         var infoTimeout = null;
         function loadInfo() {
             if(infoTimeout) {

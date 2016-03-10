@@ -1,0 +1,100 @@
+@import "../../variables.less";
+
+.simple-calendar {
+    &, .h-scrollable, .v-scrollable {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+    .current-line {
+        position: absolute;
+        left: 50px;
+        right: 0;
+        background: @teal;
+        height: 5px;
+    }
+    
+    .h-scrollable {
+        overflow-x: scroll;
+        overflow-y: visible;
+        left: 50px;
+    }
+    .v-scrollable {
+        overflow-x: visible;
+        overflow-y: scroll;
+        top: 50px;
+    }
+    &.has-titles {
+        .v-scrollable {
+            top: 80px;
+        }
+    }
+    .h-scrollable, .v-scrollable {
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+    .data {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+    }
+    .top {
+        position: absolute;
+        top: 0;
+        h3.title {
+            text-align: center;
+            font-size: 16px;
+            color: white;
+        }
+        .status {
+            text-align: center;
+            font-size: 16px;
+            margin: 10px 35px;
+            padding: 6px;
+            
+            &.free {
+                background: @teal;
+                color: @midBlue;
+            }
+            &.busy {
+                background: @red;
+                color: white;
+            }
+        }
+    }
+    .times {
+        .time {
+            position: absolute;
+            color: white;
+            font-size: 12px;
+        }
+        .time-line {
+            position: absolute;
+            background-color: white;
+            left: 50px;
+            right: 0;
+            height: 1px;
+        }
+    }
+    .event {
+        position: absolute;
+        left: 30px;
+        right: 30px;
+        background: white;
+        margin: 3px;
+        border: 1px solid red;
+    }
+    
+    
+    .data, .top {
+        width: 100%;
+    }
+    &.has-multiple {
+        .data, .top {
+            width: 250px;
+        }
+    }
+}

@@ -33,10 +33,7 @@
             </h2>
         </div>
         <div class="calendar-area">
-            <div class="status" ng-class=" { free: (c.freeMinutes() > 0) || !c.current, busy: c.current && (c.freeMinutes() <= 0) }">
-                {{ c.getStatus() }}
-            </div>
-            <calendar data="c.appointments"></calendar>
+            <simple-calendar calendars="[ { DisplayName: c.displayName, Events: c.appointments, Current: c.current } ]" show-titles="false"></simple-calendar>
         </div>
     </div>
     <div class="buttons btn-group-vertical dropup" ng-class="{ 'btn-group-lg': c.isSmallScreen }" ng-if="false">
