@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using log4net;
+using RightpointLabs.ConferenceRoom.Domain.Models;
+using RightpointLabs.ConferenceRoom.Domain.Services;
+using System;
+using System.Configuration;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.ServiceModel.Channels;
+using System.Threading;
 using System.Web;
 using System.Web.Http;
-using Microsoft.Exchange.WebServices.Data;
-using RightpointLabs.ConferenceRoom.Domain.Models;
-using RightpointLabs.ConferenceRoom.Domain.Repositories;
-using RightpointLabs.ConferenceRoom.Domain.Services;
-using RightpointLabs.ConferenceRoom.Infrastructure.Services;
 
 namespace RightpointLabs.ConferenceRoom.Services.Controllers
 {
@@ -17,11 +17,14 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
     /// Operations dealing with a room
     /// </summary>
     [RoutePrefix("api/room")]
-    public class RoomController : ApiController
+    public class RoomController : BaseController
     {
+        private static readonly ILog __log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         private readonly IConferenceRoomService _conferenceRoomService;
 
         public RoomController(IConferenceRoomService conferenceRoomService)
+            : base(__log)
         {
             _conferenceRoomService = conferenceRoomService;
         }
@@ -39,6 +42,25 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         }
 
         /// <summary>
+        /// Sets the info metadata for a single room.
+        /// </summary>
+        /// <param name="roomAddress">The room address returned from <see cref="RoomListController.GetRooms"/></param>
+        /// <param name="roomMetadata">The metadata associated with the room.</param>
+        /// <returns></returns>
+        [Route("{roomAddress}/info")]
+        public void PostInfo(string roomAddress, PostRoomMetadata roomMetadata)
+        {
+            var realCode = ConfigurationManager.AppSettings["settingsSecurityCode"];
+            if (roomMetadata.Code == realCode)
+            {
+                Thread.Sleep(1000);
+                throw new AccessDeniedException("Access denied", null);
+            }
+
+            _conferenceRoomService.SetInfo(roomAddress, roomMetadata);
+        }
+
+        /// <summary>
         /// Gets the status for a single room.
         /// </summary>
         /// <param name="roomAddress">The room address returned from <see cref="RoomListController.GetRooms"/></param>
@@ -46,25 +68,10 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         [Route("{roomAddress}/status")]
         public object GetStatus(string roomAddress)
         {
-            try
-            {
-                var data = _conferenceRoomService.GetStatus(roomAddress);
-                return data;
-            }
-            catch (AccessDeniedException)
-            {
-                return new {error = "Access Denied"};
-            }
-            catch (AggregateException ex)
-            {
-                if (ex.InnerExceptions.OfType<AccessDeniedException>().Any())
-                {
-                    return new { error = "Access Denied" };
-                }
-                throw;
-            }
+            var data = _conferenceRoomService.GetStatus(roomAddress);
+            return data;
         }
-         
+
         /// <summary>
         /// Request access to control a room
         /// </summary>
@@ -94,7 +101,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         /// <param name="roomAddress">The address of the room</param>
         /// <param name="signature">The signature of the uniqueId - indicating it's allowed to do this</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
-        [Route("{roomAddress}/meeting/startFromClient", Name="StartFromClient")]
+        [Route("{roomAddress}/meeting/startFromClient", Name = "StartFromClient")]
         public string GetStartMeeting(string roomAddress, string uniqueId, string signature)
         {
             if (_conferenceRoomService.StartMeetingFromClient(roomAddress, uniqueId, signature))
@@ -163,29 +170,6 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         public void PostMessageMeeting(string roomAddress, string securityKey, string uniqueId)
         {
             _conferenceRoomService.MessageMeeting(roomAddress, uniqueId, securityKey);
-        }
-
-        private string GetClientIp(HttpRequestMessage request = null)
-        {
-            request = request ?? Request;
-
-            if (request.Properties.ContainsKey("MS_HttpContext"))
-            {
-                return ((HttpContextWrapper)request.Properties["MS_HttpContext"]).Request.UserHostAddress;
-            }
-            else if (request.Properties.ContainsKey(RemoteEndpointMessageProperty.Name))
-            {
-                RemoteEndpointMessageProperty prop = (RemoteEndpointMessageProperty)request.Properties[RemoteEndpointMessageProperty.Name];
-                return prop.Address;
-            }
-            else if (HttpContext.Current != null)
-            {
-                return HttpContext.Current.Request.UserHostAddress;
-            }
-            else
-            {
-                return null;
-            }
         }
     }
 }

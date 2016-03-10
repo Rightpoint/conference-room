@@ -1,7 +1,7 @@
-﻿using System.Linq;
-using System.Web.Http;
-using Microsoft.Exchange.WebServices.Data;
+﻿using log4net;
 using RightpointLabs.ConferenceRoom.Domain.Services;
+using System.Reflection;
+using System.Web.Http;
 
 namespace RightpointLabs.ConferenceRoom.Services.Controllers
 {
@@ -9,11 +9,14 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
     /// Operations dealing with room lists
     /// </summary>
     [RoutePrefix("api/roomList")]
-    public class RoomListController : ApiController
+    public class RoomListController : BaseController
     {
+        private static readonly ILog __log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         private readonly IConferenceRoomService _conferenceRoomService;
 
         public RoomListController(IConferenceRoomService conferenceRoomService)
+            : base(__log)
         {
             _conferenceRoomService = conferenceRoomService;
         }
