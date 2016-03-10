@@ -69,7 +69,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
             _useChangeNotification = bool.Parse(ConfigurationManager.AppSettings["useChangeNotification"] ?? "true");
             _impersonateForAllCalls = bool.Parse(ConfigurationManager.AppSettings["impersonateForAllCalls"] ?? "true");
-            _emailDomains = ConfigurationManager.AppSettings["emailDomains"]
+            _emailDomains = (ConfigurationManager.AppSettings["emailDomains"] ?? "")
                 .Split(';')
                 .Select(_ => _.StartsWith("@") ? _.ToLowerInvariant() : "@" + _.ToLowerInvariant())
                 .ToArray();
@@ -127,11 +127,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 Size = roomMetadata.Size,
                 BuildingId = roomMetadata.BuildingId,
                 Floor = roomMetadata.Floor,
-                DistanceFromFloorOrigin = new Point()
-                {
-                    X = roomMetadata.DistanceFromFloorOrigin.X,
-                    Y = roomMetadata.DistanceFromFloorOrigin.Y,
-                },
+                DistanceFromFloorOrigin = roomMetadata.DistanceFromFloorOrigin ?? new Point(),
                 Equipment = roomMetadata.Equipment,
             };
         }
