@@ -1,11 +1,5 @@
 <div class="room">
-    <div class="header">
-        <h1 class="room-name">{{c.displayName}}</h3>
-        <ul class="navigation">
-            <li ui-sref-active="active"><a href ui-sref="room">Home</a></li>
-            <li ui-sref-active="active"><a href ui-sref="find-room">Find a Room</a></li>
-        <ul>
-    </div>
+    <header title="{{ c.displayName }}"></header>
     <div class="content">
         <div class="actions">
             <div class="meet-now" ng-if="c.showMeetNow()">

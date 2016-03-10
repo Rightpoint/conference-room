@@ -1,0 +1,13 @@
+<div class="find-room">
+    <header title="Find a room"></header>
+    
+    <ul>
+        <li ng-repeat="room in c.rooms">
+            {{ room.DisplayName }}: floor: {{ room.Floor }}, equipment: {{ room.Equipment }}, size: {{ room.Size }}
+        </li>
+    </ul>
+    <div class="loading-background" ng-if="c.isLoading"></div>
+    <div class="loading-foreground" ng-if="c.isLoading">
+        <big-spinner active="true"></big-spinner>
+    </div>
+</div>
