@@ -3,10 +3,10 @@
     
     <div class="calendar-area">
         <simple-calendar calendars="c.rooms" show-titles="true"></simple-calendar>
-    </div>
 
-    <div class="loading-background" ng-if="c.isLoading"></div>
-    <div class="loading-foreground" ng-if="c.isLoading">
-        <big-spinner active="true"></big-spinner>
+        <div class="loading-background" ng-if="c.isLoading"></div>
+        <div class="loading-foreground" ng-if="c.isLoading">
+            <big-spinner active="true"></big-spinner>
+        </div>
     </div>
 </div>

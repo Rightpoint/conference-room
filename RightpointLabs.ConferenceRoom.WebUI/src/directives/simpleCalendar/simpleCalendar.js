@@ -12,7 +12,8 @@
             },
             link: function (scope, element, attr) {
                 var pxPerHour = parseInt(attr.pxPerHour || 75);
-                var minHeight = parseInt(attr.minHeight || pxPerHour / 4);
+                var minHeight = parseInt(attr.minHeight || 24);
+                var vMargin = parseInt(attr.vMargin || 2);
                 var hours = parseInt(attr.hours || 72);
                 scope.vHeight = pxPerHour * hours;
                 
@@ -21,7 +22,7 @@
                     var bottom = scope.getOffset(evt.End);
                     return {
                         top: top,
-                        height: Math.max(bottom - top, minHeight)
+                        height: Math.max(bottom - top - vMargin, minHeight)
                     };
                 };
                 scope.formatHour = function formatHour(value) {
