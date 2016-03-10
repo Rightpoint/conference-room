@@ -1,6 +1,23 @@
 <div class="find-room">
     <header title="Find a room"></header>
     
+    <div class="search">
+        <div class="container-fluid">
+            <div class="form-inline">
+                <div class="form-group">
+                    <label for="minSize">Minimum Size</label>
+                    <input type="number" class="form-control" id="minSize" ng-model="c.search.minSize" style="width: 60px"/>
+                    <button class="btn btn-primary" ng-disabled="c.search.minSize < 1" ng-click="c.search.minSize = c.search.minSize - 1"><span class="glyphicon glyphicon-minus-sign"></span></button>
+                    <button class="btn btn-primary" ng-click="c.search.minSize = c.search.minSize + 1"><span class="glyphicon glyphicon-plus-sign"></span></button>
+                </div>
+                <div class="form-group" ng-if="c.locationChoices.length">
+                    <label for="location">Location</label>
+                    <select class="form-control" id="location" ng-model="c.search.location" ng-options="c.locationChoices"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <div class="calendar-area">
         <simple-calendar calendars="c.rooms" show-titles="true"></simple-calendar>
 

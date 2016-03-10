@@ -9,6 +9,10 @@
         var self = this;
         self.isLoading = true;
         self.rooms = [];
+        self.search = {
+            minSize: 1
+        };
+        self.locationChoices = [];
         Restangular.all('roomList').getList().then(function(roomLists) {
             return $q.all(roomLists.map(function(roomList) {
                 return Restangular.one('roomList', roomList.Address).getList('rooms').then(function(rooms) {
