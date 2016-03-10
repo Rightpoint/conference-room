@@ -20,8 +20,10 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
 
         protected internal ILog Log { get; private set; }
 
-        protected static string GetClientIp(HttpRequestMessage request = null)
+        protected string GetClientIp(HttpRequestMessage request = null)
         {
+            request = request ?? Request;
+
             // from https://trikks.wordpress.com/2013/06/27/getting-the-client-ip-via-asp-net-web-api/
             if (request.Properties.ContainsKey("MS_HttpContext"))
             {
