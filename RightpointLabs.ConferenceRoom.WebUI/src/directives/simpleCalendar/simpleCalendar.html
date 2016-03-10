@@ -23,7 +23,7 @@
                 ng-class="{ 'first-data': $index === 0 }" 
                 ng-style="{ left: ($index * 220) }">
                 <div class="event" 
-                    ng-repeat="evt in calendar.Events"
+                    ng-repeat="evt in calendar.NearTermMeetings"
                     ng-style="styles(evt)"
                     >
                     {{ evt.Organizer }}

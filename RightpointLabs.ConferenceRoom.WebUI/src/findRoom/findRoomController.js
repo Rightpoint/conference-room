@@ -20,10 +20,7 @@
                                 Restangular.one('room', room.Address).one('info').get({ securityKey: '' }),
                                 Restangular.one('room', room.Address).one('status').get()
                             ]).then(function(calls){
-                                var roomInfo = calls[0];
-                                var roomStatus = calls[1];
-                                roomInfo.Status = roomStatus;
-                                allRooms.push(roomInfo);
+                                allRooms.push(angular.merge({}, calls[0], calls[1]));
                             });
                         })).then(function() {
                             allRooms.sort(function(a, b) { return a.DisplayName < b.DisplayName ? -1 : 1; });
