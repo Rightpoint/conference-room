@@ -69,7 +69,13 @@ function updateIn(delay) {
                         }
                         break;
                     case 2:
-                        purple();
+                        if(obj.CurrentMeeting && obj.CurrentMeeting.IsNotManaged) {
+                            // non-managed meetings don't need to be started
+                            red();
+                        } else {
+                            // this is a managed meeting that's on the verge of getting auto-cancelled - look wierd.
+                            purple();
+                        }
                         break;
                     default:
                         console.log('invalid status: ' + status);
@@ -143,5 +149,11 @@ function start() {
             updateIn(1);
         }
     });
+    client.serviceHandlers.connected = function() {
+        console.log('signalR connected');
+    };
+    client.serviceHandlers.onerror = function(error) {
+        console.log('signalR error: ' + error);
+    }
 }
 // wait
