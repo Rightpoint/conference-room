@@ -29,7 +29,6 @@
                         })).then(function() {
                             allRooms.sort(function(a, b) { return a.DisplayName < b.DisplayName ? -1 : 1; });
                             self.rooms = allRooms;
-                            console.log(self.rooms);
                         });
                     }
                     else {

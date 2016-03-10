@@ -127,7 +127,6 @@
                         lastScale = evt.scale;
                         
                         resetTimeout = $timeout(function() {
-                            console.log('resetting');
                             zoom.scale(1).translate([0,0]).event(e);
                             resetTimeout = null;
                             lastY = 0;
