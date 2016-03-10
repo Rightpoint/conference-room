@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('FindRoomController', ['Restangular', '$state', 'settings', '$timeout', '$q', function(Restangular, $state, settings, $timeout, $q) {
+    angular.module('app').controller('FindRoomController', ['Restangular', '$state', 'settings', '$timeout', '$q', '$modal', function(Restangular, $state, settings, $timeout, $q, $modal) {
         if(!settings.defaultRoom) {
             $state.go('settings');
             return;
@@ -40,6 +40,19 @@
         }).then(function() {
             self.isLoading = false;
         });
+        
+        self.showDetails = function showDetails(meeting) {
+            $modal.open({
+                templateUrl: 'meeting/meeting.html',
+                controller: 'MeetingController',
+                controllerAs: 'c',
+                resolve: {
+                    meeting: function() {
+                        return meeting;
+                    }
+                }
+            });
+        };
 
         // we have a default room we're supposed to be managing - time out and go there after 60 seconds
         $timeout(function() {

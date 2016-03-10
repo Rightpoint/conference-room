@@ -8,7 +8,8 @@
             replace: true,
             scope: {
                 calendars: '=',
-                showTitles: '='
+                showTitles: '=',
+                click: '&',
             },
             link: function (scope, element, attr) {
                 var pxPerHour = parseInt(attr.pxPerHour || 75);

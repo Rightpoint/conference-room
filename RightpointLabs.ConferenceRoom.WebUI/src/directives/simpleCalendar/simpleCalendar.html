@@ -25,6 +25,7 @@
                 <div class="event" 
                     ng-repeat="evt in calendar.NearTermMeetings"
                     ng-style="styles(evt)"
+                    ng-click="click({ meeting: evt })"
                     >
                     {{ evt.Organizer }}
                 </div>
