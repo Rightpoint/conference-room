@@ -1,5 +1,5 @@
 <div class="find-room">
-    <header title="Find a room"></header>
+    <header data-title="Find a room"></header>
     
     <div class="search">
         <div class="container-fluid">
@@ -14,11 +14,18 @@
                     <label for="equipment">Equipment</label>
                     <ui-select multiple ng-model="c.search.equipment" append-to-body="true" style="width: 200px">
                         <ui-select-match>
-                            <span ng-repeat="icon in $item.icons" ng-class="icon"></span>
+                            <span ng-repeat="icon in $item.icons" ng-switch on="$index !== 0">
+                                <span ng-switch-when="true">/</span>
+                                <span ng-class="icon"></span>
+                            </span>
                         </ui-select-match>
                         <ui-select-choices repeat="item in c.equipmentChoices">
                             <div>
-                                <span ng-repeat="icon in item.icons" ng-class="icon">&nbsp;</span>
+                                <span ng-repeat="icon in item.icons" ng-switch on="$index !== 0">
+                                    <span ng-switch-when="true">/</span>
+                                    <span ng-class="icon"></span>
+                                </span>
+                                &nbsp;
                                 <span ng-bind-html="item.text | highlight: $select.search"></span>
                             </div>
                         </ui-select-choices>
