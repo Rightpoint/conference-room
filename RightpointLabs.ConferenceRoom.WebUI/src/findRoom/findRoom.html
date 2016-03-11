@@ -6,9 +6,7 @@
             <div class="form-inline">
                 <div class="form-group">
                     <label for="minSize">Minimum Size</label>
-                    <input type="number" class="form-control" id="minSize" ng-model="c.search.minSize" style="width: 60px"/>
-                    <button class="btn btn-primary" ng-disabled="c.search.minSize < 1" ng-click="c.search.minSize = c.search.minSize - 1"><span class="glyphicon glyphicon-minus-sign"></span></button>
-                    <button class="btn btn-primary" ng-click="c.search.minSize = c.search.minSize + 1"><span class="glyphicon glyphicon-plus-sign"></span></button>
+                    <number-slider selected-number="c.search.minSize" allowed-numbers="c.sizeChoices"></number-slider>
                 </div>
                 <div class="form-group">
                     <label for="equipment">Equipment</label>

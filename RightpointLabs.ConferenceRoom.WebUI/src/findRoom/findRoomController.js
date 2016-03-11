@@ -14,6 +14,7 @@
             location: '',
             equipment: []
         };
+        self.sizeChoices = [ 1, 2, 3, 4, 6, 8, 10, 12, 40 ];
         self.searchResult = [];
         self.locationChoices = [ { id: '', text: '<ANY>'} ];
         function selfMatch (item, room) {
