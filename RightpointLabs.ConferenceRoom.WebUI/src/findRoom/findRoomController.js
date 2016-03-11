@@ -20,12 +20,12 @@
             return _.some(room.Equipment, item);
         }
         self.equipmentChoices = [ 
-            { text: 'Television', abbreviation: 'TV' },
-            { text: 'Projector', abbreviation: 'P' },
-            { text: 'Monitor', abbreviation: 'M' },
-            { text: 'Telephone', abbreviation: 'T' },
-            { text: 'Ethernet', abbreviation: 'E' },
-            { text: 'Television or Projector', abbreviation: 'TV/P', match: function(e) { return e == 'Television' || e == 'Projector'; } },
+            { text: 'Television', icons: ['fa fa-television'] },
+            { text: 'Projector', icons: ['fa fa-camera'] },
+            { text: 'Monitor', icons: ['fa fa-laptop'] },
+            { text: 'Telephone', icons: ['fa fa-phone'] },
+            { text: 'Ethernet', icons: ['fa fa-signal'] },
+            { text: 'Television or Projector', icons: ['fa fa-television', 'fa fa-camera'], match: function(e) { return e == 'Television' || e == 'Projector'; } },
         ];
         Restangular.all('roomList').getList().then(function(roomLists) {
             return $q.all(roomLists.map(function(roomList) {

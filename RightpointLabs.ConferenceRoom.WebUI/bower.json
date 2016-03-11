@@ -30,7 +30,8 @@
     "d3": "~3.5.16",
     "angular-touch": "~1.4",
     "ui-select": "angular-ui-select#~0.14.9",
-    "angular-sanitize": "~1.4.0"
+    "angular-sanitize": "~1.4.0",
+    "components-font-awesome": "~4.5.0"
   },
   "overrides": {
     "bootstrap-less": {

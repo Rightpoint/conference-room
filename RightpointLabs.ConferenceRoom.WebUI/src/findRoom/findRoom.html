@@ -13,9 +13,14 @@
                 <div class="form-group">
                     <label for="equipment">Equipment</label>
                     <ui-select multiple ng-model="c.search.equipment" append-to-body="true" style="width: 200px">
-                        <ui-select-match>{{$item.abbreviation}}</ui-select-match>
+                        <ui-select-match>
+                            <span ng-repeat="icon in $item.icons" ng-class="icon"></span>
+                        </ui-select-match>
                         <ui-select-choices repeat="item in c.equipmentChoices">
-                            <div ng-bind-html="item.text | highlight: $select.search"></div>
+                            <div>
+                                <span ng-repeat="icon in item.icons" ng-class="icon">&nbsp;</span>
+                                <span ng-bind-html="item.text | highlight: $select.search"></span>
+                            </div>
                         </ui-select-choices>
                     </ui-select>
                 </div>
