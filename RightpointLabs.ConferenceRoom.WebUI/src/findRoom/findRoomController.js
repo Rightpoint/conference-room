@@ -38,6 +38,8 @@
             }));
         }).then(function() {
             self.isLoading = false;
+        }).catch(function() {
+            $state.go('settings');
         });
         
         self.showDetails = function showDetails(meeting) {
