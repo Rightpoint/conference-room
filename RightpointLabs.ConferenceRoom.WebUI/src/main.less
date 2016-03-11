@@ -45,3 +45,13 @@
     -webkit-user-select: none !important;
     user-select: none !important;
 }
+
+html > body > .ui-select-bootstrap.open {
+    z-index: 1020; /** keep above the spinner **/
+}
+
+/** override a few styles to keep the select dropdown in the find a room header from being borked **/
+.ui-select-placeholder {
+    display: inline-block;
+    height: 10px !important;
+}

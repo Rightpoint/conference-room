@@ -11,10 +11,22 @@
         self.rooms = [];
         self.search = {
             minSize: 1,
-            location: ''
+            location: '',
+            equipment: []
         };
         self.searchResult = [];
         self.locationChoices = [ { id: '', text: '<ANY>'} ];
+        function selfMatch (item, room) {
+            return _.some(room.Equipment, item);
+        }
+        self.equipmentChoices = [ 
+            { text: 'Television', abbreviation: 'TV' },
+            { text: 'Projector', abbreviation: 'P' },
+            { text: 'Monitor', abbreviation: 'M' },
+            { text: 'Telephone', abbreviation: 'T' },
+            { text: 'Ethernet', abbreviation: 'E' },
+            { text: 'Television or Projector', abbreviation: 'TV/P', match: function(e) { return e == 'Television' || e == 'Projector'; } },
+        ];
         Restangular.all('roomList').getList().then(function(roomLists) {
             return $q.all(roomLists.map(function(roomList) {
                 return Restangular.one('roomList', roomList.Address).getList('rooms').then(function(rooms) {
@@ -67,12 +79,16 @@
             self.searchResults = self.rooms.map(function(room) {
                 var matchLocation = !self.search.location || room.Location == self.search.location;
                 var matchSize = self.search.minSize <= room.Size;
+                var matchEquipment = _.all(self.search.equipment, function(e) {
+                    return _.some(room.Equipment, e.match || function(i) { return i == e.text; });
+                });
+                var match = matchLocation && matchSize && matchEquipment;
                 
                 var s = statusService.status(room.CurrentMeeting, room.NearTermMeetings);
                 var score = s.busy ? s.duration ? (1000 - Math.min(s.duration, 1000)) : 0 : s.duration ? 1000 + Math.min(s.duration, 1000) : 2000;
                 
                 room = angular.copy(room);
-                if(matchSize && matchLocation) {
+                if(match) {
                     room.score = score;
                 } else {
                     room.score = score - 2001;
@@ -81,7 +97,7 @@
                 // tag with some classes so we can do some styling
                 room.class = {
                     'highlight-free': !s.busy,
-                    'dim-not-match': !(matchSize && matchLocation)
+                    'dim-not-match': !match
                 };
                 return room;
             });

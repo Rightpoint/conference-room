@@ -10,6 +10,15 @@
                     <button class="btn btn-primary" ng-disabled="c.search.minSize < 1" ng-click="c.search.minSize = c.search.minSize - 1"><span class="glyphicon glyphicon-minus-sign"></span></button>
                     <button class="btn btn-primary" ng-click="c.search.minSize = c.search.minSize + 1"><span class="glyphicon glyphicon-plus-sign"></span></button>
                 </div>
+                <div class="form-group">
+                    <label for="equipment">Equipment</label>
+                    <ui-select multiple ng-model="c.search.equipment" append-to-body="true" style="width: 200px">
+                        <ui-select-match>{{$item.abbreviation}}</ui-select-match>
+                        <ui-select-choices repeat="item in c.equipmentChoices">
+                            <div ng-bind-html="item.text | highlight: $select.search"></div>
+                        </ui-select-choices>
+                    </ui-select>
+                </div>
                 <div class="form-group" ng-if="c.locationChoices.length > 1">
                     <label for="location">Location</label>
                     <select class="form-control" id="location" ng-model="c.search.location" ng-options="item.id as item.text for item in c.locationChoices"/>
