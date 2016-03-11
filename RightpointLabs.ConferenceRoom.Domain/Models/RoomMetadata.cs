@@ -12,6 +12,7 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models
         Monitor = 0x04,
         Telephone = 0x08,
         Ethernet = 0x10,
+        Whiteboard = 0x20,
     }
 
     public class RoomMetadata : Entity

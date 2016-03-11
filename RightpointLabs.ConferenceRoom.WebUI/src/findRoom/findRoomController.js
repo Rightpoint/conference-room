@@ -25,6 +25,7 @@
             { text: 'Monitor', icons: ['fa fa-laptop'] },
             { text: 'Telephone', icons: ['fa fa-phone'] },
             { text: 'Ethernet', icons: ['fa fa-signal'] },
+            { text: 'Whiteboard', icons: ['fa fa-eraser'] },
             { text: 'Television or Projector', icons: ['fa fa-television', 'fa fa-camera'], match: function(e) { return e == 'Television' || e == 'Projector'; } },
         ];
         Restangular.all('roomList').getList().then(function(roomLists) {
