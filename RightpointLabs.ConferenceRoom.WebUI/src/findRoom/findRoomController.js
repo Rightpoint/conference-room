@@ -29,6 +29,16 @@
             { text: 'Whiteboard', icons: ['fa fa-eraser'] },
             { text: 'Television or Projector', icons: ['fa fa-television', 'fa fa-camera'], match: function(e) { return e == 'Television' || e == 'Projector'; } },
         ];
+        self.equipmentSelected = function(e) {
+            return _.some(self.search.equipment, function(i) { return i === e; });
+        };
+        self.toggleEquipment = function(e) {
+            if(self.equipmentSelected(e)) {
+                self.search.equipment = self.search.equipment.filter(function(i) { return i != e; }); 
+            } else {
+                self.search.equipment = self.search.equipment.concat([e]);
+            }
+        };
         Restangular.all('roomList').getList().then(function(roomLists) {
             return $q.all(roomLists.map(function(roomList) {
                 return Restangular.one('roomList', roomList.Address).getList('rooms').then(function(rooms) {

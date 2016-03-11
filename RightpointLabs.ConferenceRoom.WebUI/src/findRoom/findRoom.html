@@ -5,29 +5,19 @@
         <div class="container-fluid">
             <div class="form-inline">
                 <div class="form-group">
-                    <label for="minSize">Minimum Size</label>
+                    <label for="minSize">Size</label>
                     <number-slider selected-number="c.search.minSize" allowed-numbers="c.sizeChoices"></number-slider>
                 </div>
                 <div class="form-group">
                     <label for="equipment">Equipment</label>
-                    <ui-select multiple ng-model="c.search.equipment" append-to-body="true" style="width: 200px">
-                        <ui-select-match>
-                            <span ng-repeat="icon in $item.icons" ng-switch on="$index !== 0">
+                    <div class="btn-group equipment-picker">
+                        <button class="btn" ng-repeat="e in c.equipmentChoices" ng-click="c.toggleEquipment(e)" ng-class="{ 'active': c.equipmentSelected(e) }" title="{{ e.text }}">
+                            <span ng-repeat="icon in e.icons" ng-switch on="$index !== 0">
                                 <span ng-switch-when="true">/</span>
                                 <span ng-class="icon"></span>
                             </span>
-                        </ui-select-match>
-                        <ui-select-choices repeat="item in c.equipmentChoices">
-                            <div>
-                                <span ng-repeat="icon in item.icons" ng-switch on="$index !== 0">
-                                    <span ng-switch-when="true">/</span>
-                                    <span ng-class="icon"></span>
-                                </span>
-                                &nbsp;
-                                <span ng-bind-html="item.text | highlight: $select.search"></span>
-                            </div>
-                        </ui-select-choices>
-                    </ui-select>
+                        </button>
+                    </div>
                 </div>
                 <div class="form-group" ng-if="c.locationChoices.length > 1">
                     <label for="location">Location</label>
