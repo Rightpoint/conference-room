@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').directive('simpleCalendar', ['$timeout', '$interval', '$window', function($timeout, $interval, $window) {
+    angular.module('app').directive('simpleCalendar', ['$timeout', '$interval', '$window', 'statusService', function($timeout, $interval, $window, statusService) {
         return {
             restrict: 'E',
             templateUrl: 'directives/simpleCalendar/simpleCalendar.html',
@@ -26,6 +26,12 @@
                         height: Math.max(bottom - top - vMargin, minHeight)
                     };
                 };
+                scope.topClass = function($index, calendar) {
+                    return angular.merge({ 'first-top': $index === 0 }, calendar.class || {});
+                }
+                scope.calendarClass = function($index, calendar) {
+                    return angular.merge({ 'first-data': $index === 0 }, calendar.class || {});
+                }
                 scope.formatHour = function formatHour(value) {
                     return moment(value).format('h a');
                 };
@@ -33,40 +39,10 @@
                     return moment(value).format('h:mm a');
                 };
                 scope.status = function status(calendar) {
-                    var current = calendar.CurrentMeeting;
-                    if (!current) {
-                        return 'Free';
-                    }
-                    if(!current.IsStarted && moment(current.Start).isAfter(scope.now))
-                    {
-                        if(moment(scope.now).startOf('day').add(1, 'days').isBefore(moment(current.Start))) {
-                            // nothing else today
-                            return 'Free';
-                        }
-                        return 'Free until ' + scope.formatTime(current.Start);
-                    }
-                    var until = current.End;
-                    calendar.NearTermMeetings.forEach(function (a) {
-                        if (a.Start == until) {
-                            until = a.End;
-                        }
-                    });
-                    if(moment(scope.now).startOf('day').add(1, 'days').isBefore(moment(until))) {
-                        // nothing else today
-                        return 'Busy';
-                    }
-                    return 'Busy until ' + scope.formatTime(until);
+                    return statusService.statusText(calendar.CurrentMeeting, calendar.NearTermMeetings);
                 };
                 scope.freeBusy = function freeBusy(calendar) {
-                    var current = calendar.CurrentMeeting;
-                    if (!current) {
-                        return 'free';
-                    }
-                    if(!current.IsStarted && moment(current.Start).isAfter(scope.now))
-                    {
-                        return 'free';
-                    }
-                    return 'busy';
+                    return statusService.status(calendar.CurrentMeeting, calendar.NearTermMeetings).busy ? 'busy' : 'free';
                 };
 
                 function update() {
