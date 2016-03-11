@@ -34,7 +34,7 @@
                             allRooms.forEach(function(r) {
                                 r.Location = !r.BuildingId ? null : r.Floor ? r.BuildingId + ": " + r.Floor : r.BuildingId; 
                             });
-                            self.locationChoices = allRooms.map(function(r) { return r.Location; }).filter(function(l) { return l; }).map(function(l) { return { id: l, text: l }; }).concat([ { id: '', text: '<ANY>'} ]);
+                            self.locationChoices = _.unique(allRooms.map(function(r) { return r.Location; }).filter(function(l) { return l; })).map(function(l) { return { id: l, text: l }; }).concat([ { id: '', text: '<ANY>'} ]);
                             
                             self.rooms = allRooms;
                         });
