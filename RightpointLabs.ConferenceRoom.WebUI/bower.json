@@ -31,7 +31,8 @@
     "angular-touch": "~1.4",
     "ui-select": "angular-ui-select#~0.14.9",
     "angular-sanitize": "~1.4.0",
-    "components-font-awesome": "~4.5.0"
+    "components-font-awesome": "~4.5.0",
+    "open-sans-fontface": "~1.4.2"
   },
   "overrides": {
     "bootstrap-less": {

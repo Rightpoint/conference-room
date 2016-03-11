@@ -17,13 +17,14 @@
                 ng-repeat="hour in hours"
                 ng-style="{ top: getOffset(hour) }"></div> 
         </div>
-        <div class="current-line" ng-style="{ top: getOffset(now) }"></div>
+        <div class="current-line" ng-style="{ top: getOffset(now) }" ng-class="freeBusy(calendars[0])"></div>
         <div class="h-scrollable" ng-style="{ height: vHeight }">
             <div class="data" ng-repeat="calendar in calendars"
                 ng-class="calendarClass($index, calendar)" 
                 ng-style="{ left: ($index * 220) }">
                 <div class="event" 
                     ng-repeat="evt in calendar.NearTermMeetings"
+                    ng-class="eventClass(evt)"
                     ng-style="styles(evt)"
                     ng-click="click({ meeting: evt })"
                     >

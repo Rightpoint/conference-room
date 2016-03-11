@@ -13,7 +13,7 @@
                 clickHeader: '&'
             },
             link: function (scope, element, attr) {
-                var pxPerHour = parseInt(attr.pxPerHour || 75);
+                var pxPerHour = parseInt(attr.pxPerHour || 70);
                 var minHeight = parseInt(attr.minHeight || 24);
                 var vMargin = parseInt(attr.vMargin || 2);
                 var hours = parseInt(attr.hours || 72);
@@ -32,6 +32,12 @@
                 }
                 scope.calendarClass = function($index, calendar) {
                     return angular.merge({ 'first-data': $index === 0 }, calendar.class || {});
+                }
+                scope.eventClass = function(evt) {
+                    var isPast = moment(scope.now).isAfter(evt.End) || evt.IsEndedEarly;
+                    return { 
+                        'past-event': isPast 
+                    };
                 }
                 scope.formatHour = function formatHour(value) {
                     return moment(value).format('h a');

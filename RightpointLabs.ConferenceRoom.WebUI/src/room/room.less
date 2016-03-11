@@ -4,63 +4,69 @@
 @import "../variables.less";
 
 .room {
-  .loading-background, .loading-foreground {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1001;
-  }
-  .loading-background {
-    background-color: black;
-    opacity: 0.6;
-  }
-  .loading-foreground {
-  
-  }
-  
-  .content {
-      &, .actions, .calendar-area {
-        position: absolute;
+    .loading-background, .loading-foreground {
+        position: fixed;
         top: 0;
-        bottom: 0;
         left: 0;
         right: 0;
-      }
-      body & {
-        top: 55px;
-      }
-      .actions {
-          right: 65%;
-          background: @midBlue;
-
-          a {
-              position: absolute;
-              display: block;
-              left: 0;
-              right: 0;
-              bottom: 0;
-              text-transform: uppercase;
-              color: white;
-              text-align: center;
-              padding: 10px;
-              font-size: 16px;
-              font-weight: bold;
-          }
+        bottom: 0;
+        z-index: 1001;
+    }
+    .loading-background {
+        background-color: black;
+        opacity: 0.6;
+    }
+    .loading-foreground {
+    }
+    .content {
+        &, .actions, .calendar-area {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+        body & {
+            top: 60px;
+        }
+        .actions {
+            right: auto;
+            width: 295px;
+            background: @midBlue;
+            a {
+                position: absolute;
+                display: block;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                text-transform: uppercase;
+                text-align: center;
+                padding: 8px;
+                height: 40px;
+                font-family: 'Open Sans';
+                font-weight: 800;
+                font-size: 18px;
+                letter-spacing: 3.5px;
+                color: @white;
+            }
             .meet-now, .current-meeting, .next-meeting {
-                padding: 15px;
-                box-shadow: 0 0 25px black;
-                
+                padding: 13px 15px;
+                box-shadow: 0 10px 19px 0 @black;
+                position: relative;
+                height: 153px;
+                background: white;
+                margin: 20px 20px 25px 20px;
                 h2 {
                     margin-top: 0;
-                    font-size: 16px;
-                    font-weight: bold;
                     text-align: center;
-                    color: @midBlue;
+                    font-family: 'Open Sans';
+                    font-weight: bold;
+                    font-size: 15px;
+                    color: @dark-blue;
                     .meeting-time {
                         font-size: 10px;
                     }
+                    margin-bottom: 19px;
                 }
                 h3 {
                     font-size: 14px;
@@ -68,43 +74,44 @@
                     color: black;
                 }
                 h4 {
-                    font-size: 12px;
+                    font-family: 'Open Sans';
                     font-weight: bold;
-                    color: black;
-                }
-                position: relative;
-                height: 150px;
-                background: white;
-                margin: 15px;
+                    font-size: 14px;
+                    line-height: 1.0;
+                    color: @black;
+                    max-height: 38px;
+                    overflow: hidden;
+                  }
             }
             .meet-now a {
-                background: @teal;
+                background: @aqua;
             }
             .current-meeting, .next-meeting {
                 a {
-                    background: @lightPurple;
+                    background: @purple;
                 }
             }
             .time {
                 position: absolute;
-                bottom: 0;
-                left: 15px;
-                color: white;
-                font-size: 18px;
-                font-weight: normal;
+                bottom: 6px;
+                left: 20px;
+                font-family: 'Open Sans';
+                font-weight: 300;
+                font-size: 22px;
+                color: #e6e6e6;
+                margin-bottom: 0;
             }
-      }
-      .calendar-area {
-          left: 35%;
-          background: @darkBlue;
-          .calendar {
-              position: absolute;
-              top: 50px;
-              right: 15px;
-              bottom: 15px;
-              left: 15px;
-          }
-      }
-      
-  }
+        }
+        .calendar-area {
+            left: 295px;
+            background: @black;
+            .calendar {
+                position: absolute;
+                top: 50px;
+                right: 15px;
+                bottom: 15px;
+                left: 15px;
+            }
+        }
+    }
 }

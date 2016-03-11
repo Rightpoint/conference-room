@@ -31,13 +31,13 @@
             var s = status(current, meetings);
             if(s.busy) {
                 if(s.until) {
-                    return 'Busy until ' + s.until.format('h:mm a');
+                    return 'Occupied Until ' + s.until.format('h:mm a');
                 } else {
-                    return 'Busy';
+                    return 'Occupied';
                 }
             } else {
                 if(s.until) {
-                    return 'Free until ' + s.until.format('h:mm a');
+                    return 'Free Until ' + s.until.format('h:mm a');
                 } else {
                     return 'Free';
                 }

@@ -10,16 +10,22 @@
     }
     .current-line {
         position: absolute;
-        left: 50px;
-        right: 0;
-        background: @teal;
+        left: 127px - 2px;
+        right: 46px - 2px;
         height: 5px;
+        &.free {
+            background: @aqua;
+        }
+        &.busy {
+            background: @red;
+        }
     }
     
     .h-scrollable {
         overflow-x: scroll;
         overflow-y: visible;
-        left: 50px;
+        left: 127px;
+        right: 46px;
     }
     .v-scrollable {
         overflow-x: visible;
@@ -51,41 +57,68 @@
         }
         .status {
             text-align: center;
-            font-size: 16px;
-            margin: 10px 35px;
-            padding: 6px;
+            margin: 10px 0;
+            padding: 11px 9px 7px 9px;
+            font-family: 'Open Sans';
+            font-weight: 600;
+            font-size: 14px;
             
             &.free {
-                background: @teal;
-                color: @midBlue;
+                background: @aqua;
+                color: @black;
             }
             &.busy {
                 background: @red;
-                color: white;
+                color: @white;
+            }
+        }
+    }
+    &.has-titles {
+        .top {
+            .status {
+                margin-left: 10px;
+                margin-right: 10px;
             }
         }
     }
     .times {
+        position: absolute;
+        top: 0;
+        left: 20px;
+        right: 46px;
+        bottom: 0;
         .time {
+            font-family: 'Open Sans';
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 1.0;
+            color: @white;
             position: absolute;
-            color: white;
-            font-size: 12px;
         }
         .time-line {
             position: absolute;
-            background-color: white;
-            left: 50px;
+            background-color: @grey;
+            left: 107px;
             right: 0;
             height: 1px;
         }
     }
+    
     .event {
         position: absolute;
-        left: 30px;
-        right: 30px;
-        background: white;
+        left: 41px;
+        right: 41px;
+        background-color: white;
         margin-bottom: 2px;
-        padding: 3px;
+        padding: 10px;
+        font-family: 'Open Sans';
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 1.2;
+        color: @black;
+        &.past-event {
+            background-color: @slate-blue
+        }
     }
     
     
