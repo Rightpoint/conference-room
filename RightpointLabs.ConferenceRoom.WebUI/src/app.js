@@ -8,5 +8,11 @@
         localStorageServiceProvider.setPrefix('confRoom');
 
         $httpProvider.interceptors.push('requestInterceptor');
-    }])
+    }]);
+    
+    document.onmousedown = function(evt) {
+        if(evt.button == 2) {
+            return false;
+        }
+    };
 })();
