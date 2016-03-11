@@ -11,7 +11,7 @@
         self.rooms = [];
         self.search = {
             minSize: 1,
-            location: null
+            location: ''
         };
         self.searchResult = [];
         self.locationChoices = [ { id: '', text: '<ANY>'} ];
