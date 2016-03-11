@@ -4,7 +4,7 @@
             ng-repeat="calendar in calendars"
             ng-class="topClass($index, calendar)" 
             ng-style="{ left: ($index * 220) }">
-            <h3 class="title" ng-if="showTitles">{{ calendar.DisplayName }}</h3>
+            <h3 class="title" ng-if="showTitles" ng-click="clickHeader({ calendar: calendar })">{{ calendar.DisplayName }}</h3>
             <div class="status" ng-class="freeBusy(calendar)">{{ status(calendar) }}</div>
        </div>
     </div>

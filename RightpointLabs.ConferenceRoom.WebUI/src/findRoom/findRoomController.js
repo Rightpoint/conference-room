@@ -44,7 +44,7 @@
                             allRooms.sort(function(a, b) { return a.DisplayName < b.DisplayName ? -1 : 1; });
                             
                             allRooms.forEach(function(r) {
-                                r.Location = !r.BuildingId ? null : r.Floor ? r.BuildingId + ": " + r.Floor : r.BuildingId; 
+                                r.Location = !r.BuildingId ? null : r.Floor ? r.BuildingId + " - " + r.Floor + 'th floor' : r.BuildingId; 
                             });
                             self.locationChoices = _.unique(allRooms.map(function(r) { return r.Location; }).filter(function(l) { return l; })).map(function(l) { return { id: l, text: l }; }).concat([ { id: '', text: '<ANY>'} ]);
                             
@@ -70,6 +70,20 @@
                 resolve: {
                     meeting: function() {
                         return meeting;
+                    }
+                }
+            });
+        };
+        
+        self.showRoomDetails = function showDetails(calendar) {
+            var room = _.find(self.rooms, { DisplayName: calendar.DisplayName });
+            $modal.open({
+                templateUrl: 'roomDetail/roomDetail.html',
+                controller: 'RoomDetailController',
+                controllerAs: 'c',
+                resolve: {
+                    room: function() {
+                        return room;
                     }
                 }
             });

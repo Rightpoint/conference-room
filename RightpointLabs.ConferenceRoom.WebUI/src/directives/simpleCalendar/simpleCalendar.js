@@ -10,6 +10,7 @@
                 calendars: '=',
                 showTitles: '=',
                 click: '&',
+                clickHeader: '&'
             },
             link: function (scope, element, attr) {
                 var pxPerHour = parseInt(attr.pxPerHour || 75);

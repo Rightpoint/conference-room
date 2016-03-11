@@ -1,0 +1,22 @@
+// bower-refonly:less
+// endbower
+
+@import "../variables.less";
+
+.room-detail {
+    .status {
+        text-align: center;
+        font-size: 16px;
+        margin: 10px 35px;
+        padding: 6px;
+        
+        &.free {
+            background: @teal;
+            color: @midBlue;
+        }
+        &.busy {
+            background: @red;
+            color: white;
+        }
+    }
+}

@@ -33,7 +33,7 @@
     </div>
     
     <div class="calendar-area">
-        <simple-calendar calendars="c.searchResults" show-titles="true" click="c.showDetails(meeting)"></simple-calendar>
+        <simple-calendar calendars="c.searchResults" show-titles="true" click="c.showDetails(meeting)" click-header="c.showRoomDetails(calendar)"></simple-calendar>
 
         <div class="loading-background" ng-if="c.isLoading"></div>
         <div class="loading-foreground" ng-if="c.isLoading">
