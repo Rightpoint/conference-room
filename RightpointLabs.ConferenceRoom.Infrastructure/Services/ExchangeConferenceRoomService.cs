@@ -127,12 +127,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 Size = roomMetadata.Size,
                 BuildingId = roomMetadata.BuildingId,
                 Floor = roomMetadata.Floor,
-                DistanceFromFloorOrigin = new Point()
-                {
-                    X = roomMetadata.DistanceFromFloorOrigin.X,
-                    Y = roomMetadata.DistanceFromFloorOrigin.Y,
-                },
-                Equipment = roomMetadata.Equipment,
+                DistanceFromFloorOrigin = (roomMetadata.DistanceFromFloorOrigin ?? new Point()).Clone(),
+                Equipment = roomMetadata.Equipment.ToList(),
             };
         }
 

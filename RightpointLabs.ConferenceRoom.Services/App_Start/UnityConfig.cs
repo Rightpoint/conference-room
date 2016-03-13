@@ -23,30 +23,37 @@ namespace RightpointLabs.ConferenceRoom.Services
     {
         public static void RegisterComponents()
         {
-			var container = new UnityContainer();
+            var container = new UnityContainer();
 
-            var connectionString =
-                System.Web.Configuration.WebConfigurationManager.ConnectionStrings["Mongo"].ConnectionString;
-            var database = System.Web.Configuration.WebConfigurationManager.ConnectionStrings["Mongo"].ProviderName;
+            var connectionStrings = System.Web.Configuration.WebConfigurationManager.ConnectionStrings;
+            var connectionString = connectionStrings["Mongo"].ConnectionString;
+            var providerName = connectionStrings["Mongo"].ProviderName;
+            var exchangeUsername = ConfigurationManager.AppSettings["username"];
+            var exchangePassword = ConfigurationManager.AppSettings["password"];
+            var exchangeServiceUrl = ConfigurationManager.AppSettings["serviceUrl"];
+            var plivoAuthId = ConfigurationManager.AppSettings["plivoAuthId"];
+            var plivoAuthToken = ConfigurationManager.AppSettings["plivoAuthToken"];
+            var plivoFrom = ConfigurationManager.AppSettings["plivoFrom"];
 
             container.RegisterType<IMongoConnectionHandler, MongoConnectionHandler>(
                 new ContainerControlledLifetimeManager(),
-                new InjectionConstructor(connectionString, database));
+                new InjectionConstructor(connectionString, providerName));
 
-            var serviceBuilder =
-                ExchangeConferenceRoomService.GetExchangeServiceBuilder(
-                    ConfigurationManager.AppSettings["username"],
-                    ConfigurationManager.AppSettings["password"],
-                    ConfigurationManager.AppSettings["serviceUrl"]);
+            var serviceBuilder = ExchangeConferenceRoomService.GetExchangeServiceBuilder(
+                exchangeUsername,
+                exchangePassword,
+                exchangeServiceUrl);
 
-            container.RegisterType<IInstantMessagingService>(new HierarchicalLifetimeManager(), new InjectionFactory(c => new InstantMessagingService(
-                ConfigurationManager.AppSettings["username"],
-                ConfigurationManager.AppSettings["password"])));
+            container.RegisterType<IInstantMessagingService>(new HierarchicalLifetimeManager(),
+                new InjectionFactory(c => new InstantMessagingService(
+                    exchangeUsername,
+                    exchangePassword)));
 
-            container.RegisterType<ISmsMessagingService>(new HierarchicalLifetimeManager(), new InjectionFactory(c => new SmsMessagingService(
-                ConfigurationManager.AppSettings["plivoAuthId"],
-                ConfigurationManager.AppSettings["plivoAuthToken"],
-                ConfigurationManager.AppSettings["plivoFrom"])));
+            container.RegisterType<ISmsMessagingService>(new HierarchicalLifetimeManager(),
+                new InjectionFactory(c => new SmsMessagingService(
+                    plivoAuthId,
+                    plivoAuthToken,
+                    plivoFrom)));
 
             container.RegisterType<ISmsAddressLookupService, SmsAddressLookupService>(new HierarchicalLifetimeManager());
             container.RegisterType<ISignatureService, SignatureService>(new ContainerControlledLifetimeManager());
@@ -61,6 +68,8 @@ namespace RightpointLabs.ConferenceRoom.Services
             container.RegisterType<IMeetingCacheService, MeetingCacheService>(new ContainerControlledLifetimeManager()); // singleton cache
             container.RegisterType<ISimpleTimedCache, SimpleTimedCache>(new ContainerControlledLifetimeManager()); // singleton cache
             container.RegisterType<IRoomRepository, RoomRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IBuildingService, BuildingService>(new HierarchicalLifetimeManager());
+            container.RegisterType<IBuildingRepository, BuildingRepository>(new HierarchicalLifetimeManager());
 
             // create change notifier in a child container and register as a singleton with the main container (avoids creating it's dependencies in the global container)
             var child = container.CreateChildContainer();

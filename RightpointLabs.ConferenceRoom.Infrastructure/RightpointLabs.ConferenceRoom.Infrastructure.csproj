@@ -91,11 +91,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Persistence\Collections\BuildingInfoValuesCollectionDefinition.cs" />
     <Compile Include="Persistence\Collections\RoomInfoValuesCollectionDefinition.cs" />
     <Compile Include="Persistence\Collections\SecurityRequestCollectionDefinition.cs" />
+    <Compile Include="Persistence\Models\BuildingInfoValues.cs" />
     <Compile Include="Persistence\Models\RoomInfoValues.cs" />
     <Compile Include="Persistence\Models\MeetingInfoValues.cs" />
     <Compile Include="Persistence\Models\SecurityRequest.cs" />
+    <Compile Include="Persistence\Repositories\BuildingRepository.cs" />
     <Compile Include="Persistence\Repositories\RoomRepository.cs" />
     <Compile Include="Persistence\Repositories\MeetingRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -107,6 +110,7 @@
     <Compile Include="Persistence\MongoConnectionHandler.cs" />
     <Compile Include="Services\ChangeNotificationService.cs" />
     <Compile Include="Services\ConnectionManager.cs" />
+    <Compile Include="Services\BuildingService.cs" />
     <Compile Include="Services\ExchangeConferenceRoomService.cs" />
     <Compile Include="Services\IExchangeServiceManager.cs" />
     <Compile Include="Services\MeetingCacheService.cs" />

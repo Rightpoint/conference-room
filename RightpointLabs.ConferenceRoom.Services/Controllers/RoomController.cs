@@ -51,7 +51,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         public void PostInfo(string roomAddress, PostRoomMetadata roomMetadata)
         {
             var realCode = ConfigurationManager.AppSettings["settingsSecurityCode"];
-            if (roomMetadata.Code == realCode)
+            if (roomMetadata.Code != realCode)
             {
                 Thread.Sleep(1000);
                 throw new AccessDeniedException("Access denied", null);
