@@ -10,18 +10,23 @@ var configFile = path.join(__dirname, 'config.json');
 console.log('Loading configuration from ' + configFile);
 var config = JSON.parse(fs.readFileSync(configFile));
 
+var LedManager = require('./ledManager.js');
+var led = new LedManager(config);
+
 // test colors
-setPins(0, 0, 0);
-setPins(1, 0, 0);
+led.setColor(0, 0, 0, 0);
+led.setColor(1, 0, 0, 400);
 setTimeout(function() {
-    setPins(0, 1, 0);
+    led.setColor(0, 1, 0, 400);
     setTimeout(function() {
-        setPins(0, 0, 1);
+        led.setColor(0, 0, 1, 400);
         setTimeout(function() {
             // and start
-            setPins(0, 0, 0);
-            updateIn(1);
-            start();
+            led.setColor(0, 0, 0, 400);
+            setTimeout(function() {
+                updateIn(1);
+                start();
+            }, 500);
         }, 500);
     }, 500);
 }, 500);
@@ -96,42 +101,29 @@ function updateIn(delay) {
 
 function purple() {
     console.log('purple');
-    setPins(0.625, 0.125, 0.9375);
+    led.setCycle([ 
+       { state: { red: 1, green: 0, blue: 0 }, duration: 1000 }, 
+       { state: { red: 1, green: 0, blue: 0 }, duration: 5000 }, 
+       { state: { red: 0.625, green: 0.125, blue: 0.9375 }, duration: 1000 }
+    ]);
 }
 
 function orange() {
     console.log('orange');
-    setPins(1, 0.5, 0);
+    led.setCycle([ 
+       { state: { red: 1, green: 0, blue: 0 }, duration: 1000 }, 
+       { state: { red: 1, green: 0, blue: 0 }, duration: 5000 }, 
+       { state: { red: 1, green: 0.5, blue: 0 }, duration: 1000 }
+    ]);
 }
 
 function red() {
     console.log('red');
-    setPins(1, 0, 0);
+    led.setColor(1, 0, 0, 1000);
 }
 function green() {
     console.log('green');
-    setPins(0, 1, 0);
-}
-
-var lastRed = null;
-var lastGreen = null;
-var lastBlue = null;
-function setPins(red, green, blue) {
-    var toSet = [
-        { pin: config.red.pin, last: lastRed, now: red },
-        { pin: config.green.pin, last: lastGreen, now: green },
-        { pin: config.blue.pin, last: lastBlue, now: blue },
-    ];
-
-    // make sure we set the ones with the largest decrease in power first, largest increase in power last (to avoid over-driving our power supply due to the transition)
-    toSet.forEach(function(i) { i.delta = i.now - (i.last || 0); });
-    toSet.sort(function(a,b) { return a.delta < b.delta ? -1 : a.delta > b.delta ? 1 : 0; });
-    toSet.forEach(function(i) { pwm.setPwm(i.pin, i.now); });
-
-    lastRed = red;
-    lastGreen = green;
-    lastBlue = blue;
-    console.log('set pins');
+    led.setColor(0, 1, 0, 1000);
 }
 
 function start() {
