@@ -122,7 +122,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             return new RoomInfo()
             {
                 CurrentTime = _dateTimeService.Now,
-                DisplayName = room.Mailbox.Name,
+                DisplayName = (room.Mailbox.Name ?? "").Replace("(Meeting Room ", "("),
                 SecurityStatus = rights,
                 Size = roomMetadata.Size,
                 BuildingId = roomMetadata.BuildingId,
