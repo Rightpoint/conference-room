@@ -1,6 +1,9 @@
+var pwm = require('pi-blaster.js');
+
 module.exports = function LedManager(config) {
     var self = this;
     
+    var debug = false;
     var interval = null;
     var intervalDelay = 50;
     var currentState = { red: 0, green: 0, blue: 0 };
@@ -8,10 +11,11 @@ module.exports = function LedManager(config) {
     var cycle = [];
     
     function process() {
-        if(!queuedStates.length || !cycle.length) {
+        if(debug) console.log('process', queuedStates.length, cycle.length);
+        if(!queuedStates.length && !cycle.length) {
             // no work to do
             if(interval) {
-                console.log('stopping interval');
+                if(debug) console.log('stopping interval');
                 clearInterval(interval);
                 interval = null;
             }
@@ -20,39 +24,45 @@ module.exports = function LedManager(config) {
         
         // there's work - turn on the interval if it's not on yet
         if(!interval) {
-            console.log('starting interval', queuedStates.length, cycle.length);
+            if(debug) console.log('starting interval', queuedStates.length, cycle.length);
             interval = setInterval(process, intervalDelay);
         }
         
         // and now for the work...
         if(!queuedStates.length && cycle.length) {
             // nothing in the queue, but we have a cycle, so let's use that
-            var nextCycle = cycle.unshift();
+            var nextCycle = cycle.shift();
             cycle.push(nextCycle);
-            transitionTo(nextCycle.state, nextCycle.duration);
+            if(debug) console.log('next cycle', nextCycle);
+            queueTransitionTo(nextCycle.state, nextCycle.duration);
             // now there should be queued states - let them happen
         }
         
         if(queuedStates.length) {
-            var newState = queuedState.unshift();
+            var newState = queuedStates.shift();
             setPins(newState);
+        } else {
+            if(debug) console.log('odd, no work to do...');
         }
     }
     
     function queueTransitionTo(targetState, duration) {
+        if(debug) console.log('prepping transition', currentState, targetState, duration);
         queuedStates = [];
         var steps = Math.floor(duration / intervalDelay);
-        for(var i=0; i++; i < steps) {
+        for(var i=0; i < steps; i++) {
             queuedStates.push({
-                red: Math.floor(currentState.red + (currentState.red - targetState.red) / steps * i),
-                green: Math.floor(currentState.green + (currentState.green - targetState.green) / steps * i),
-                blue: Math.floor(currentState.blue + (currentState.blue - targetState.blue) / steps * i),
+                red: currentState.red + (targetState.red - currentState.red) / steps * i,
+                green: currentState.green + (targetState.green - currentState.green) / steps * i,
+                blue: currentState.blue + (targetState.blue - currentState.blue) / steps * i,
             });
         }
         queuedStates.push(targetState);
+        if(debug) console.log('transition', duration, steps, queuedStates);
     }
     
     function setPins(newState) {
+        if(debug) console.log('setPins', newState, currentState);
         var toSet = ['red', 'green', 'blue'].map(function(c) {
             return { pin: config[c].pin, last: currentState[c], now: newState[c] };
         });
@@ -68,7 +78,9 @@ module.exports = function LedManager(config) {
         toSet.sort(function(a,b) { return a.delta < b.delta ? -1 : a.delta > b.delta ? 1 : 0; });
         toSet.forEach(function(i) { pwm.setPwm(i.pin, i.now); });
 
-        console.log('set pins', toSet);
+        currentState = newState;
+
+        if(debug) console.log('set pins', toSet);
     }
     
     this.setColor = function setColor(red, green, blue, duration) {

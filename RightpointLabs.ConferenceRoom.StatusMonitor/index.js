@@ -102,18 +102,18 @@ function updateIn(delay) {
 function purple() {
     console.log('purple');
     led.setCycle([ 
-       { state: { red: 1, green: 0, blue: 0 }, duration: 1000 }, 
-       { state: { red: 1, green: 0, blue: 0 }, duration: 5000 }, 
-       { state: { red: 0.625, green: 0.125, blue: 0.9375 }, duration: 1000 }
+       { state: { red: 1, green: 0, blue: 0 }, duration: 200 }, 
+       { state: { red: 1, green: 0, blue: 0 }, duration: 2000 }, 
+       { state: { red: 0.625, green: 0.125, blue: 0.9375 }, duration: 200 }
     ]);
 }
 
 function orange() {
     console.log('orange');
     led.setCycle([ 
-       { state: { red: 1, green: 0, blue: 0 }, duration: 1000 }, 
+       { state: { red: 1, green: 0, blue: 0 }, duration: 200 }, 
        { state: { red: 1, green: 0, blue: 0 }, duration: 5000 }, 
-       { state: { red: 1, green: 0.5, blue: 0 }, duration: 1000 }
+       { state: { red: 1, green: 0.5, blue: 0 }, duration: 200 }
     ]);
 }
 
