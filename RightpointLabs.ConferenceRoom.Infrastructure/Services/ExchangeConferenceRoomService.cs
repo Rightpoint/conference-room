@@ -303,7 +303,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             var item = ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc => Appointment.Bind(svc, new ItemId(uniqueId)));
             __log.DebugFormat("Warning {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
             var startUrl = buildUrl(_signatureService.GetSignature(uniqueId));
-            SendEmail(item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "Use the conference room management device to start the meeting ASAP, or go to " + startUrl + " .");
+            SendEmail(roomAddress, item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "<p>Please start your meeting by using the RoomNinja on the wall outside the room or simply <a href='" + startUrl + "'>click here</a> to start it.</p>");
         }
 
         public void CancelMeeting(string roomAddress, string uniqueId, string securityKey)
@@ -332,7 +332,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 return appt;
             });
 
-            SendEmail(item, string.Format("Your meeting '{0}' in {1} has been cancelled.", item.Subject, item.Location), "If you want to keep the room, use the conference room management device to start a new meeting ASAP.");
+            SendEmail(roomAddress, item, string.Format("Your meeting '{0}' in {1} has been cancelled.", item.Subject, item.Location), "<p>If you want to keep the room, use the RoomNinja on the wall outside the room to start a new meeting ASAP.</p>");
 
             BroadcastUpdate(roomAddress);
         }
@@ -437,13 +437,16 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _broadcastService.BroadcastUpdate(roomAddress);
         }
 
-        private void SendEmail(Appointment item, string subject, string body)
+        private void SendEmail(string roomAddress, Appointment item, string subject, string body)
         {
-            _exchangeServiceManager.Execute(string.Empty, svc =>
+            ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
             {
                 var msg = new EmailMessage(svc);
+                msg.From = new EmailAddress(roomAddress);
+                msg.ReplyTo.Add("noreply@" + roomAddress.Split('@').Last());
                 msg.Subject = subject;
                 msg.Body = body;
+                msg.Body.BodyType = BodyType.HTML;
                 __log.DebugFormat("Address: {0}, MailboxType: {1}", item.Organizer.Address, item.Organizer.MailboxType);
                 if (item.Organizer.MailboxType == MailboxType.Mailbox)
                 {
