@@ -162,7 +162,7 @@
             var warnTime = warnings[current.UniqueId];
             if(!warnTime) {
                 // we haven't warned yet - figure out when we should
-                warnTime = moment(current.Start).add(4, 'minute');
+                warnTime = moment(current.Start).add(5, 'minute');
                 if(!warnTime.isAfter(now)) {
                     // whoops, we should have done that already.... let's do it now.
                     room.one('meeting').post('warnAbandon', {}, { securityKey: securityKey, uniqueId: current.UniqueId }).then(function () {
@@ -184,8 +184,8 @@
                 return;
             }
 
-            // ok, we've warned.  Have they had a minute to get back to us yet?
-            var canCancelAt = warnTime.clone().add(1, 'minute');
+            // ok, we've warned.  Have they had 2 minutes to get back to us yet?
+            var canCancelAt = warnTime.clone().add(2, 'minute');
             if(!canCancelAt.isAfter(now)) {
                 // they've taken too long - cancel it now
                 room.one('meeting').post('abandon', {}, { securityKey: securityKey, uniqueId: current.UniqueId }).then(function() {
