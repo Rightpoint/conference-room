@@ -13,7 +13,6 @@
                 <h4>{{ c.current.Subject }}</h4>
                 <a href class="start" ng-if="c.showStartEarly()" ng-click="c.start(c.current)">Start Early</a>
                 <a href class="start" ng-if="c.showStart()" ng-click="c.start(c.current)">Start</a>
-                <a href class="end"  ng-if="c.showCancel()" ng-click="c.cancel(c.current)">Cancel</a>
                 <a href class="end"  ng-if="c.showEndEarly()" ng-click="c.end(c.current)">End Early</a>
             </div>
             <div class="next-meeting" ng-if="c.current && c.isCurrentInFuture() && !c.current.IsStarted">

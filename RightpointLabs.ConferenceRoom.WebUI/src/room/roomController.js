@@ -68,15 +68,11 @@
         };
         
         self.showStartEarly = function showStartEarly() {
-            return self.showCancel() && !self.showStart();
+            return self.canManageCurrent() && !self.current.IsStarted && self.freeMinutes() <= early;
         };
         
         self.showStart = function showStart() {
             return self.canManageCurrent() && !self.current.IsStarted && self.freeMinutes() <= 0;
-        };
-        
-        self.showCancel = function showCancel() {
-            return self.canManageCurrent() && !self.current.IsStarted && self.freeMinutes() <= early;
         };
         
         self.showEndEarly = function showEndEarly() {
