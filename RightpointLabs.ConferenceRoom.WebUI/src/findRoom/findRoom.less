@@ -17,32 +17,110 @@
     opacity: 0.6;
   }
   
-  .search {
-      position: absolute;
-      top: 60px;
-      left: 0;
-      right: 0;
-  }
-  
-  .calendar-area {
-      position: absolute;
-      top: 100px;
-      bottom: 0;
-      right: 0;
-      left: 0;
-    background: @darkBlue;
-    .calendar {
+  .rooms-area {
         position: absolute;
-        top: 50px;
-        right: 15px;
-        bottom: 15px;
-        left: 15px;
+        top: 60px;
+        bottom: 115px;
+        right: 0;
+        left: 0;
+        background: @midBlue;
+
+        overflow-x: scroll;
+        overflow-y: hidden;
+        
+        ul, li {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        & > ul {
+            display: block;
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .group {
+            position: relative;
+            display: inline-block;
+            height: 100%;
+            padding-left: 10px;
+            & > h2 {
+                padding: 0;
+                margin: 0;
+                position: absolute;
+                top: 50%;
+                bottom: 50%;
+                left: 10px;
+                transform: translateX(-50%) translateY(-50%) rotate(90deg);
+                span {
+                    display: block;
+                    color: white;
+                    font-size: 14px;
+
+                    &:after, &:before {
+                        content: ' ';
+                        position: absolute;
+                        top: 6px;
+                        border-top: 1px solid white;
+                    }
+                    &:before {
+                        left: -10000px;
+                        right: 115%;
+                    }
+                    &:after {
+                        left: 115%;
+                        right: -10000px;
+                    }
+                }
+            }
+            
+            .room-item {
+                display: inline-block;
+                position: relative;
+                padding: 13px 15px;
+                box-shadow: 0 10px 19px 0 @black;
+                height: 200px;
+                width: 330px;
+                background: white;
+                margin: 50px 20px 50px 20px;
+                h3 {
+                    margin-top: 0;
+                    text-align: center;
+                    font-family: 'Open Sans';
+                    font-weight: bold;
+                    font-size: 15px;
+                    color: @dark-blue;
+                    margin-bottom: 19px;
+                }
+                a {
+                    position: absolute;
+                    display: block;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    text-transform: uppercase;
+                    text-align: center;
+                    padding: 8px;
+                    height: 40px;
+                    font-family: 'Open Sans';
+                    font-weight: 800;
+                    font-size: 18px;
+                    letter-spacing: 3.5px;
+                    color: @white;
+                    background: darkgoldenrod;
+                }
+            }
+        }
+    
     }
     
-    .highlight-free {
+    .search {
+        position: absolute;
+        height: 115px;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: @darkBlue;
     }
-    .dim-not-match {
-        opacity: 0.4;
-    }
-  }
 }

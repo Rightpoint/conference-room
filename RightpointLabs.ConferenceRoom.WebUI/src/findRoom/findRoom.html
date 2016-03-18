@@ -1,6 +1,28 @@
 <div class="find-room">
     <header data-title="Find a room"></header>
     
+    <div class="rooms-area">
+        <ul ng-style="{ 'width': c.scrollWidth }">
+            <li ng-repeat="(ix, g) in c.searchResults" class="group" ng-class="{ 'first': $index === 0 }">
+                <h2><span>{{ ix }}</span></h2>
+                <ul>
+                    <li ng-repeat="i in g" class="room-item">
+                        <h3>{{ i.DisplayName }}</h3>
+                        <span class="for">for</span>
+                        <span class="duration">{{ i.status.freeFor || 120 }}</span>
+                        <span class="minutes">minutes</span>
+                        <a href="" class="book-now">Book Now</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+
+        <div class="loading-background" ng-if="c.isLoading"></div>
+        <div class="loading-foreground" ng-if="c.isLoading">
+            <big-spinner active="true"></big-spinner>
+        </div>
+    </div>
+    
     <div class="search">
         <div class="container-fluid">
             <div class="form-inline">
@@ -24,15 +46,6 @@
                     <select class="form-control" id="location" ng-model="c.search.location" ng-options="item.id as item.text for item in c.locationChoices"/>
                 </div>
             </div>
-        </div>
-    </div>
-    
-    <div class="calendar-area">
-        <simple-calendar calendars="c.searchResults" show-titles="true" click="c.showDetails(meeting)" click-header="c.showRoomDetails(calendar)"></simple-calendar>
-
-        <div class="loading-background" ng-if="c.isLoading"></div>
-        <div class="loading-foreground" ng-if="c.isLoading">
-            <big-spinner active="true"></big-spinner>
         </div>
     </div>
 </div>

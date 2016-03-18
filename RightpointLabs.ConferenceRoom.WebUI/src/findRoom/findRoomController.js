@@ -108,31 +108,25 @@
                 var matchEquipment = _.all(self.search.equipment, function(e) {
                     return _.some(room.Equipment, e.match || function(i) { return i == e.text; });
                 });
-                var match = matchLocation && matchSize && matchEquipment;
-                
-                var s = statusService.status(room.CurrentMeeting, room.NearTermMeetings);
-                var score = s.busy ? s.duration ? (1000 - Math.min(s.duration, 1000)) : 0 : s.duration ? 1000 + Math.min(s.duration, 1000) : 2000;
                 
                 room = angular.copy(room);
-                if(match) {
-                    room.score = score;
-                } else {
-                    room.score = score - 2001;
-                }
-                
-                // tag with some classes so we can do some styling
-                room.class = {
-                    'highlight-free': !s.busy,
-                    'dim-not-match': !match
-                };
+                room.match = matchLocation && matchSize && matchEquipment;
+                room.status = statusService.status(room.CurrentMeeting, room.NearTermMeetings);
+                room.group = room.status.freeAt === 0 ? 'Available Now' : room.status.freeAt ? ('Available at ' + moment(room.status.freeAt).format('h:mm a')) : null;
                 return room;
+            }).filter(function(r) {
+                return r.match && r.group;
             });
             self.searchResults.sort(function(a,b) {
-                if(a.score != b.score) {
-                    return a.score > b.score ? -1 : 1;
+                if(a.freeAt != b.freeAt) {
+                    return a.freeAt > b.freeAt ? -1 : 1;
                 }
                 return a.DisplayName < b.DisplayName ? -1 : 1;
             });
+            var roomCount = self.searchResults.length;
+            self.searchResults = _.groupBy(self.searchResults, 'group');
+            var groupCount = _.keys(self.searchResults).length;
+            self.scrollWidth = 40 + roomCount * (330 + 40) + groupCount * 20; // width + padding
         }, true);
 
         // we have a default room we're supposed to be managing - time out and go there after 60 seconds

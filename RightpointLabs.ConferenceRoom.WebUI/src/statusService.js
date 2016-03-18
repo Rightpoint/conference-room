@@ -5,15 +5,16 @@
         function status(current, meetings) {
             var now = moment();
             if (!current) {
-                return { busy: false };
+                return { busy: false, freeAt: 0, freeFor: null };
             }
             if(!current.IsStarted && moment(current.Start).isAfter(now))
             {
                 if(moment(now).startOf('day').add(1, 'days').isBefore(moment(current.Start))) {
                     // nothing else today
-                    return { busy: false };
+                    return { busy: false, freeAt: 0, freeFor: null };
                 }
-                return { busy: false, until: moment(current.Start), duration: -now.diff(current.Start, 'minutes', true) };
+                var freeFor = -now.diff(current.Start, 'minutes', true);
+                return { busy: false, until: moment(current.Start), duration: freeFor, freeAt: 0, freeFor: freeFor };
             }
             var until = current.End;
             meetings.forEach(function (a) {
@@ -21,11 +22,15 @@
                     until = a.End;
                 }
             });
+            var following = meetings.filter(function(m) { m.Start > until });
+            following.sort(function(a, b) { return a.Start < b.Start ? -1 : 1; });
+            var nextStart = (following[0] || {}).Start;
+            
             if(moment(now).startOf('day').add(1, 'days').isBefore(moment(until))) {
                 // nothing else today
-                return { busy: true };
+                return { busy: true, freeAt: null, freeFor: null };
             }
-            return { busy: true, until: moment(until), duration: -now.diff(until, 'minutes', true) };
+            return { busy: true, until: moment(until), duration: -now.diff(until, 'minutes', true), freeAt: until, freeFor: nextStart ? moment(until).diff(nextStart, 'minutes', true) : null };
         };
         function statusText(current, meetings) {
             var s = status(current, meetings);
