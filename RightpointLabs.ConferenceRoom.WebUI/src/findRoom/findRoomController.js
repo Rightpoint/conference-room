@@ -112,20 +112,40 @@
                 room = angular.copy(room);
                 room.match = matchLocation && matchSize && matchEquipment;
                 room.status = statusService.status(room.CurrentMeeting, room.NearTermMeetings);
+                room.status.freeFor = room.status.freeFor ? Math.floor(room.status.freeFor) : room.status.freeFor; 
                 room.group = room.status.freeAt === 0 ? 'Available Now' : room.status.freeAt ? ('Available at ' + moment(room.status.freeAt).format('h:mm a')) : null;
                 return room;
             }).filter(function(r) {
                 return r.match && r.group;
             });
-            self.searchResults.sort(function(a,b) {
-                if(a.freeAt != b.freeAt) {
-                    return a.freeAt > b.freeAt ? -1 : 1;
-                }
-                return a.DisplayName < b.DisplayName ? -1 : 1;
-            });
             var roomCount = self.searchResults.length;
-            self.searchResults = _.groupBy(self.searchResults, 'group');
-            var groupCount = _.keys(self.searchResults).length;
+            self.searchResults = _.pairs(_.groupBy(self.searchResults, 'group')).map(function(g) {
+                return {
+                    key: g[0],
+                    rooms: g[1],
+                    freeAt: g[1][0].status.freeAt
+                };
+            });;
+            self.searchResults.sort(function(a,b) {
+                if(a.freeAt === 0) {
+                    return -1;
+                }
+                if(b.freeAt === 0) {
+                    return 1;
+                }
+                if(!a.freeAt) { 
+                    return 1;
+                }
+                if(!b.freeAt) {
+                    return -1;
+                }
+                if(a.freeAt != b.freeAt) {
+                    return a.freeAt < b.freeAt ? -1 : 1;
+                }
+                return a.key < b.key ? -1 : 1;
+            });
+            console.log(self.searchResults);
+            var groupCount = self.searchResults.length;
             self.scrollWidth = 40 + roomCount * (330 + 40) + groupCount * 20; // width + padding
         }, true);
 

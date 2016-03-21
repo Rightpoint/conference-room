@@ -3,10 +3,10 @@
     
     <div class="rooms-area">
         <ul ng-style="{ 'width': c.scrollWidth }">
-            <li ng-repeat="(ix, g) in c.searchResults" class="group" ng-class="{ 'first': $index === 0 }">
-                <h2><span>{{ ix }}</span></h2>
+            <li ng-repeat="g in c.searchResults" class="group" ng-class="{ 'first': $index === 0 }">
+                <h2><span>{{ g.key }}</span></h2>
                 <ul>
-                    <li ng-repeat="i in g" class="room-item">
+                    <li ng-repeat="i in g.rooms" class="room-item">
                         <h3>{{ i.DisplayName }}</h3>
                         <span class="for">for</span>
                         <span class="duration">{{ i.status.freeFor || 120 }}</span>
