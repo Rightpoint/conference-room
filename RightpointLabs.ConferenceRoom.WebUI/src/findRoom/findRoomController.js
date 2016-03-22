@@ -21,13 +21,9 @@
             return _.some(room.Equipment, item);
         }
         self.equipmentChoices = [ 
-            { text: 'Television', icons: ['custom-icon-display'] },
-            { text: 'Projector', icons: ['custom-icon-display'] },
-            { text: 'Monitor', icons: ['custom-icon-display'] },
+            { text: 'Display', icons: ['custom-icon-display'] },
             { text: 'Telephone', icons: ['custom-icon-phone'] },
-            { text: 'Ethernet', icons: ['custom-icon-phone'] },
-            { text: 'Whiteboard', icons: ['custom-icon-whiteboard'] },
-            { text: 'Television or Projector', icons: ['custom-icon-display'], match: function(e) { return e == 'Television' || e == 'Projector'; } },
+            { text: 'Whiteboard', icons: ['custom-icon-whiteboard'] }
         ];
         self.equipmentSelected = function(e) {
             return _.some(self.search.equipment, function(i) { return i === e; });
@@ -106,7 +102,7 @@
                 var matchLocation = !self.search.location || room.Location == self.search.location;
                 var matchSize = self.search.minSize <= room.Size;
                 var matchEquipment = _.all(self.search.equipment, function(e) {
-                    return _.some(room.Equipment, e.match || function(i) { return i == e.text; });
+                    return _.some(room.Equipment, e.match);
                 });
                 
                 room = angular.copy(room);
