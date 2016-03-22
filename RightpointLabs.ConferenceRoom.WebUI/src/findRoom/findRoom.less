@@ -91,7 +91,24 @@
                     font-weight: bold;
                     font-size: 15px;
                     color: @dark-blue;
-                    margin-bottom: 19px;
+                    margin-bottom: 10px;
+                }
+                .for, .primary-duration, .secondary-duration {
+                    display: block;
+                    text-align: center;
+                    font-family: 'Open Sans';
+                    font-weight: 300;
+                    font-size: 15px;
+                    color: @dark-blue;
+                    line-height: 1.2em;
+                }
+                .primary-duration {
+                    font-size: 42px;
+                }
+                .secondary-duration {
+                    .bold {
+                        font-weight: bold;
+                    }
                 }
                 a {
                     position: absolute;
@@ -117,10 +134,67 @@
     
     .search {
         position: absolute;
-        height: 115px;
+        height: 114px;
         bottom: 0;
         left: 0;
         right: 0;
         background-color: @darkBlue;
+        
+        font-family: 'Open Sans';
+        font-weight: bold;
+        
+        .equipment-picker {
+            position: absolute;
+            top: 34px;
+            left: 32px;
+            div {
+                display: inline-block;
+                text-align: center;
+                width: 140px;
+                color: @bluey-grey;
+                span {
+                    text-align: center;
+                    font-size: 32px;
+                    line-height: 24px;
+                    font-weight: normal;
+                    &.text {
+                        font-weight: bold;
+                        font-size: 15px;
+                    }
+                }
+                &.active {
+                    color: @squash;
+                }
+            }
+        }
+        .people-count-picker {
+            .value, .buttons, .buttons div {
+                display: inline-block;
+            }
+            position: absolute;
+            top: 34px;
+            right: 45px;
+            .value {
+                text-align: center;
+                color: @squash;
+                line-height: 18px;
+                .number {
+                    font-weight: 300;
+                    font-size: 42px;
+                }
+                .people {
+                    font-size: 15px;
+                }
+            }
+            .buttons {
+                position: relative;
+                top: -5px;
+                font-size: 40px;
+                color: @bluey-grey;
+                div {
+                    margin-left: 20px;
+                }
+            }
+        }
     }
 }

@@ -35,6 +35,10 @@
                 self.search.equipment = self.search.equipment.concat([e]);
             }
         };
+        self.floor = function(e) {
+            return Math.floor(e);
+        }
+        
         Restangular.all('roomList').getList().then(function(roomLists) {
             return $q.all(roomLists.map(function(roomList) {
                 return Restangular.one('roomList', roomList.Address).getList('rooms').then(function(rooms) {
@@ -46,9 +50,19 @@
                                 Restangular.one('room', room.Address).one('info').get({ securityKey: '' }),
                                 Restangular.one('room', room.Address).one('status').get()
                             ]).then(function(calls){
-                                allRooms.push(angular.merge({}, calls[0], calls[1]));
+                                var merged = angular.merge({}, calls[0], calls[1]);
+                                allRooms.push(merged);
+                                
+                                // if this is the default room, default search settings to the room config
+                                if(room.Address == settings.defaultRoom ) {
+                                    self.search.minSize = merged.Size;
+                                    self.search.equipment = merged.Equipment.map(function(i) {
+                                        return _.find(self.equipmentChoices, { text: i });
+                                    });
+                                }
                             });
                         })).then(function() {
+                            
                             allRooms.sort(function(a, b) { return a.DisplayName < b.DisplayName ? -1 : 1; });
                             
                             allRooms.forEach(function(r) {
@@ -108,11 +122,11 @@
                 room = angular.copy(room);
                 room.match = matchLocation && matchSize && matchEquipment;
                 room.status = statusService.status(room.CurrentMeeting, room.NearTermMeetings);
-                room.status.freeFor = room.status.freeFor ? Math.floor(room.status.freeFor) : room.status.freeFor; 
+                room.status.freeFor = room.status.freeFor === 0 ? 0 : Math.floor(Math.min(120, room.status.freeFor || 120)); 
                 room.group = room.status.freeAt === 0 ? 'Available Now' : room.status.freeAt ? ('Available at ' + moment(room.status.freeAt).format('h:mm a')) : null;
                 return room;
             }).filter(function(r) {
-                return r.match && r.group;
+                return r.match && r.group && r.status.freeFor > 0;
             });
             var roomCount = self.searchResults.length;
             self.searchResults = _.pairs(_.groupBy(self.searchResults, 'group')).map(function(g) {
@@ -140,7 +154,14 @@
                 }
                 return a.key < b.key ? -1 : 1;
             });
-            console.log(self.searchResults);
+            self.searchResults.forEach(function (g) {
+                g.rooms.sort(function(a,b) {
+                    if(a.status.freeFor != b.status.freeFor) {
+                        return a.status.freeFor > b.status.freeFor ? -1 : 1;
+                    }
+                    return a.DisplayText < b.DisplayText ? -1 : 1;
+                });
+            });
             var groupCount = self.searchResults.length;
             self.scrollWidth = 40 + roomCount * (330 + 40) + groupCount * 20; // width + padding
         }, true);
