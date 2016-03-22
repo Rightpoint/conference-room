@@ -5,9 +5,11 @@
 
 .header {
     height: 60px;
+    margin: 0 -15px;
+    background: @white;
     .title {
         margin-top: 26px;
-        margin-left: 4px;
+        margin-left: 19px;
         font-size: 30px;
         float: left;
         color: @dark-indigo;
@@ -15,11 +17,8 @@
         font-weight: 300;
         font-size: 32px;
         line-height: 0.4;
-        color: #0d223f;
     }
     .navigation {
-        padding-top: 21px;
-        padding-right: 8px;
         span, a, a:link, a:hover, a:visited, a:active {
             color: @dark-blue;
             line-height: 0.7em;
@@ -30,25 +29,23 @@
             font-size: 26px;
         }
         float: right;
-        ul, li {
+        ul, li, a {
             display: inline-block;
         }
-        li {
-            margin-left: 47px;
-            margin-right: 5px;
-        }
         a {
-            padding-left: 3px;
-            padding-right: 3px;
-            padding-bottom: 2px;
+            padding-top: 24px;
+            padding-bottom: 24px;
+            width: 168px;
+            text-align: center;
+            margin-left: 35px;
+
             font-family: 'Open Sans';
             font-size: 20px;
             font-weight: bold;
-            border-bottom: 7px solid transparent;
             text-decoration: none !important;
         }
-        .active a, .active a:hover {
-            border-bottom: 7px solid @dark-blue;
+        .active a {
+            background: @white-two;
         }
     }
 }
