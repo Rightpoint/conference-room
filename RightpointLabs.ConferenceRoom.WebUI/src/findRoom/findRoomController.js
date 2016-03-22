@@ -21,9 +21,9 @@
             return _.some(room.Equipment, item);
         }
         self.equipmentChoices = [ 
-            { text: 'Display', icons: ['custom-icon-display'] },
-            { text: 'Telephone', icons: ['custom-icon-phone'] },
-            { text: 'Whiteboard', icons: ['custom-icon-whiteboard'] }
+            { text: 'Display', icon: 'custom-icon-display'},
+            { text: 'Telephone', icon: 'custom-icon-phone', displayText: 'Phone' },
+            { text: 'Whiteboard', icon: 'custom-icon-whiteboard' }
         ];
         self.equipmentSelected = function(e) {
             return _.some(self.search.equipment, function(i) { return i === e; });

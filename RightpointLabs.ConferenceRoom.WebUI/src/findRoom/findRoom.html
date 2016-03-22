@@ -11,7 +11,6 @@
                         <span class="for">for</span>
                         <span class="duration">{{ i.status.freeFor || 120 }}</span>
                         <span class="minutes">minutes</span>
-                        <a href="" class="book-now">Book Now</a>
                     </li>
                 </ul>
             </li>
@@ -25,25 +24,24 @@
     
     <div class="search">
         <div class="container-fluid">
-            <div class="form-inline">
-                <div class="form-group">
-                    <label for="minSize">Size</label>
-                    <number-slider selected-number="c.search.minSize" allowed-numbers="c.sizeChoices"></number-slider>
+            <div class="btn-group equipment-picker">
+                <button class="btn" ng-repeat="e in c.equipmentChoices" ng-click="c.toggleEquipment(e)" ng-class="{ 'active': c.equipmentSelected(e) }" title="{{ e.text }}">
+                    <span ng-class="e.icon"></span>
+                    <span class="text">{{ e.displayText || e.text }}</span>
+                </button>
+            </div>
+            <div class="people-count-picker">
+                <div class="value">
+                    <span class="number">{{ c.search.minSize }}</span>
+                    <span class="people">People</span>
                 </div>
-                <div class="form-group">
-                    <label for="equipment">Equipment</label>
-                    <div class="btn-group equipment-picker">
-                        <button class="btn" ng-repeat="e in c.equipmentChoices" ng-click="c.toggleEquipment(e)" ng-class="{ 'active': c.equipmentSelected(e) }" title="{{ e.text }}">
-                            <span ng-repeat="icon in e.icons" ng-switch on="$index !== 0">
-                                <span ng-switch-when="true">/</span>
-                                <span ng-class="icon"></span>
-                            </span>
-                        </button>
-                    </div>
-                </div>
-                <div class="form-group" ng-if="c.locationChoices.length > 1">
-                    <label for="location">Location</label>
-                    <select class="form-control" id="location" ng-model="c.search.location" ng-options="item.id as item.text for item in c.locationChoices"/>
+                <div class="btn-group">
+                    <button class="btn" ng-click="c.search.minSize = c.search.minSize + 1">
+                        <span class="custom-icon-plus"></span>
+                    </button>
+                    <button class="btn" ng-click="c.search.minSize = c.search.minSize - 1" ng-disabled="c.search.minSize <= 0">
+                        <span class="custom-icon-minus"></span>
+                    </button>
                 </div>
             </div>
         </div>
