@@ -292,7 +292,19 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             return true;
         }
 
-        public void WarnMeeting(string roomAddress, string uniqueId, string securityKey, Func<string, string> buildUrl)
+        public bool CancelMeetingFromClient(string roomAddress, string uniqueId, string signature)
+        {
+            if (!_signatureService.VerifySignature(uniqueId, signature))
+            {
+                __log.ErrorFormat("Invalid signature: {0} for {1}", signature, uniqueId);
+                return false;
+            }
+            __log.DebugFormat("Abandoning {0} for {1}", uniqueId, roomAddress);
+            CancelMeeting(roomAddress, uniqueId);
+            return true;
+        }
+
+        public void WarnMeeting(string roomAddress, string uniqueId, string securityKey, Func<string, string> buildStartUrl, Func<string, string> buildCancelUrl)
         {
             var meeting = SecurityCheck(roomAddress, uniqueId, securityKey);
             if (meeting.IsNotManaged)
@@ -302,8 +314,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             var item = ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc => Appointment.Bind(svc, new ItemId(uniqueId)));
             __log.DebugFormat("Warning {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
-            var startUrl = buildUrl(_signatureService.GetSignature(uniqueId));
-            SendEmail(roomAddress, item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "<p>Please start your meeting by using the RoomNinja on the wall outside the room or simply <a href='" + startUrl + "'>click here</a> to start it.</p>");
+            var startUrl = buildStartUrl(_signatureService.GetSignature(uniqueId));
+            var cancelUrl = buildCancelUrl(_signatureService.GetSignature(uniqueId));
+            SendEmail(roomAddress, item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "<p>Please start your meeting by using the RoomNinja on the wall outside the room or simply <a href='" + startUrl + "'>click here to START the meeting</a>.</p><p><a href='" + cancelUrl + "'>Click here to RELEASE the room</a> if you no longer need it so that others can use it.</p>");
         }
 
         public void CancelMeeting(string roomAddress, string uniqueId, string securityKey)
@@ -313,6 +326,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 throw new Exception("Cannot manage this meeting");
             }
+            CancelMeeting(roomAddress, uniqueId);
+        }
+
+        private void CancelMeeting(string roomAddress, string uniqueId)
+        {
             _meetingRepository.CancelMeeting(uniqueId);
 
             var item = ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
@@ -332,7 +350,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 return appt;
             });
 
-            SendEmail(roomAddress, item, string.Format("Your meeting '{0}' in {1} has been cancelled.", item.Subject, item.Location), "<p>If you want to keep the room, use the RoomNinja on the wall outside the room to start a new meeting ASAP.</p>");
+            SendEmail(roomAddress, item,
+                string.Format("Your meeting '{0}' in {1} has been cancelled.", item.Subject, item.Location),
+                "<p>If you want to keep the room, use the RoomNinja on the wall outside the room to start a new meeting ASAP.</p>");
 
             BroadcastUpdate(roomAddress);
         }
