@@ -55,30 +55,30 @@
                 transform: translateX(-50%) translateY(-50%) rotate(90deg);
                 span {
                     display: block;
+                    font-family: 'Open Sans';
                     color: white;
                     font-size: 14px;
 
                     &:after, &:before {
                         content: ' ';
                         position: absolute;
-                        top: 6px;
+                        top: 8px;
                         border-top: 1px solid white;
                     }
                     &:before {
-                        left: -10000px;
-                        right: 115%;
+                        left: -85px;
+                        right: 118%;
                     }
                     &:after {
-                        left: 115%;
-                        right: -10000px;
+                        left: 118%;
+                        right: -88px;
                     }
                 }
             }
             
             .room-item {
-                display: inline-block;
-                position: relative;
-                padding: 13px 15px;
+                float: left;
+                padding: 15px;
                 box-shadow: 0 10px 19px 0 @black;
                 height: 200px;
                 width: 330px;
