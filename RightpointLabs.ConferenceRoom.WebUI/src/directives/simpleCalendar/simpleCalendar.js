@@ -35,8 +35,10 @@
                 }
                 scope.eventClass = function(evt) {
                     var isPast = moment(scope.now).isAfter(evt.End) || evt.IsEndedEarly;
+                    var isCurrent = (moment(scope.now).isAfter(evt.Start) || evt.IsStarted) && (moment(scope.now).isBefore(evt.End) && !evt.IsEndedEarly);
                     return { 
-                        'past-event': isPast 
+                        'past-event': isPast,
+                        'current-event': isCurrent
                     };
                 }
                 scope.formatHour = function formatHour(value) {
