@@ -55,8 +55,8 @@
                                 
                                 // if this is the default room, default search settings to the room config
                                 if(room.Address == settings.defaultRoom ) {
-                                    self.search.minSize = merged.Size;
-                                    self.search.equipment = merged.Equipment.map(function(i) {
+                                    self.search.minSize = merged.Size || 0;
+                                    self.search.equipment = (merged.Equipment || []).map(function(i) {
                                         return _.find(self.equipmentChoices, { text: i });
                                     });
                                 }
@@ -114,7 +114,7 @@
         $scope.$watch('[ c.rooms, c.search ]', function() {
             self.searchResults = self.rooms.map(function(room) {
                 var matchLocation = !self.search.location || room.Location == self.search.location;
-                var matchSize = self.search.minSize <= room.Size;
+                var matchSize = self.search.minSize <= (room.Size || 0);
                 var matchEquipment = _.all(self.search.equipment, function(e) {
                     return _.some(room.Equipment, e.match);
                 });
