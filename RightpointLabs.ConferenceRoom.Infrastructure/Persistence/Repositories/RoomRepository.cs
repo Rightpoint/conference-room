@@ -30,6 +30,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
                 .Set(i => i.Floor, value.Floor)
                 .Set(i => i.DistanceFromFloorOrigin, value.DistanceFromFloorOrigin.Clone())
                 .Set(i => i.Equipment, value.Equipment.ToList())
+                .Set(i => i.GdoDeviceId, value.GdoDeviceId)
                 .Set(i => i.LastModified, DateTime.Now);
 
             var result = this.Collection.Update(Query<RoomInfoValues>.Where(i => i.Id == roomAddress), update, UpdateFlags.Upsert, WriteConcern.Acknowledged);

@@ -75,6 +75,7 @@
     <Reference Include="MongoDB.Driver.Legacy">
       <HintPath>..\packages\mongocsharpdriver.2.0.0\lib\net45\MongoDB.Driver.Legacy.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL" />
     <Reference Include="Plivo">
       <HintPath>..\packages\Plivo.3.0.2\lib\net40\Plivo.dll</HintPath>
     </Reference>
@@ -84,6 +85,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -113,6 +115,7 @@
     <Compile Include="Services\BuildingService.cs" />
     <Compile Include="Services\ExchangeConferenceRoomService.cs" />
     <Compile Include="Services\IExchangeServiceManager.cs" />
+    <Compile Include="Services\GdoService.cs" />
     <Compile Include="Services\MeetingCacheService.cs" />
     <Compile Include="Services\InstantMessagingService.cs" />
     <Compile Include="Services\SignatureService.cs" />

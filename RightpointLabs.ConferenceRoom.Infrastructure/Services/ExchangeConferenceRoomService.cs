@@ -129,6 +129,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 Floor = roomMetadata.Floor,
                 DistanceFromFloorOrigin = roomMetadata.DistanceFromFloorOrigin ?? new Point(),
                 Equipment = roomMetadata.Equipment,
+                HasControllableDoor = !string.IsNullOrEmpty(roomMetadata.GdoDeviceId),
             };
         }
 
@@ -487,16 +488,21 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         private Meeting SecurityCheck(string roomAddress, string uniqueId, string securityKey)
         {
-            if (_securityRepository.GetSecurityRights(roomAddress, securityKey) != SecurityStatus.Granted)
-            {
-                throw new UnauthorizedAccessException();
-            }
+            SecurityCheck(roomAddress, securityKey);
             var meeting = GetUpcomingAppointmentsForRoom(roomAddress).FirstOrDefault(i => i.UniqueId == uniqueId);
             if (null == meeting)
             {
                 throw new Exception();
             }
             return meeting;
+        }
+
+        public void SecurityCheck(string roomAddress, string securityKey)
+        {
+            if (_securityRepository.GetSecurityRights(roomAddress, securityKey) != SecurityStatus.Granted)
+            {
+                throw new UnauthorizedAccessException();
+            }
         }
 
         private bool IsExternalAttendee(Attendee attendee)

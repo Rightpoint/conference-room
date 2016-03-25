@@ -12,5 +12,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models
         public Point DistanceFromFloorOrigin { get; set; }
         [JsonProperty("Equipment", ItemConverterType = typeof(StringEnumConverter))]
         public List<RoomEquipment> Equipment { get; set; }
+        public string GdoDeviceId { get; set; }
     }
 }

@@ -34,6 +34,10 @@ namespace RightpointLabs.ConferenceRoom.Services
             var plivoAuthId = ConfigurationManager.AppSettings["plivoAuthId"];
             var plivoAuthToken = ConfigurationManager.AppSettings["plivoAuthToken"];
             var plivoFrom = ConfigurationManager.AppSettings["plivoFrom"];
+            var gdoBaseUrl = ConfigurationManager.AppSettings["gdoBaseUrl"];
+            var gdoApiKey = ConfigurationManager.AppSettings["gdoApiKey"];
+            var gdoUsername = ConfigurationManager.AppSettings["gdoUsername"];
+            var gdoPassword = ConfigurationManager.AppSettings["gdoPassword"];
 
             container.RegisterType<IMongoConnectionHandler, MongoConnectionHandler>(
                 new ContainerControlledLifetimeManager(),
@@ -54,6 +58,13 @@ namespace RightpointLabs.ConferenceRoom.Services
                     plivoAuthId,
                     plivoAuthToken,
                     plivoFrom)));
+
+            container.RegisterType<IGdoService>(new ContainerControlledLifetimeManager(),
+                new InjectionFactory(c => new GdoService(
+                    new Uri(gdoBaseUrl),
+                    gdoApiKey,
+                    gdoUsername,
+                    gdoPassword)));
 
             container.RegisterType<ISmsAddressLookupService, SmsAddressLookupService>(new HierarchicalLifetimeManager());
             container.RegisterType<ISignatureService, SignatureService>(new ContainerControlledLifetimeManager());
