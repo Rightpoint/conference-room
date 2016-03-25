@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('FindRoomController', ['Restangular', '$state', 'settings', '$timeout', '$q', '$modal', '$scope', 'statusService', function(Restangular, $state, settings, $timeout, $q, $modal, $scope, statusService) {
+    angular.module('app').controller('FindRoomController', ['Restangular', '$state', 'settings', '$timeout', '$q', '$modal', '$scope', 'statusService', 'logger', function(Restangular, $state, settings, $timeout, $q, $modal, $scope, statusService, logger) {
         if(!settings.defaultRoom) {
             $state.go('settings');
             return;
@@ -40,47 +40,45 @@
         }
         
         Restangular.all('roomList').getList().then(function(roomLists) {
+            var allRooms = [];
             return $q.all(roomLists.map(function(roomList) {
                 return Restangular.one('roomList', roomList.Address).getList('rooms').then(function(rooms) {
-                    if(rooms.filter(function(r) { return r.Address == settings.defaultRoom; }).length) {
-                        // this is the right list - let's get our details
-                        var allRooms = [];
-                        return $q.all(rooms.map(function(room) {
-                            return $q.all([
-                                Restangular.one('room', room.Address).one('info').get({ securityKey: '' }),
-                                Restangular.one('room', room.Address).one('status').get()
-                            ]).then(function(calls){
-                                var merged = angular.merge({}, calls[0], calls[1]);
-                                allRooms.push(merged);
-                                
-                                // if this is the default room, default search settings to the room config
-                                if(room.Address == settings.defaultRoom ) {
-                                    self.search.minSize = merged.Size || 0;
-                                    self.search.equipment = (merged.Equipment || []).map(function(i) {
-                                        return _.find(self.equipmentChoices, { text: i });
-                                    });
-                                }
-                            });
-                        })).then(function() {
-                            
-                            allRooms.sort(function(a, b) { return a.DisplayName < b.DisplayName ? -1 : 1; });
-                            
-                            allRooms.forEach(function(r) {
-                                r.Location = !r.BuildingId ? null : r.Floor ? r.BuildingId + " - " + r.Floor + 'th floor' : r.BuildingId; 
-                            });
-                            self.locationChoices = _.unique(allRooms.map(function(r) { return r.Location; }).filter(function(l) { return l; })).map(function(l) { return { id: l, text: l }; }).concat([ { id: '', text: '<ANY>'} ]);
-                            
-                            self.rooms = allRooms;
+                    return $q.all(rooms.map(function(room) {
+                        return $q.all([
+                            Restangular.one('room', room.Address).one('info').get({ securityKey: '' }),
+                            Restangular.one('room', room.Address).one('status').get()
+                        ]).then(function(calls){
+                            var merged = angular.merge({ Address: room.Address }, calls[0], calls[1]);
+                            allRooms.push(merged);
                         });
-                    }
-                    else {
-                        // wrong list - do nothing
-                    }
+                    }));
                 });
-            }));
+            })).then(function() {
+                allRooms.sort(function(a, b) { return a.DisplayName < b.DisplayName ? -1 : 1; });
+                
+                allRooms.forEach(function(r) {
+                    r.Location = !r.BuildingId ? null : r.Floor ? r.BuildingId + " - " + r.Floor + 'th floor' : r.BuildingId; 
+                });
+                self.locationChoices = _.unique(allRooms.map(function(r) { return r.Location; }).filter(function(l) { return l; })).map(function(l) { return { id: l, text: l }; }).concat([ { id: '', text: '<ANY>'} ]);
+                
+                var defaultRoom = _.findWhere(allRooms, { Address: settings.defaultRoom });
+                if(defaultRoom) {
+                    self.search.minSize = defaultRoom.Size || 0;
+                    self.search.equipment = (defaultRoom.Equipment || []).map(function(i) {
+                        return _.find(self.equipmentChoices, { text: i });
+                    });
+                    if(defaultRoom.BuildingId) {
+                        // default room has a building, so let's filter our data by that
+                        allRooms = _.where(allRooms, { BuildingId: defaultRoom.BuildingId });
+                    }
+                }
+
+                self.rooms = allRooms;
+            });
         }).then(function() {
             self.isLoading = false;
-        }).catch(function() {
+        }).catch(function(err) {
+            logger.error(err);
             $state.go('settings');
         });
         
