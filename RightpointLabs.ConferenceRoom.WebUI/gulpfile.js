@@ -30,11 +30,17 @@ var concat = require('gulp-concat');
 var ngAnnotate = require('gulp-ng-annotate');
 var uglify = require('gulp-uglify');
 var minifyCss = require('gulp-minify-css');
+var args = require('yargs').argv;
+
+var async = require('async');
+var iconfont = require('gulp-iconfont');
+var consolidate = require('gulp-consolidate');
 
 var RESOURCE_SOURCE = 'src/resources/**';
 var JS_SCRIPT_SOURCE = 'src/**/*.js';
 var TS_SCRIPT_SOURCE = 'src/**/*.ts';
-var STYLE_SOURCE = 'src/**/*.less';
+var STYLE_SOURCE = ['src/**/*.less', 'custom-icons.css'];
+var STYLE_SOURCE_WATCH = ['src/**/*.less', 'icon-font/**/*.*'];
 var TEMPLATES_SOURCE = ['src/**/*.html', '!src/index.html'];
 var INDEX_SOURCE = 'src/index.html';
 var PORT = 4567;
@@ -191,10 +197,39 @@ gulp.task('styles-release', ['fonts'], function () {
         .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest('dist/styles'));
 });
-gulp.task('fonts', [], function() {
-    return gulp.src('bower_components/bootstrap-less/fonts/*')
-        .pipe(plumber())
-        .pipe(gulp.dest('dist/fonts'));
+gulp.task('fonts', [], function(done) {
+
+    var iconStream = gulp.src(['icon-font/*.svg'])
+        .pipe(iconfont({ fontName: 'custom-icon', normalize: true, fontHeight: 1001 }));
+
+    async.parallel([
+        function handleGlyphs (cb) {
+            iconStream.on('glyphs', function(glyphs, options) {
+                gulp.src('icon-font/template.css')
+                    .pipe(consolidate('lodash', {
+                        glyphs: glyphs,
+                        fontName: 'custom-icon',
+                        fontPath: '../fonts/',
+                        className: 'custom-icon'
+                    }))
+                    .pipe(concat('custom-icons.css'))
+                    .pipe(gulp.dest('.'))
+                    .on('finish', cb);
+            });
+        },
+        function handleFonts (cb) {
+            iconStream
+                .pipe(gulp.dest('dist/fonts/'))
+                .on('finish', cb);
+        },
+        function handleBootstrapFonts(cb) {
+            return gulp.src('bower_components/bootstrap-less/fonts/*')
+                .pipe(plumber())
+                .pipe(gulp.dest('dist/fonts'))
+                .on('finish', cb);
+        }
+    ], done);
+
 });
 
 gulp.task('index', ['scripts', 'styles', 'templates', 'resources'], function() {
@@ -212,6 +247,8 @@ gulp.task('index-release', ['scripts-release', 'styles-release', 'resources'], f
         .pipe(gulp.dest('./dist'));
 });
 
+var server = args.live ? 'http://rooms.labs.rightpoint.com' : 'http://localhost:63915'; 
+
 gulp.task('server', ['index'], function() {
     connect.server({ 
         livereload: { port: 8785 },
@@ -220,8 +257,8 @@ gulp.task('server', ['index'], function() {
         middleware: function(c, opt) {
             return [
                 c().use('/bower_components', c.static('./bower_components')),
-                c().use('/api', proxy(url.parse('http://localhost:63915/api'))),
-                c().use('/signalr', proxy(url.parse('http://localhost:63915/signalr')))
+                c().use('/api', proxy(url.parse(server + '/api'))),
+                c().use('/signalr', proxy(url.parse(server + '/signalr')))
             ];
         }
     });
@@ -232,8 +269,8 @@ gulp.task('server-release', ['index-release'], function() {
         root: 'dist',
         middleware: function(c, opt) {
             return [
-                c().use('/api', proxy(url.parse('http://localhost:63915/api'))),
-                c().use('/signalr', proxy(url.parse('http://localhost:63915/signalr')))
+                c().use('/api', proxy(url.parse(server + '/api'))),
+                c().use('/signalr', proxy(url.parse(server + '/signalr')))
             ];
         }
     });
@@ -254,7 +291,7 @@ gulp.task('reload', [], function() {
 
 gulp.task('watch', ['scripts'], function() {
     gulp.watch([TS_SCRIPT_SOURCE, JS_SCRIPT_SOURCE], function() { runSequence('scripts', 'index', 'reload'); });
-    gulp.watch(STYLE_SOURCE, function() { runSequence('styles', 'index', 'reload'); });
+    gulp.watch(STYLE_SOURCE_WATCH, function() { runSequence('styles', 'index', 'reload'); });
     gulp.watch(TEMPLATES_SOURCE, function() { runSequence('templates', 'reload'); });
     gulp.watch(RESOURCE_SOURCE, function() { runSequence('resources', 'reload'); });
     gulp.watch(INDEX_SOURCE, function() { runSequence('index', 'reload'); });

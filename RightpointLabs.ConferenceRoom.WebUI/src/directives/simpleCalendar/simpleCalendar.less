@@ -1,0 +1,138 @@
+@import "../../variables.less";
+
+.simple-calendar {
+    &, .h-scrollable, .v-scrollable {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+    .current-line {
+        position: absolute;
+        left: 127px - 2px;
+        right: 46px - 2px;
+        height: 5px;
+        &.free {
+            background: @aqua;
+        }
+        &.busy {
+            background: @red;
+        }
+    }
+    
+    .h-scrollable {
+        overflow-x: scroll;
+        overflow-y: visible;
+        left: 127px;
+        right: 46px;
+    }
+    .v-scrollable {
+        overflow-x: visible;
+        overflow-y: scroll;
+        top: 50px;
+    }
+    &.has-titles {
+        .v-scrollable {
+            top: 87px;
+        }
+    }
+    .h-scrollable, .v-scrollable {
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+    .data {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+    }
+    .top {
+        position: absolute;
+        top: 0;
+        h3.title {
+            text-align: center;
+            font-size: 16px;
+            color: white;
+        }
+        .status {
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px 9px;
+            font-family: 'Open Sans';
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 17px;
+            
+            &.free {
+                background: @aqua;
+                color: @black;
+            }
+            &.busy {
+                background: @red;
+                color: @white;
+            }
+        }
+    }
+    &.has-titles {
+        .top {
+            .status {
+                margin-left: 20px;
+                margin-right: 20px;
+            }
+        }
+    }
+    .times {
+        position: absolute;
+        top: 0;
+        left: 20px;
+        right: 46px;
+        bottom: 0;
+        .time {
+            font-family: 'Open Sans';
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 1.0;
+            color: @white;
+            position: absolute;
+        }
+        .time-line {
+            position: absolute;
+            background-color: @grey;
+            left: 107px;
+            right: 0;
+            height: 1px;
+        }
+    }
+    
+    .event {
+        position: absolute;
+        left: 41px;
+        right: 41px;
+        background-color: white;
+        margin-bottom: 2px;
+        padding: 10px;
+        font-family: 'Open Sans';
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 1.2;
+        color: @black;
+        &.past-event {
+            background-color: @slate-blue
+        }
+        &.current-event {
+            background-color: @white;
+            opacity: 0.75;
+        }
+    }
+    
+    
+    .data, .top {
+        width: 100%;
+    }
+    &.has-multiple {
+        .data, .top {
+            width: 250px;
+        }
+    }
+}

@@ -4,228 +4,125 @@
 @import "../variables.less";
 
 .room {
-  .loading-background, .loading-foreground {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 1001;
-  }
-  .loading-background {
-    background-color: black;
-    opacity: 0.6;
-  }
-  .loading-foreground {
-  
-  }
-  .buttons {
-    //.btn-group(); - this doesn't fully work (child rules like .btn-group .btn don't get set up :(
-    float: right;
-    clear: right;
-
-    .dropdown-menu {
-      top: 0;
-      right: 101%;
-      left: initial;
-      bottom: initial;
-      background: none;
-      border-shadow: none;
-      border-radius: 0;
-      padding: 0;
-      margin: 0;
-      border: none;
-      .btn-group-vertical {
-        width: 100%;
-      }
-    }
-  }
-
-  @media screen and (max-width: 320px) and (max-height: 240px) {
-    .btn {
-      padding: 20px 25px;
-    }
-    .buttons {
-      .dropdown-menu {
+    .loading-background, .loading-foreground {
         position: fixed;
-        top: 10px;
-        right: initial;
-        left: 10px;
-        .btn {
-          padding: 15px 20px;
-        }
-      }
-    }
-  }
-  .small-screen & {
-    .btn {
-      padding: 20px 25px;
-      font-size: 28px;
-    }
-    .buttons {
-      .dropdown-menu {
-        position: fixed;
-        top: 20px;
-        right: 270px;
-        a {
-          font-size: 20px;
-          padding: 20px 30px;
-        }
-        @media screen and (min-width: 1400px) {
-          left: 50%;
-          right: auto;
-        }
-      }
-    }
-  }
-
-  .date {
-    float: right;
-    margin-top: 0;
-  }
-  .current-appointment {
-    min-height: 100px;
-  }
-  .timeline {
-    position: relative;
-    padding-top: 30px;
-    padding-bottom: 20px;
-    .marker {
-      padding-left: 2px;
-      padding-top: 8px;
-      position: absolute;
-      top: 10px;
-      bottom: -0px;
-      border-left: solid 1px red;
-      z-index: -1;
-      color: red;
-      font-size: 8px;
-    }
-    .marker.now {
-      border-left: none;
-      z-index: 1;
-      top: 0;
-      color: black;
-      padding-top: 0;
-      font-size: 14px;
-      padding-left: 4px;
-    }
-    @nowColor: black;
-    .marker.now.now-left {
-      border-left: solid 3px @nowColor;
-      padding-left: 4px;
-      text-align: left;
-    }
-    .marker.now.now-right {
-      border-right: solid 3px @nowColor;
-      padding-right: 4px;
-      text-align: right;
-    }
-
-    .progress {
-      margin-bottom: 0;
-    }
-    .progress-bar {
-      border-radius: 8px;
-    }
-
-    .small-screen-1 {
-      .marker {
-        padding-top: 0;
-      }
-      .marker.now {
-        top: -7px;
-      }
-      position: fixed;
-      bottom: 0;
-      left: 5px;
-      right: 5px;
-      padding-top: 20px;
-      padding-bottom: 10px;
-    }
-
-    @media screen and (max-width: 320px) and (max-height: 240px) {
-      .small-screen-1();
-    }
-    .small-screen & {
-      .small-screen-1();
-
-      padding-top: 50px;
-      padding-bottom: 20px;
-
-      .marker {
-        top: 30px;
-        font-size: 16px;
-      }
-      .marker.now {
         top: 0;
-        padding-left: 8px;
-        font-size: 28px;
-      }
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1001;
     }
-  }
-
-  .add-meeting-body {
-    .btn-group {
-      display: inline-block;
-      margin-left: 5px;
-      .small-screen & {
-        margin-left: 30px;
-      }
+    .loading-background {
+        background-color: black;
+        opacity: 0.6;
     }
-  }
-
-  .small-screen & {
-    h3{
-      font-size: 48px;
+    .loading-foreground {
     }
-    h4 {
-      font-size: 36px;
-    }
-    h5 {
-      font-size: 28px;
-    }
-    font-size: 28px;
-  }
-
-  @media screen and (min-width: @highDpiMinW) and (min-height: @highDpiMinH) {
-    .small-screen & {
-      .buttons {
-        margin-top: 20px;
-       .dropdown-menu {
-         left: 33%;
-         right: auto;
-       }
-     }
-      .btn {
-        font-size: 48px;
-        padding: 35px 45px;
-      }
-      .timeline {
-        padding-top: 70px;
-        padding-bottom: 30px;
-        .progress {
-          height: 40px;
+    .content {
+        &, .actions, .calendar-area {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
         }
-        .marker {
-          font-size: 28px;
-          &.now {
-            font-size: 48px;
-            top: -20px;
-          }
+        body & {
+            top: 60px;
         }
-      }
-      h3{
-        font-size: 70px;
-      }
-      h4 {
-        font-size: 60px;
-      }
-      h5 {
-        font-size: 48px;
-      }
-      font-size: 48px;
-      
+        .actions {
+            right: auto;
+            width: 295px;
+            background: @midBlue;
+            a {
+                position: absolute;
+                display: block;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                text-transform: uppercase;
+                text-align: center;
+                padding: 8px;
+                height: 40px;
+                font-family: 'Open Sans';
+                font-weight: 800;
+                font-size: 18px;
+                letter-spacing: 3.5px;
+                color: @white;
+            }
+            .meet-now, .current-meeting, .next-meeting {
+                padding: 13px 15px;
+                box-shadow: 0 10px 19px 0 @black;
+                position: relative;
+                height: 153px;
+                background: white;
+                margin: 20px 20px 25px 20px;
+                h2 {
+                    margin-top: 0;
+                    text-align: center;
+                    font-family: 'Open Sans';
+                    font-weight: bold;
+                    font-size: 15px;
+                    color: @dark-blue;
+                    .meeting-time {
+                        font-size: 10px;
+                    }
+                    margin-bottom: 19px;
+                }
+                h3 {
+                    font-family: 'Open Sans';
+                    font-size: 14px;
+                    line-height: 19px;
+                    font-weight: normal;
+                    color: black;
+                    margin-bottom: 0;
+                }
+                h4 {
+                    font-family: 'Open Sans';
+                    font-weight: bold;
+                    font-size: 13px;
+                    line-height: 1;
+                    color: @black;
+                    max-height: 40px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    margin-top: 0;
+                    padding-bottom: 0.25em;
+                  }
+            }
+            .meet-now a {
+                background: @aqua;
+            }
+            .next-meeting {
+                a {
+                    background: @purple;
+                }
+            }
+            .current-meeting {
+                a {
+                    background: @red;
+                }
+            }
+            .time {
+                position: absolute;
+                bottom: 6px;
+                left: 20px;
+                font-family: 'Open Sans';
+                font-weight: 300;
+                font-size: 22px;
+                color: #e6e6e6;
+                margin-bottom: 0;
+            }
+        }
+        .calendar-area {
+            left: 295px;
+            background: @black;
+            .calendar {
+                position: absolute;
+                top: 50px;
+                right: 15px;
+                bottom: 15px;
+                left: 15px;
+            }
+        }
     }
-  }
 }

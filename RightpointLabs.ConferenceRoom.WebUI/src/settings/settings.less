@@ -37,15 +37,18 @@
       }
     }
   }
-  @media screen and (min-width: @highDpiMinW) and (min-height: @highDpiMinH) {
-    .small-screen & {
-      font-size: 200%;
-    }
-  }
 }
 .unlock-body {
   .row .btn {
       width: 100%;
       margin-top: 20px;
+  }
+}
+.pick-room-body {
+  a.selected {
+      background: green;
+      &:hover {
+          background: lighten(green, 20%);
+      }
   }
 }
