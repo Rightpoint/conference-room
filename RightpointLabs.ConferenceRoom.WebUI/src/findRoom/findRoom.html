@@ -40,10 +40,10 @@
                     <span class="people">People</span>
                 </div>
                 <div class="buttons">
-                    <div aria-role="button" ng-click="c.search.minSize = c.search.minSize + 1">
+                    <div aria-role="button" ng-click="c.biggerRoom()" ng-disabled="!c.hasBiggerRoom()">
                         <span class="custom-icon-plus"></span>
                     </div>
-                    <div aria-role="button" ng-click="c.search.minSize = c.search.minSize <= 0 ? 0 : c.search.minSize - 1" ng-disabled="c.search.minSize <= 0">
+                    <div aria-role="button" ng-click="c.smallerRoom()" ng-disabled="c.search.minSize <= 0">
                         <span class="custom-icon-minus"></span>
                     </div>
                 </div>

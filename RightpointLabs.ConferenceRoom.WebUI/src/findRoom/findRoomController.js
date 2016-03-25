@@ -15,6 +15,15 @@
             equipment: []
         };
         self.sizeChoices = [ 1, 2, 3, 4, 6, 8, 10, 12, 40 ];
+        self.hasBiggerRoom = function hasBiggerRoom() {
+            return !!self.sizeChoices.filter(function(c) { return c > self.search.minSize; }).length;
+        };
+        self.biggerRoom = function biggerRoom() {
+            self.search.minSize = self.sizeChoices.filter(function(c) { return c > self.search.minSize; })[0] || _.last(self.sizeChoices);
+        };
+        self.smallerRoom = function smallerRoom() {
+            self.search.minSize = _.last(self.sizeChoices.filter(function(c) { return c < self.search.minSize; })) || self.sizeChoices[0];
+        };
         self.searchResult = [];
         self.locationChoices = [ { id: '', text: '<ANY>'} ];
         function selfMatch (item, room) {
@@ -59,13 +68,12 @@
                 allRooms.forEach(function(r) {
                     r.Location = !r.BuildingId ? null : r.Floor ? r.BuildingId + " - " + r.Floor + 'th floor' : r.BuildingId; 
                 });
-                self.locationChoices = _.unique(allRooms.map(function(r) { return r.Location; }).filter(function(l) { return l; })).map(function(l) { return { id: l, text: l }; }).concat([ { id: '', text: '<ANY>'} ]);
                 
                 var defaultRoom = _.findWhere(allRooms, { Address: settings.defaultRoom });
                 if(defaultRoom) {
                     self.search.minSize = defaultRoom.Size || 0;
                     self.search.equipment = (defaultRoom.Equipment || []).map(function(i) {
-                        return _.find(self.equipmentChoices, { text: i });
+                        return _.findWhere(self.equipmentChoices, { text: i });
                     });
                     if(defaultRoom.BuildingId) {
                         // default room has a building, so let's filter our data by that
@@ -73,6 +81,9 @@
                     }
                 }
 
+                self.locationChoices = _.unique(allRooms.map(function(r) { return r.Location; }).filter(function(l) { return l; })).map(function(l) { return { id: l, text: l }; }).concat([ { id: '', text: '<ANY>'} ]);
+                self.sizeChoices = _.unique(allRooms.map(function(r) { return r.Size; }));
+                self.sizeChoices.sort(function(a, b) { return a < b ? -1 : 1; });
                 self.rooms = allRooms;
             });
         }).then(function() {
@@ -114,7 +125,7 @@
                 var matchLocation = !self.search.location || room.Location == self.search.location;
                 var matchSize = self.search.minSize <= (room.Size || 0);
                 var matchEquipment = _.all(self.search.equipment, function(e) {
-                    return _.some(room.Equipment, e.match);
+                    return _.some(room.Equipment, function(ee) { return e.text == ee; });
                 });
                 
                 room = angular.copy(room);
