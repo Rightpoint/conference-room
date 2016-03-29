@@ -206,6 +206,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             var rooms =
                 _conferenceRoomService.GetRoomLists()
                     .AsParallel()
+                    .WithDegreeOfParallelism(256)
                     .SelectMany(i => _conferenceRoomService.GetRoomsFromRoomList(i.Address))
                     .Select(i => new { i.Address, Info =  _conferenceRoomService.GetInfo(i.Address) })
                     .ToList();
@@ -222,6 +223,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             // ok, we have the filtered rooms list, now we need to get the status and smash it together with the room data
             return
                 rooms.AsParallel()
+                    .WithDegreeOfParallelism(256)
                     .Select(i => new {i.Address, i.Info, Status = _conferenceRoomService.GetStatus(i.Address, true)})
                     .ToList();
         }
