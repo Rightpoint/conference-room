@@ -101,7 +101,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     .ToArray()))).Result;
         }
 
-        public object GetInfo(string roomAddress, string securityKey = null)
+        public RoomInfo GetInfo(string roomAddress, string securityKey = null)
         {
             var room = ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc => svc.ResolveName(roomAddress).SingleOrDefault());
 
