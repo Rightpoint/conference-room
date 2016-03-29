@@ -16,7 +16,7 @@
                 var pxPerHour = parseInt(attr.pxPerHour || 70);
                 var minHeight = parseInt(attr.minHeight || 24);
                 var vMargin = parseInt(attr.vMargin || 2);
-                var hours = parseInt(attr.hours || 72);
+                var hours = parseInt(attr.hours || 24);
                 scope.vHeight = pxPerHour * hours;
                 
                 scope.styles = function styles(evt) {
