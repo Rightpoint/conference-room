@@ -199,6 +199,35 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             _conferenceRoomService.MessageMeeting(roomAddress, uniqueId, securityKey);
         }
 
+
+        [Route("all/status")]
+        public object GetAllStatus(string roomAddress)
+        {
+            var rooms =
+                _conferenceRoomService.GetRoomLists()
+                    .AsParallel()
+                    .WithDegreeOfParallelism(256)
+                    .SelectMany(i => _conferenceRoomService.GetRoomsFromRoomList(i.Address))
+                    .Select(i => new { i.Address, Info =  _conferenceRoomService.GetInfo(i.Address) })
+                    .ToList();
+
+            if (!string.IsNullOrEmpty(roomAddress))
+            {
+                var room = rooms.FirstOrDefault(i => i.Address == roomAddress);
+                if (!string.IsNullOrEmpty(room?.Info.BuildingId))
+                {
+                    rooms = rooms.Where(i => i.Info.BuildingId == room.Info.BuildingId).ToList();
+                }
+            }
+
+            // ok, we have the filtered rooms list, now we need to get the status and smash it together with the room data
+            return
+                rooms.AsParallel()
+                    .WithDegreeOfParallelism(256)
+                    .Select(i => new {i.Address, i.Info, Status = _conferenceRoomService.GetStatus(i.Address, true)})
+                    .ToList();
+        }
+
         /// <summary>
         /// Open a GDO
         /// </summary>
