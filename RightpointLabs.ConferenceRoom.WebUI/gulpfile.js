@@ -260,7 +260,7 @@ gulp.task('index-release', ['scripts-release', 'styles-release', 'resources'], f
         .pipe(gulp.dest('./dist'));
 });
 
-var server = args.live ? 'http://rooms.labs.rightpoint.com' : 'http://localhost:63915'; 
+var server = args.live ? 'http://rooms.labs.rightpoint.com' : args.beta ? 'http://beta.rooms.labs.rightpoint.com' : 'http://localhost:63915'; 
 
 gulp.task('server', ['index'], function() {
     connect.server({ 
