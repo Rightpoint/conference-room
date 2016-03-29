@@ -182,7 +182,7 @@
                 });
             });
             var groupCount = self.searchResults.length;
-            self.scrollWidth = 30 + roomCount * (330 + 20*2) + groupCount * 60; // calculate the full width of the scrolling container based on the expected sizes of the various elements
+            self.scrollWidth = 30 + roomCount * (330 + 20*2) + groupCount * 20; // calculate the full width of the scrolling container based on the expected sizes of the various elements
         }, true);
 
         // we have a default room we're supposed to be managing - time out and go there after 60 seconds
