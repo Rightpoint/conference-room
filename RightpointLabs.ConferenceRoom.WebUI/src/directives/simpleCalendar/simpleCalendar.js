@@ -20,6 +20,9 @@
                 scope.vHeight = pxPerHour * hours;
                 
                 scope.styles = function styles(evt) {
+                    if(!scope.isVisible(evt.Start)) {
+                        return { display: 'none' };
+                    }
                     var top = scope.getOffset(evt.Start);
                     var bottom = scope.getOffset(evt.End);
                     return {
@@ -60,6 +63,9 @@
                     var today = moment(now).startOf('day');
                     scope.getOffset = function getOffset(value) {
                         return Math.min(Math.max(moment(value).diff(today, 'minutes') / 60 * pxPerHour, 0), pxPerHour * hours);
+                    };
+                    scope.isVisible = function isVisible(value) {
+                        return moment(value).diff(today, 'hours') <= hours;
                     };
                     scope.hours = _.range(0, hours).map(function (i) { return moment(today).add(i, 'hours').toDate(); });
 
