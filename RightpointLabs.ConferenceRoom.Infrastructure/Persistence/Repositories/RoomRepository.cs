@@ -5,6 +5,7 @@ using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Models;
 using System;
+using System.Linq;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
 {
@@ -27,8 +28,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
                 .Set(i => i.Size, value.Size)
                 .Set(i => i.BuildingId, value.BuildingId)
                 .Set(i => i.Floor, value.Floor)
-                .Set(i => i.DistanceFromFloorOrigin, value.DistanceFromFloorOrigin)
-                .Set(i => i.Equipment, value.Equipment)
+                .Set(i => i.DistanceFromFloorOrigin, value.DistanceFromFloorOrigin.Clone())
+                .Set(i => i.Equipment, value.Equipment.ToList())
+                .Set(i => i.GdoDeviceId, value.GdoDeviceId)
                 .Set(i => i.LastModified, DateTime.Now);
 
             var result = this.Collection.Update(Query<RoomInfoValues>.Where(i => i.Id == roomAddress), update, UpdateFlags.Upsert, WriteConcern.Acknowledged);

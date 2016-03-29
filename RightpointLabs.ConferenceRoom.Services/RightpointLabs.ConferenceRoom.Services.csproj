@@ -204,6 +204,7 @@
     <Compile Include="Attributes\ErrorHandlerAttribute.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\ClientLogController.cs" />
+    <Compile Include="Controllers\BuildingController.cs" />
     <Compile Include="Controllers\SettingsController.cs" />
     <Compile Include="Controllers\RoomListController.cs" />
     <Compile Include="Controllers\RoomController.cs" />

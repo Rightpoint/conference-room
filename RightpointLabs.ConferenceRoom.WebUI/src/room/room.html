@@ -30,6 +30,12 @@
             <h2 class="time" ui-sref="settings">
                 {{ c.currentTime().format('h:mm A') }}
             </h2>
+            <div class="door-control" ng-if="c.hasControllableDoor">
+                <div class="btn-group">
+                    <button class="btn btn-lg" ng-click="c.openDoor()">Open</button>
+                    <button class="btn btn-lg" ng-click="c.closeDoor()">Close</button>
+                </div>
+            </div>
         </div>
         <div class="calendar-area">
             <simple-calendar calendars="[ { DisplayName: c.displayName, NearTermMeetings: c.appointments, CurrentMeeting: c.current } ]" show-titles="false"></simple-calendar>

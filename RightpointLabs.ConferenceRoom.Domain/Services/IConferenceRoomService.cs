@@ -33,5 +33,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Services
         void RequestAccess(string roomAddress, string securityKey, string clientInfo);
         void MessageMeeting(string roomAddress, string uniqueId, string securityKey);
         bool CancelMeetingFromClient(string roomAddress, string uniqueId, string signature);
+        void SecurityCheck(string roomAddress, string securityKey);
     }
 }

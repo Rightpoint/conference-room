@@ -8,8 +8,10 @@ using System.Net.Http;
 using System.Reflection;
 using System.ServiceModel.Channels;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
+using RightpointLabs.ConferenceRoom.Domain.Repositories;
 
 namespace RightpointLabs.ConferenceRoom.Services.Controllers
 {
@@ -22,11 +24,15 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         private static readonly ILog __log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly IConferenceRoomService _conferenceRoomService;
+        private readonly IRoomRepository _roomRepository;
+        private readonly IGdoService _gdoService;
 
-        public RoomController(IConferenceRoomService conferenceRoomService)
+        public RoomController(IConferenceRoomService conferenceRoomService, IRoomRepository roomRepository, IGdoService gdoService)
             : base(__log)
         {
             _conferenceRoomService = conferenceRoomService;
+            _roomRepository = roomRepository;
+            _gdoService = gdoService;
         }
 
         /// <summary>
@@ -51,7 +57,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         public void PostInfo(string roomAddress, PostRoomMetadata roomMetadata)
         {
             var realCode = ConfigurationManager.AppSettings["settingsSecurityCode"];
-            if (roomMetadata.Code == realCode)
+            if (roomMetadata.Code != realCode)
             {
                 Thread.Sleep(1000);
                 throw new AccessDeniedException("Access denied", null);
@@ -191,6 +197,40 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         public void PostMessageMeeting(string roomAddress, string securityKey, string uniqueId)
         {
             _conferenceRoomService.MessageMeeting(roomAddress, uniqueId, securityKey);
+        }
+
+        /// <summary>
+        /// Open a GDO
+        /// </summary>
+        /// <param name="roomAddress">The address of the room</param>
+        /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
+        [Route("{roomAddress}/door/open")]
+        public async System.Threading.Tasks.Task PostOpenDoor(string roomAddress, string securityKey)
+        {
+            _conferenceRoomService.SecurityCheck(roomAddress, securityKey);
+            var info = _roomRepository.GetRoomInfo(roomAddress);
+            if (string.IsNullOrEmpty(info.GdoDeviceId))
+            {
+                throw new ArgumentException("No door to control");
+            }
+            await _gdoService.Open(info.GdoDeviceId);
+        }
+
+        /// <summary>
+        /// Close a GDO
+        /// </summary>
+        /// <param name="roomAddress">The address of the room</param>
+        /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
+        [Route("{roomAddress}/door/close")]
+        public async System.Threading.Tasks.Task PostCloseDoor(string roomAddress, string securityKey)
+        {
+            _conferenceRoomService.SecurityCheck(roomAddress, securityKey);
+            var info = _roomRepository.GetRoomInfo(roomAddress);
+            if (string.IsNullOrEmpty(info?.GdoDeviceId))
+            {
+                throw new ArgumentException("No door to control");
+            }
+            await _gdoService.Close(info.GdoDeviceId);
         }
     }
 }

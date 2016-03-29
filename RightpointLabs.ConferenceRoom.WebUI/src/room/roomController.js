@@ -55,7 +55,6 @@
         };
         
         self.canManageCurrent = function canManageCurrent() {
-            return true;
             return self.current && !self.current.IsNotManaged;
         };
         
@@ -108,6 +107,7 @@
 
                 timeDelta = moment().diff(moment(data.CurrentTime));
                 self.displayName = data.DisplayName;
+                self.hasControllableDoor = data.HasControllableDoor;
                 scheduleCancel();
 
                 if(!self.roomListAddress) {
@@ -206,6 +206,7 @@
 
             return room.one('status').get().then(function(data) {
                 if(!data || data.error) {
+                    self.doorStatus = null;
                     self.status = {};
                     self.appointments = [];
                     self.current = null;
@@ -214,6 +215,7 @@
                     return;
                 }
 
+                self.doorStatus = data.DoorStatus;
                 self.status = data.Status;
                 self.appointments = _.sortBy(data.NearTermMeetings, 'Start');
                 self.current = data.CurrentMeeting;
@@ -272,6 +274,19 @@
             var p = room.one('meeting').post('startNew', {}, { securityKey: securityKey, title: 'New Meeting', minutes: self.meetNowTime }).then(function() {
                 soundService.play('resources/new.mp3');
                 self.meetNowTime = 30;
+                return loadStatus();
+            });
+            showIndicator(p);
+        };
+
+        self.openDoor = function openDoor() {
+            var p = room.one('door').post('open', {}, { securityKey: securityKey }).then(function() {
+                return loadStatus();
+            });
+            showIndicator(p);
+        };
+        self.closeDoor = function closeDoor() {
+            var p = room.one('door').post('close', {}, { securityKey: securityKey }).then(function() {
                 return loadStatus();
             });
             showIndicator(p);
