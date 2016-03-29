@@ -173,11 +173,11 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         /// <param name="roomAddress">The address of the room</param>
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         /// <param name="title">The title of the meeting</param>
-        /// <param name="minutes">The length of the meeting in minutes</param>
+        /// <param name="endTime">The time the meeting will end</param>
         [Route("{roomAddress}/meeting/startNew")]
-        public void PostStartNewMeeting(string roomAddress, string securityKey, string title, int minutes)
+        public void PostStartNewMeeting(string roomAddress, string securityKey, string title, DateTime endTime)
         {
-            _conferenceRoomService.StartNewMeeting(roomAddress, securityKey, title, minutes);
+            _conferenceRoomService.StartNewMeeting(roomAddress, securityKey, title, endTime);
         }
 
         /// <summary>

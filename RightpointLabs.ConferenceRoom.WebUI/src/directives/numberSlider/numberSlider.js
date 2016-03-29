@@ -12,6 +12,13 @@
             },
             link: function (scope, element, attr) {
                 scope.selectedNumber = scope.selectedNumber || 30;
+                scope.render = function(n) {
+                    var now = moment();
+                    var minute = now.minute() % 15;
+                    now.minute(minute).second(0).millisecond(0);
+                    now.add(n, 'minutes');
+                    return n.format('h:mm');
+                };
                 function update() {
                     if(!_.some(scope.allowedNumbers, function(i) { return i == scope.selectedNumber; })) {
                         scope.selectedNumber = _.last(scope.allowedNumbers) || 0;
