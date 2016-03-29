@@ -187,7 +187,7 @@
 
         // we have a default room we're supposed to be managing - time out and go there after 60 seconds
         $timeout(function() {
-            //$state.go('room');
+            $state.go('room');
         }, 60000);
     }]);
 })();
