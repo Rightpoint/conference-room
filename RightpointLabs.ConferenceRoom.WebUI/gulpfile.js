@@ -39,6 +39,7 @@ var consolidate = require('gulp-consolidate');
 var RESOURCE_SOURCE = 'src/resources/**';
 var JS_SCRIPT_SOURCE = 'src/**/*.js';
 var TS_SCRIPT_SOURCE = 'src/**/*.ts';
+var IMG_SOURCE = 'images/**';
 var STYLE_SOURCE = ['src/**/*.less', 'custom-icons.css'];
 var STYLE_SOURCE_WATCH = ['src/**/*.less', 'icon-font/**/*.*'];
 var TEMPLATES_SOURCE = ['src/**/*.html', '!src/index.html'];
@@ -185,7 +186,7 @@ gulp.task('styles', ['fonts'], function () {
         .pipe(sourcemaps.write())
         .pipe(gulp.dest('dist/styles'));
 });
-gulp.task('styles-release', ['fonts'], function () {
+gulp.task('styles-release', ['fonts', 'images'], function () {
     return merge([
             styles(),
             gulp.src(wiredep().css)
@@ -236,6 +237,12 @@ gulp.task('fonts', [], function(done) {
         }
     ], done);
 
+});
+
+gulp.task('images', [], function(done) {
+    return gulp.src(IMG_SOURCE)
+        .pipe(plumber())
+        .pipe(gulp.dest('dist/images'));
 });
 
 gulp.task('index', ['scripts', 'styles', 'templates', 'resources'], function() {
@@ -297,6 +304,7 @@ gulp.task('reload', [], function() {
 
 gulp.task('watch', ['scripts'], function() {
     gulp.watch([TS_SCRIPT_SOURCE, JS_SCRIPT_SOURCE], function() { runSequence('scripts', 'index', 'reload'); });
+    gulp.watch(IMG_SOURCE, function() { runSequence('reload'); });
     gulp.watch(STYLE_SOURCE_WATCH, function() { runSequence('styles', 'index', 'reload'); });
     gulp.watch(TEMPLATES_SOURCE, function() { runSequence('templates', 'reload'); });
     gulp.watch(RESOURCE_SOURCE, function() { runSequence('resources', 'reload'); });
