@@ -227,6 +227,12 @@ gulp.task('fonts', [], function(done) {
                 .pipe(plumber())
                 .pipe(gulp.dest('dist/fonts'))
                 .on('finish', cb);
+        },
+        function handleOpenSansFonts(cb) {
+            return gulp.src('bower_components/open-sans-fontface/fonts/**')
+                .pipe(plumber())
+                .pipe(gulp.dest('dist/styles/fonts'))
+                .on('finish', cb);
         }
     ], done);
 
