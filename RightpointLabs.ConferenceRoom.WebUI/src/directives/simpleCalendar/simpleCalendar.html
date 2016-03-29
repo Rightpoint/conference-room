@@ -28,7 +28,7 @@
                     ng-style="styles(evt)"
                     ng-click="click({ meeting: evt })"
                     >
-                    {{ evt.Organizer }}
+                    <span class="organizer">{{ evt.Organizer }}</span>
                     <span ng-if="evt.Subject">: {{ evt.Subject}}</span>
                 </div>
             </div>
