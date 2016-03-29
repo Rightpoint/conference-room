@@ -29,6 +29,7 @@
                     ng-click="click({ meeting: evt })"
                     >
                     {{ evt.Organizer }}
+                    <span ng-if="evt.Subject">: {{ evt.Subject}}</span>
                 </div>
             </div>
         </div>
