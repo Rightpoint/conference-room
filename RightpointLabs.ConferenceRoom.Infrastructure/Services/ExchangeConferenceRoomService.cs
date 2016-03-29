@@ -103,7 +103,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         public RoomInfo GetInfo(string roomAddress, string securityKey = null)
         {
-            var room = ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc => svc.ResolveName(roomAddress).SingleOrDefault());
+            var room = _simpleTimedCache.GetCachedValue("RoomInfo_" + roomAddress,
+                TimeSpan.FromHours(24),
+                () => Task.FromResult(ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc => svc.ResolveName(roomAddress).SingleOrDefault()))).Result;
 
             if (null == room)
             {
