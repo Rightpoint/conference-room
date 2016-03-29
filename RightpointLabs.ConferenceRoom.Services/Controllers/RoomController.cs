@@ -222,7 +222,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             // ok, we have the filtered rooms list, now we need to get the status and smash it together with the room data
             return
                 rooms.AsParallel()
-                    .Select(i => new {i.Address, i.Info, Status = _conferenceRoomService.GetStatus(i.Address)})
+                    .Select(i => new {i.Address, i.Info, Status = _conferenceRoomService.GetStatus(i.Address, true)})
                     .ToList();
         }
 

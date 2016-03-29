@@ -204,11 +204,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     }
                     catch (ServiceResponseException ex)
                     {
-                        if (ex.ErrorCode == ServiceError.ErrorFolderNotFound || ex.ErrorCode == ServiceError.ErrorNonExistentMailbox || ex.ErrorCode == ServiceError.ErrorAccessDenied)
-                        {
-                            __log.DebugFormat("Access denied ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
-                            throw new AccessDeniedException("Folder/mailbox not found or access denied", ex);
-                        }
+                        CheckForAccessDenied(roomAddress, ex);
                         __log.DebugFormat("Unexpected error ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
                         throw;
                     }
@@ -216,10 +212,65 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             }).Result;
         }
 
-        public RoomStatusInfo GetStatus(string roomAddress)
+        public IEnumerable<Meeting> GetSimpleUpcomingAppointmentsForRoom(string roomAddress)
+        {
+            var isTracked = _changeNotificationService.IsTrackedForChanges(roomAddress);
+            var result = _meetingCacheService.TryGetUpcomingAppointmentsForRoom(roomAddress, isTracked)?.Result;
+            if (null == result)
+            {
+                try
+                {
+                    return ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
+                    {
+                        var apt = svc.FindAppointments(WellKnownFolderName.Calendar, new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))
+                        {
+                            // load enough properties that we don't have to make a second trip to the server
+                            PropertySet = new PropertySet(
+                                AppointmentSchema.Id,
+                                AppointmentSchema.LegacyFreeBusyStatus,
+                                AppointmentSchema.Start,
+                                AppointmentSchema.End,
+                                AppointmentSchema.IsAllDayEvent
+                            )
+                        }).ToList();
+                        __log.DebugFormat("Got {0} appointments for {1} via {2} with {3}", apt.Count, roomAddress, svc.GetHashCode(), svc.CookieContainer.GetCookieHeader(svc.Url));
+                        if (_ignoreFree)
+                        {
+                            apt = apt.Where(i => i.LegacyFreeBusyStatus != LegacyFreeBusyStatus.Free).ToList();
+                        }
+
+                        // short-circuit if we don't have any meetings
+                        if (!apt.Any())
+                        {
+                            return new Meeting[] { };
+                        }
+                        
+                        var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
+                        return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
+                    });
+                }
+                catch (ServiceResponseException ex)
+                {
+                    CheckForAccessDenied(roomAddress, ex);
+                    __log.DebugFormat("Unexpected error ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
+                    throw;
+                }
+            }
+            return result;
+        }
+        private static void CheckForAccessDenied(string roomAddress, ServiceResponseException ex)
+        {
+            if (ex.ErrorCode == ServiceError.ErrorFolderNotFound || ex.ErrorCode == ServiceError.ErrorNonExistentMailbox || ex.ErrorCode == ServiceError.ErrorAccessDenied)
+            {
+                __log.DebugFormat("Access denied ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
+                throw new AccessDeniedException("Folder/mailbox not found or access denied", ex);
+            }
+        }
+
+        public RoomStatusInfo GetStatus(string roomAddress, bool isSimple = false)
         {
             var now = _dateTimeService.Now;
-            var allMeetings = GetUpcomingAppointmentsForRoom(roomAddress)
+            var allMeetings = (isSimple ? GetSimpleUpcomingAppointmentsForRoom(roomAddress) : GetUpcomingAppointmentsForRoom(roomAddress))
                 .OrderBy(i => i.Start).ToList();
             var upcomingMeetings = allMeetings.Where(i => !i.IsCancelled && !i.IsEndedEarly && i.End > now);
             var meetings = upcomingMeetings
@@ -528,18 +579,23 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         private Meeting BuildMeeting(Appointment i, MeetingInfo meetingInfo)
         {
-            var externalAttendees = i.RequiredAttendees.Concat(i.OptionalAttendees).Count(IsExternalAttendee);
+            var fields = i.GetLoadedPropertyDefinitions().OfType<PropertyDefinition>().ToLookup(x => x.Name);
+
+            var externalAttendees = fields.Contains("RequiredAttendees") && fields.Contains("OptionalAttendees") ?
+                i.RequiredAttendees.Concat(i.OptionalAttendees).Count(IsExternalAttendee) : 0;
 
             return new Meeting()
             {
                 UniqueId = i.Id.UniqueId,
-                Subject = i.Sensitivity != Sensitivity.Normal ? i.Sensitivity.ToString() :
-                    i.Subject != null && i.Subject.Trim() == i.Organizer.Name.Trim() ? null : i.Subject,
+                Subject = fields.Contains("Sensitivity") && fields.Contains("Subject") ? (
+                    i.Sensitivity != Sensitivity.Normal ? i.Sensitivity.ToString() :
+                    i.Subject != null && i.Subject.Trim() == i.Organizer.Name.Trim() ? null : i.Subject
+                    ) : null,
                 Start = i.Start,
                 End = i.End,
-                Organizer = i.Organizer.Name,
-                RequiredAttendees = i.RequiredAttendees.Count,
-                OptionalAttendees = i.OptionalAttendees.Count,
+                Organizer = fields.Contains("Organizer") ? i.Organizer.Name : string.Empty,
+                RequiredAttendees = fields.Contains("RequiredAttendees") ? i.RequiredAttendees.Count : 0,
+                OptionalAttendees = fields.Contains("OptionalAttendees") ? i.OptionalAttendees.Count : 0,
                 ExternalAttendees = externalAttendees,
                 IsStarted = meetingInfo.IsStarted,
                 IsEndedEarly = meetingInfo.IsEndedEarly,

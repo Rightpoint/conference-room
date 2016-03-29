@@ -48,6 +48,26 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 return cached.Value;
             }
         }
+        public Task<IEnumerable<Meeting>> TryGetUpcomingAppointmentsForRoom(string roomAddress, bool isTracked)
+        {
+            var now = DateTime.UtcNow;
+            ValueHolder cached;
+            _tasks.TryGetValue(roomAddress, out cached);
+            if (null == cached)
+                return null;
+            if (isTracked)
+            {
+                // we don't care when it was loaded, if we're tracking changes, it's guaranteed to be good
+                return cached.Value;
+            }
+
+            if (cached.Created.AddSeconds(15) < now)
+            {
+                // more than 15 seconds old
+                return null;
+            }
+            return cached.Value;
+        }
 
         public void ClearUpcomingAppointmentsForRoom(string roomAddress)
         {
