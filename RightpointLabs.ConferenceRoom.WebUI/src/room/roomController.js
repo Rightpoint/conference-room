@@ -59,7 +59,7 @@
         };
         
         self.showMeetNow = function showMeetNow() {
-            return !self.current || self.freeMinutes() > 15;
+            return !self.current || self.freeMinutes() > 10;
         }
         
         self.isCurrentInFuture = function isCurrentInFuture() {
@@ -271,9 +271,9 @@
         };
 
         self.meetNow = function meetNow() {
-            var p = room.one('meeting').post('startNew', {}, { securityKey: securityKey, title: 'New Meeting', minutes: self.meetNowTime }).then(function() {
+            var p = room.one('meeting').post('startNew', {}, { securityKey: securityKey, title: 'Local Meeting', endTime: self.meetNowTime }).then(function() {
                 soundService.play('resources/new.mp3');
-                self.meetNowTime = 30;
+                self.meetNowMinutes = 30;
                 return loadStatus();
             });
             showIndicator(p);

@@ -3,8 +3,8 @@
     <div class="content">
         <div class="actions">
             <div class="meet-now" ng-if="c.showMeetNow()">
-                <h2>Book For</h2>
-                <time-slider selected-time="c.meetNowTime" max-time="c.freeMinutes() || 240"></time-slider>
+                <h2>Book Until</h2>
+                <time-slider selected-minutes="c.meetNowMinutes" selected-time="c.meetNowTime" max-time="c.current.Start"></time-slider>
                 <a href ng-click="c.meetNow()">Meet Now</a>
             </div>
             <div class="current-meeting" ng-if="c.current && (!c.isCurrentInFuture() || c.current.IsStarted)">

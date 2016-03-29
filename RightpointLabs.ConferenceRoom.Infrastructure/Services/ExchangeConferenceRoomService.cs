@@ -472,7 +472,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             }
         }
 
-        public void StartNewMeeting(string roomAddress, string securityKey, string title, int minutes)
+        public void StartNewMeeting(string roomAddress, string securityKey, string title, DateTime endTime)
         {
             if (_securityRepository.GetSecurityRights(roomAddress, securityKey) != SecurityStatus.Granted)
             {
@@ -489,11 +489,21 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
 
                 var now = _dateTimeService.Now.TruncateToTheMinute();
-                minutes = Math.Max(0, Math.Min(minutes, Math.Min(120, status.NextMeeting.ChainIfNotNull(m => (int?)m.Start.Subtract(now).TotalMinutes) ?? 120)));
+                if (status.NextMeeting != null)
+                {
+                    if (endTime > status.NextMeeting.Start)
+                    {
+                        endTime = status.NextMeeting.Start;
+                    }
+                }
+                if (endTime.Subtract(now).TotalHours > 2)
+                {
+                    throw new ApplicationException("Cannot create a meeting for more than 2 hours");
+                }
 
                 var appt = new Appointment(svc);
                 appt.Start = now;
-                appt.End = now.AddMinutes(minutes);
+                appt.End = endTime;
                 appt.Subject = title;
                 appt.Body = "Scheduled via conference room management system";
                 appt.Save(calId, SendInvitationsMode.SendToNone);

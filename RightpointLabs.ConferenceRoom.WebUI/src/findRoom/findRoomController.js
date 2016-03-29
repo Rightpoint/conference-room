@@ -49,7 +49,7 @@
         }
         
         // try to delegate the work to the server.  If that doesn't work, then we'll fallback to calling the normal APIs
-        Restangular.all('room').one('all').getList('status', { roomAddress: settings.defaultRoom }).then(function(data) {
+        Restangular.all('room').one('all').one('status').get({ roomAddress: settings.defaultRoom }).then(function(data) {
             return data.map(function(i) {
                 return angular.merge({ Address: i.Address }, i.Info, i.Status);
             });

@@ -27,7 +27,7 @@ namespace RightpointLabs.ConferenceRoom.Domain.Services
         void WarnMeeting(string roomAddress, string uniqueId, string securityKey, Func<string, string> buildStartUrl, Func<string, string> buildCancelUrl);
         void CancelMeeting(string roomAddress, string uniqueId, string securityKey);
         void EndMeeting(string roomAddress, string uniqueId, string securityKey);
-        void StartNewMeeting(string roomAddress, string securityKey, string title, int minutes);
+        void StartNewMeeting(string roomAddress, string securityKey, string title, DateTime endTime);
         RoomInfo GetInfo(string roomAddress, string securityKey = null);
         void SetInfo(string roomAddress, RoomMetadata roomMetadata);
         void RequestAccess(string roomAddress, string securityKey, string clientInfo);
