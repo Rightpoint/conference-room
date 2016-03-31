@@ -16,6 +16,7 @@
                 scope.selectedMinutes = scope.selectedMinutes || 30;
                 function update() {
                     var now = timeService.now();
+                    var realNow = moment(now);
                     var minute = now.minute();
                     minute -= minute % 15;
                     now.minute(minute).second(0).millisecond(0);
@@ -38,7 +39,7 @@
                             formattedTime: time.format('h:mm')
                         }
                     }).filter(function(i) {
-                        return !scope.maxTime || i.time.isSameOrBefore(scope.maxTime);
+                        return (!scope.maxTime || i.time.isSameOrBefore(scope.maxTime)) && i.time.diff(realNow, 'minutes') >= 5;
                     });
                     if(scope.selectedMinutes > _.last(allowed).minutes) {
                         scope.selectedMinutes = _.last(allowed).minutes;
