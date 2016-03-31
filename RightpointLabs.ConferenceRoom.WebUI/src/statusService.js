@@ -1,9 +1,9 @@
 (function() {
     'use strict;'
 
-    angular.module('app').service('statusService', [function() {
+    angular.module('app').service('statusService', ['timeService', function(timeService) {
         function status(current, meetings) {
-            var now = moment();
+            var now = timeService.now();
             if (!current) {
                 return { busy: false, freeAt: 0, freeFor: null };
             }

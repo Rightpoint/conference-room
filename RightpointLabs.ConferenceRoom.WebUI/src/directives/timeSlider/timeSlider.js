@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').directive('timeSlider', [function() {
+    angular.module('app').directive('timeSlider', ['timeService', function(timeService) {
         return {
             restrict: 'E',
             templateUrl: 'directives/timeSlider/timeSlider.html',
@@ -15,7 +15,8 @@
                 var meetTimes = [15, 30, 45, 60, 75, 90, 105, 120];
                 scope.selectedMinutes = scope.selectedMinutes || 30;
                 function update() {
-                    var now = moment();
+                    var now = timeService.now();
+                    var realNow = moment(now);
                     var minute = now.minute();
                     minute -= minute % 15;
                     now.minute(minute).second(0).millisecond(0);
@@ -38,7 +39,7 @@
                             formattedTime: time.format('h:mm')
                         }
                     }).filter(function(i) {
-                        return !scope.maxTime || i.time.isSameOrBefore(scope.maxTime);
+                        return (!scope.maxTime || i.time.isSameOrBefore(scope.maxTime)) && i.time.diff(realNow, 'minutes') >= 5;
                     });
                     if(scope.selectedMinutes > _.last(allowed).minutes) {
                         scope.selectedMinutes = _.last(allowed).minutes;
@@ -51,6 +52,7 @@
                 }
                 
                 scope.$watchCollection('[ selectedMinutes, maxTime ]', update);
+                scope.$on('timeChanged', update);
                 
                 var lastPanDelta = 0;
                 var minPanDelta = 45; // adjust this number to adjust the sensitivity of the panning - ie. this is the number of pixels you must pan to move numbers
