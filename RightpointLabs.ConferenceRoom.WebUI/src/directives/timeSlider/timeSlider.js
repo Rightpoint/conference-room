@@ -55,7 +55,7 @@
                 scope.$on('timeChanged', update);
                 
                 var lastPanDelta = 0;
-                var minPanDelta = 45; // adjust this number to adjust the sensitivity of the panning - ie. this is the number of pixels you must pan to move numbers
+                var minPanDelta = 25; // adjust this number to adjust the sensitivity of the panning - ie. this is the number of pixels you must pan to move numbers
                 scope.panReset = function() {
                     lastPanDelta = 0;
                 };
