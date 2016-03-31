@@ -130,7 +130,7 @@
             });
         };
         
-        $scope.$watch('[ c.rooms, c.search ]', function() {
+        function applyFilter() {
             self.searchResults = self.rooms.map(function(room) {
                 var matchLocation = !self.search.location || room.Location == self.search.location;
                 var matchSize = self.search.minSize <= (room.Size || 0);
@@ -183,7 +183,10 @@
             });
             var groupCount = self.searchResults.length;
             self.scrollWidth = 30 + roomCount * (330 + 20*2) + groupCount * 60; // calculate the full width of the scrolling container based on the expected sizes of the various elements
-        }, true);
+        }
+        
+        $scope.$watch('[ c.rooms, c.search ]', applyFilter, true);
+        $scope.$on('timeChanged', applyFilter);
 
         // we have a default room we're supposed to be managing - time out and go there after 60 seconds
         $timeout(function() {

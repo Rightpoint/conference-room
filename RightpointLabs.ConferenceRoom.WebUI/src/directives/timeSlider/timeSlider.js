@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').directive('timeSlider', [function() {
+    angular.module('app').directive('timeSlider', ['timeService', function(timeService) {
         return {
             restrict: 'E',
             templateUrl: 'directives/timeSlider/timeSlider.html',
@@ -15,7 +15,7 @@
                 var meetTimes = [15, 30, 45, 60, 90, 120];
                 scope.selectedMinutes = scope.selectedMinutes || 30;
                 function update() {
-                    var now = moment();
+                    var now = timeService.now();
                     var minute = now.minute();
                     minute -= minute % 15;
                     now.minute(minute).second(0).millisecond(0);
@@ -51,6 +51,8 @@
                 }
                 
                 scope.$watchCollection('[ selectedMinutes, maxTime ]', update);
+                scope.$on('timeChanged', update);
+
                 scope.next = function() {
                     if(scope.nextObj) {
                         scope.selectedMinutes = scope.nextObj.minutes;
