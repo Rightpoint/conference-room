@@ -14,9 +14,9 @@
                         <span ng-if="i.status.freeFor < 60" class="primary-duration">{{ i.status.freeFor }}</span>
                         <span ng-if="i.status.freeFor < 60" class="secondary-duration">minutes</span>
                         <div class="equipment">
-                            <div ng-repeat="e in c.equipmentChoices" ng-if="c.roomHasEquipment(i, e)" title="{{ e.text }}">
-                                <span ng-class="e.icon"></span>
-                            </div>
+                            <ul ng-repeat="e in c.equipmentChoices" ng-if="c.roomHasEquipment(i, e)" title="{{ e.text }}">
+                                <li ng-class="e.icon" class="icon"></li>
+                            </ul>
                         </div>
                     </li>
                 </ul>
