@@ -12,7 +12,7 @@
                 maxTime: '='
             },
             link: function (scope, element, attr) {
-                var meetTimes = [15, 30, 45, 60, 90, 120];
+                var meetTimes = [15, 30, 45, 60, 75, 90, 105, 120];
                 scope.selectedMinutes = scope.selectedMinutes || 30;
                 function update() {
                     var now = timeService.now();
@@ -53,15 +53,20 @@
                 
                 scope.$watchCollection('[ selectedMinutes, maxTime ]', update);
                 scope.$on('timeChanged', update);
-
-                scope.next = function() {
-                    if(scope.nextObj) {
-                        scope.selectedMinutes = scope.nextObj.minutes;
-                    }
+                
+                var lastPanDelta = 0;
+                var minPanDelta = 25; // adjust this number to adjust the sensitivity of the panning - ie. this is the number of pixels you must pan to move numbers
+                scope.panReset = function() {
+                    lastPanDelta = 0;
                 };
-                scope.prev = function() {
-                    if(scope.prevObj) {
-                        scope.selectedMinutes = scope.prevObj.minutes;
+                scope.pan = function(evt) {
+                    if(Math.abs(evt.deltaX - lastPanDelta) < minPanDelta) {
+                        return;
+                    }
+                    var obj = evt.deltaX < lastPanDelta ? scope.nextObj : scope.prevObj;
+                    lastPanDelta = evt.deltaX;
+                    if(obj) {
+                        scope.selectedMinutes = obj.minutes;
                     }
                 };
             }
