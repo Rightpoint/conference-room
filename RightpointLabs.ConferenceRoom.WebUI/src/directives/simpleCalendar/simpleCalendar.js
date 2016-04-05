@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').directive('simpleCalendar', ['$timeout', '$interval', '$window', 'statusService', function($timeout, $interval, $window, statusService) {
+    angular.module('app').directive('simpleCalendar', ['$window', 'statusService', 'timeService', function($window, statusService, timeService) {
         return {
             restrict: 'E',
             templateUrl: 'directives/simpleCalendar/simpleCalendar.html',
@@ -58,7 +58,7 @@
                 };
 
                 function update() {
-                    var now = moment();
+                    var now = timeService.now();
                     scope.now = now.toDate();
                     var today = moment(now).startOf('day');
                     scope.getOffset = function getOffset(value) {
@@ -74,7 +74,7 @@
                 }
                 
                 scope.$watch('calendars', update, true);
-                $interval(update, 60000);
+                scope.$on('timeChanged', update);
                 
                 var scrolls = element.find('.h-scrollable');
                 for(var i=0; i<scrolls.length; i++) {

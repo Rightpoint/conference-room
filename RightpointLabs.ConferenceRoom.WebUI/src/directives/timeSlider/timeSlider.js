@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').directive('timeSlider', [function() {
+    angular.module('app').directive('timeSlider', ['timeService', function(timeService) {
         return {
             restrict: 'E',
             templateUrl: 'directives/timeSlider/timeSlider.html',
@@ -12,10 +12,11 @@
                 maxTime: '='
             },
             link: function (scope, element, attr) {
-                var meetTimes = [15, 30, 45, 60, 90, 120];
+                var meetTimes = [15, 30, 45, 60, 75, 90, 105, 120];
                 scope.selectedMinutes = scope.selectedMinutes || 30;
                 function update() {
-                    var now = moment();
+                    var now = timeService.now();
+                    var realNow = moment(now);
                     var minute = now.minute();
                     minute -= minute % 15;
                     now.minute(minute).second(0).millisecond(0);
@@ -38,7 +39,7 @@
                             formattedTime: time.format('h:mm')
                         }
                     }).filter(function(i) {
-                        return !scope.maxTime || i.time.isSameOrBefore(scope.maxTime);
+                        return (!scope.maxTime || i.time.isSameOrBefore(scope.maxTime)) && i.time.diff(realNow, 'minutes') >= 5;
                     });
                     if(scope.selectedMinutes > _.last(allowed).minutes) {
                         scope.selectedMinutes = _.last(allowed).minutes;
@@ -51,14 +52,21 @@
                 }
                 
                 scope.$watchCollection('[ selectedMinutes, maxTime ]', update);
-                scope.next = function() {
-                    if(scope.nextObj) {
-                        scope.selectedMinutes = scope.nextObj.minutes;
-                    }
+                scope.$on('timeChanged', update);
+                
+                var lastPanDelta = 0;
+                var minPanDelta = 25; // adjust this number to adjust the sensitivity of the panning - ie. this is the number of pixels you must pan to move numbers
+                scope.panReset = function() {
+                    lastPanDelta = 0;
                 };
-                scope.prev = function() {
-                    if(scope.prevObj) {
-                        scope.selectedMinutes = scope.prevObj.minutes;
+                scope.pan = function(evt) {
+                    if(Math.abs(evt.deltaX - lastPanDelta) < minPanDelta) {
+                        return;
+                    }
+                    var obj = evt.deltaX < lastPanDelta ? scope.nextObj : scope.prevObj;
+                    lastPanDelta = evt.deltaX;
+                    if(obj) {
+                        scope.selectedMinutes = obj.minutes;
                     }
                 };
             }

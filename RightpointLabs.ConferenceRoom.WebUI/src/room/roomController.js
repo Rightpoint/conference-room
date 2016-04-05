@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('RoomController', ['Restangular', '$timeout', '$interval', '$q', '$scope', 'matchmedia', 'UpdateHub', 'settings', 'timelineService', '$state', 'soundService', function(Restangular, $timeout, $interval, $q, $scope, matchmedia, UpdateHub, settings, timelineService, $state, soundService) {
+    angular.module('app').controller('RoomController', ['Restangular', '$timeout', '$interval', '$q', '$scope', 'matchmedia', 'UpdateHub', 'settings', 'timelineService', '$state', 'soundService', 'timeService', function(Restangular, $timeout, $interval, $q, $scope, matchmedia, UpdateHub, settings, timelineService, $state, soundService, timeService) {
         if (!settings.defaultRoom) {
             $state.go('settings');
             return;
@@ -25,9 +25,8 @@
         var room = Restangular.one('room', self.roomAddress);
         var securityKey = settings.securityKey || '';
 
-        var timeDelta = moment().diff(moment());
         self.currentTime = function currentTime() {
-            return moment().add(-timeDelta, 'milliseconds').second(0).millisecond(0);
+            return timeService.now().startOf('minute');
         };
 
         self.minutesUntil = function (value) {
@@ -105,7 +104,7 @@
                     return;
                 }
 
-                timeDelta = moment().diff(moment(data.CurrentTime));
+                timeDelta = timeService.setCurrentTime(data.CurrentTime);
                 self.displayName = data.DisplayName;
                 self.hasControllableDoor = data.HasControllableDoor;
                 scheduleCancel();
