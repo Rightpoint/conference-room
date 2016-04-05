@@ -46,7 +46,10 @@
         };
         self.floor = function(e) {
             return Math.floor(e);
-        }
+        };
+        self.roomHasEquipment = function roomHasEquipment(room, equip) {
+            return _.some(room.Equipment, function(ee) { return equip.text == ee; });
+        };
         
         // try to delegate the work to the server.  If that doesn't work, then we'll fallback to calling the normal APIs
         Restangular.all('room').one('all').one('status').get({ roomAddress: settings.defaultRoom }).then(function(data) {
@@ -135,7 +138,7 @@
                 var matchLocation = !self.search.location || room.Location == self.search.location;
                 var matchSize = self.search.minSize <= (room.Size || 0);
                 var matchEquipment = _.all(self.search.equipment, function(e) {
-                    return _.some(room.Equipment, function(ee) { return e.text == ee; });
+                    return self.roomHasEquipment(room, e);
                 });
                 
                 room = angular.copy(room);

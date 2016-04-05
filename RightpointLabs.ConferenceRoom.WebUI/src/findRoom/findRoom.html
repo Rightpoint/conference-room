@@ -13,6 +13,11 @@
                         <span ng-if="i.status.freeFor >= 60 && i.status.freeFor % 60 > 0" class="secondary-duration">and <span class="bold">{{ i.status.freeFor - c.floor(i.status.freeFor / 60) * 60 }}</span> minutes</span>
                         <span ng-if="i.status.freeFor < 60" class="primary-duration">{{ i.status.freeFor }}</span>
                         <span ng-if="i.status.freeFor < 60" class="secondary-duration">minutes</span>
+                        <div class="equipment">
+                            <div ng-repeat="e in c.equipmentChoices" ng-if="c.roomHasEquipment(i, e)" title="{{ e.text }}">
+                                <span ng-class="e.icon"></span>
+                            </div>
+                        </div>
                     </li>
                 </ul>
             </li>
