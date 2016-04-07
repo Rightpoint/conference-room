@@ -17,6 +17,7 @@
                             <ul ng-repeat="e in c.equipmentChoices" ng-if="c.roomHasEquipment(i, e)" title="{{ e.text }}">
                                 <li ng-class="e.icon" class="icon"></li>
                             </ul>
+                            <span class="accomodates">Accomodates&nbsp;<span ng-if="i.Size">{{ i.Size }}</span></span>
                         </div>
                     </li>
                 </ul>
