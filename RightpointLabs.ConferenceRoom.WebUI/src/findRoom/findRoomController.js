@@ -191,9 +191,21 @@
         $scope.$watch('[ c.rooms, c.search ]', applyFilter, true);
         $scope.$on('timeChanged', applyFilter);
 
-        // we have a default room we're supposed to be managing - time out and go there after 60 seconds
-        $timeout(function() {
-            $state.go('room');
-        }, 60000);
+        // we have a default room we're supposed to be managing - time out and go there after 60 seconds, but reset the timer on each action
+        var redirectTimeout = null;
+        function resetTimeout() {
+            if(redirectTimeout) {
+               $timeout.cancel(redirectTimeout);
+            }
+            redirectTimeout = $timeout(function() {
+                $state.go('room');
+            }, 60000);
+        }
+        resetTimeout();
+        var resetEvents = 'mousedown mouseover mouseout mousemove';
+        angular.element(document).on(resetEvents, resetTimeout);
+        $scope.$on('$destroy', function() {
+            angular.element(document).off(resetEvents, resetTimeout);
+        });
     }]);
 })();
