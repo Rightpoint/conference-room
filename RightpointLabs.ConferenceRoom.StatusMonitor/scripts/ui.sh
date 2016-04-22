@@ -1,4 +1,4 @@
 #!/bin/sh
 while true; do
-        xinit ~rooms/innerui.sh
+        xinit ~pi/statusMonitor/scripts/innerui.sh
 done
