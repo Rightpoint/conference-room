@@ -9,4 +9,4 @@ openbox --config-file ~pi/statusMonitor/scripts/openbox.xml &
 # hide mouse cursor when idle
 unclutter -idle 1 &
 
-chromium-browser --user-data-dir=~pi/.config --app=http://rooms/ --no-sandbox
+chromium-browser --user-data-dir=~pi/.config --app=http://rooms/ --no-sandbox --disable-pinch --touch-events --kiosk
