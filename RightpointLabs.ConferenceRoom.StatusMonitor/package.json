@@ -9,10 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "async": "^0.9.0",
+    "pi-blaster.js": "^0.1.1",
     "promise": "^7.0.1",
-    "signalr-client": "0.0.12",
-    "onoff": "~1.0.2",
-    "sleep": "~2.0.0"
+    "signalr-client": "0.0.12"
   }
 }

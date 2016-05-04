@@ -1,0 +1,7 @@
+<div class="time-slider" hm-panstart="panReset()" hm-panend="panReset()" hm-pancancel="panReset()" hm-panright="pan($event)" hm-panleft="pan($event)" hm-recognizer-options='[
+{"type":"pan","threshold":10}
+]'>
+    <span class="prev" ng-if="prevObj">{{ prevObj.formattedTime }}</span>
+    <span class="selected" ng-if="selectedObj">{{ selectedObj.formattedTime }}</span>
+    <span class="next" ng-if="nextObj">{{ nextObj.formattedTime }}</span>
+</div>

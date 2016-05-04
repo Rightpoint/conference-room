@@ -41,35 +41,24 @@
   background-color: @brand-warning;
 }
 
-// and now define our own app-wide stuff
-.small-screen-basics {
-  .navbar {
-    display: none;
-  }
-  .container {
-    padding-left: 5px;
-    padding-right: 5px;
-  }
-  h1, .h1, h2, .h2, h3, .h3 {
-    margin-top: 10px;
-    margin-bottom: 5px;
-  }
-  * {
+* {
     -webkit-user-select: none !important;
     user-select: none !important;
-  }
-}
-.small-screen {
-  .small-screen-basics();
-}
-@media screen and (max-width: 320px) and (max-height: 240px) {
-  .small-screen-basics();
 }
 
-@media screen and (min-width: @highDpiMinW) and (min-height: @highDpiMinH) {
-  .small-screen {
-    .main-content {
-      padding: 50px;
-    }
-  }
+html > body > .ui-select-bootstrap.open {
+    z-index: 1020; /** keep above the spinner **/
+}
+
+/** override a few styles to keep the select dropdown in the find a room header from being borked **/
+.ui-select-placeholder {
+    display: inline-block;
+    height: 17px !important;
+}
+
+/** hide cursor **/
+body {
+    &, * {
+        cursor: none !important; 
+    } 
 }

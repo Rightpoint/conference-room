@@ -1,0 +1,37 @@
+<div class="simple-calendar" ng-class="{ 'has-multiple': calendars.length !== 1, 'has-titles': showTitles }">
+    <div class="h-scrollable">
+        <div class="top"
+            ng-repeat="calendar in calendars"
+            ng-class="topClass($index, calendar)" 
+            ng-style="{ left: ($index * 220) }">
+            <h3 class="title" ng-if="showTitles" ng-click="clickHeader({ calendar: calendar })">{{ calendar.DisplayName }}</h3>
+            <div class="status" ng-class="freeBusy(calendar)">{{ status(calendar) }}</div>
+       </div>
+    </div>
+    <div class="v-scrollable">
+        <div class="times">
+            <div class="time" 
+                ng-repeat="hour in hours" 
+                ng-style="{ top: getOffset(hour) - 9 }">{{ formatHour(hour) }}</div>
+            <div class="time-line" 
+                ng-repeat="hour in hours"
+                ng-style="{ top: getOffset(hour) }"></div> 
+        </div>
+        <div class="current-line" ng-style="{ top: getOffset(now) }" ng-class="freeBusy(calendars[0])"></div>
+        <div class="h-scrollable" ng-style="{ height: vHeight }">
+            <div class="data" ng-repeat="calendar in calendars"
+                ng-class="calendarClass($index, calendar)" 
+                ng-style="{ left: ($index * 220) }">
+                <div class="event" 
+                    ng-repeat="evt in calendar.NearTermMeetings"
+                    ng-class="eventClass(evt)"
+                    ng-style="styles(evt)"
+                    ng-click="click({ meeting: evt })"
+                    >
+                    <span class="organizer">{{ evt.Organizer }}</span>
+                    <span ng-if="evt.Subject">: {{ evt.Subject}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

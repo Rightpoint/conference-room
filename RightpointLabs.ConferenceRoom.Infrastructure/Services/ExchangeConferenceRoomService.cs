@@ -20,7 +20,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 {
     public class ExchangeConferenceRoomService : IConferenceRoomService
     {
-        private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog __log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private readonly IMeetingRepository _meetingRepository;
         private readonly ISecurityRepository _securityRepository;
         private readonly IBroadcastService _broadcastService;
@@ -33,11 +33,25 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly ISmsMessagingService _smsMessagingService;
         private readonly ISmsAddressLookupService _smsAddressLookupService;
         private readonly ISignatureService _signatureService;
+        private readonly IRoomRepository _roomRepository;
         private readonly bool _ignoreFree;
         private readonly bool _useChangeNotification;
-        private bool _impersonateForAllCalls;
+        private readonly bool _impersonateForAllCalls;
+        private readonly string[] _emailDomains;
 
-        public ExchangeConferenceRoomService(IMeetingRepository meetingRepository, ISecurityRepository securityRepository, IBroadcastService broadcastService, IDateTimeService dateTimeService, IMeetingCacheService meetingCacheService, IChangeNotificationService changeNotificationService, IExchangeServiceManager exchangeServiceManager, ISimpleTimedCache simpleTimedCache, IInstantMessagingService instantMessagingService, ISmsMessagingService smsMessagingService, ISmsAddressLookupService smsAddressLookupService, ISignatureService signatureService)
+        public ExchangeConferenceRoomService(IMeetingRepository meetingRepository,
+            ISecurityRepository securityRepository,
+            IBroadcastService broadcastService,
+            IDateTimeService dateTimeService,
+            IMeetingCacheService meetingCacheService,
+            IChangeNotificationService changeNotificationService,
+            IExchangeServiceManager exchangeServiceManager,
+            ISimpleTimedCache simpleTimedCache,
+            IInstantMessagingService instantMessagingService,
+            ISmsMessagingService smsMessagingService,
+            ISmsAddressLookupService smsAddressLookupService,
+            ISignatureService signatureService,
+            IRoomRepository roomRepository)
         {
             _meetingRepository = meetingRepository;
             _securityRepository = securityRepository;
@@ -51,9 +65,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _smsMessagingService = smsMessagingService;
             _smsAddressLookupService = smsAddressLookupService;
             _signatureService = signatureService;
+            _roomRepository = roomRepository;
             _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
             _useChangeNotification = bool.Parse(ConfigurationManager.AppSettings["useChangeNotification"] ?? "true");
             _impersonateForAllCalls = bool.Parse(ConfigurationManager.AppSettings["impersonateForAllCalls"] ?? "true");
+            _emailDomains = (ConfigurationManager.AppSettings["emailDomains"] ?? "")
+                .Split(';')
+                .Select(_ => _.StartsWith("@") ? _.ToLowerInvariant() : "@" + _.ToLowerInvariant())
+                .ToArray();
         }
 
         /// <summary>
@@ -63,7 +82,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         public IEnumerable<RoomList> GetRoomLists()
         {
             return _simpleTimedCache.GetCachedValue("RoomLists", TimeSpan.FromHours(24),
-                () => Task.FromResult(_exchangeServiceManager.Execute("", svc => svc.GetRoomLists().Select(i => new RoomList { Address = i.Address, Name = i.Name }).ToArray()))).Result;
+                () => Task.FromResult(_exchangeServiceManager.Execute(string.Empty, svc => svc.GetRoomLists()
+                    .Select(i => new RoomList {Address = i.Address, Name = i.Name})
+                    .ToArray()))).Result;
         }
 
         /// <summary>
@@ -73,13 +94,18 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         /// <returns></returns>
         public IEnumerable<Room> GetRoomsFromRoomList(string roomListAddress)
         {
-            return _simpleTimedCache.GetCachedValue("Rooms_" + roomListAddress, TimeSpan.FromHours(24), 
-                () => Task.FromResult(_exchangeServiceManager.Execute("", svc => svc.GetRooms(roomListAddress).Select(i => new Room { Address = i.Address, Name = i.Name }).ToArray()))).Result;
+            return _simpleTimedCache.GetCachedValue("Rooms_" + roomListAddress,
+                TimeSpan.FromHours(24),
+                () => Task.FromResult(_exchangeServiceManager.Execute(string.Empty, svc => svc.GetRooms(roomListAddress)
+                    .Select(i => new Room {Address = i.Address, Name = i.Name})
+                    .ToArray()))).Result;
         }
 
-        public object GetInfo(string roomAddress, string securityKey = null)
+        public RoomInfo GetInfo(string roomAddress, string securityKey = null)
         {
-            var room = _exchangeServiceManager.Execute(_impersonateForAllCalls ? roomAddress : "", svc => svc.ResolveName(roomAddress).SingleOrDefault());
+            var room = _simpleTimedCache.GetCachedValue("RoomInfo_" + roomAddress,
+                TimeSpan.FromHours(24),
+                () => Task.FromResult(ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc => svc.ResolveName(roomAddress).SingleOrDefault()))).Result;
 
             if (null == room)
             {
@@ -93,12 +119,42 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 _changeNotificationService.TrackRoom(roomAddress);
             }
 
-            return new
+            var roomMetadata = _roomRepository.GetRoomInfo(roomAddress) ?? new RoomMetadata();
+
+            return new RoomInfo()
             {
                 CurrentTime = _dateTimeService.Now,
-                DisplayName = room.Mailbox.Name,
-                SecurityStatus = rights
+                DisplayName = (room.Mailbox.Name ?? "").Replace("(Meeting Room ", "("),
+                SecurityStatus = rights,
+                Size = roomMetadata.Size,
+                BuildingId = roomMetadata.BuildingId,
+                Floor = roomMetadata.Floor,
+                DistanceFromFloorOrigin = roomMetadata.DistanceFromFloorOrigin ?? new Point(),
+                Equipment = roomMetadata.Equipment,
+                HasControllableDoor = !string.IsNullOrEmpty(roomMetadata.GdoDeviceId),
             };
+        }
+
+        public void SetInfo(string roomAddress, RoomMetadata roomMetadata)
+        {
+            var room = ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc => svc.ResolveName(roomAddress).SingleOrDefault());
+
+            if (null == room)
+            {
+                throw new Exception(string.Format("Room \"{0}\" not found", roomAddress));
+            }
+
+            if (roomMetadata.DistanceFromFloorOrigin == null)
+            {
+                roomMetadata.DistanceFromFloorOrigin = new Point();
+            }
+            if (roomMetadata.Equipment == null ||
+                roomMetadata.Equipment.Count == 0)
+            {
+                roomMetadata.Equipment = new List<RoomEquipment>() {RoomEquipment.None,};
+            }
+
+            _roomRepository.SaveRoomInfo(roomAddress, roomMetadata);
         }
 
         public void RequestAccess(string roomAddress, string securityKey, string clientInfo)
@@ -115,10 +171,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 {
                     try
                     {
-                        return _exchangeServiceManager.Execute(_impersonateForAllCalls ? roomAddress : "", svc =>
+                        return ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
                         {
                             var apt = svc.FindAppointments(WellKnownFolderName.Calendar, new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2)) { PropertySet = new PropertySet(AppointmentSchema.Id, AppointmentSchema.LegacyFreeBusyStatus)}).ToList();
-                            log.DebugFormat("Got {0} appointments for {1} via {2} with {3}", apt.Count, roomAddress, svc.GetHashCode(), svc.CookieContainer.GetCookieHeader(svc.Url));
+                            __log.DebugFormat("Got {0} appointments for {1} via {2} with {3}", apt.Count, roomAddress, svc.GetHashCode(), svc.CookieContainer.GetCookieHeader(svc.Url));
                             if (_ignoreFree)
                             {
                                 apt = apt.Where(i => i.LegacyFreeBusyStatus != LegacyFreeBusyStatus.Free).ToList();
@@ -148,22 +204,73 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     }
                     catch (ServiceResponseException ex)
                     {
-                        if (ex.ErrorCode == ServiceError.ErrorFolderNotFound || ex.ErrorCode == ServiceError.ErrorNonExistentMailbox || ex.ErrorCode == ServiceError.ErrorAccessDenied)
-                        {
-                            log.DebugFormat("Access denied ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
-                            throw new AccessDeniedException("Folder/mailbox not found or access denied", ex);
-                        }
-                        log.DebugFormat("Unexpected error ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
+                        CheckForAccessDenied(roomAddress, ex);
+                        __log.DebugFormat("Unexpected error ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
                         throw;
                     }
                 });
             }).Result;
         }
 
-        public RoomStatusInfo GetStatus(string roomAddress)
+        public IEnumerable<Meeting> GetSimpleUpcomingAppointmentsForRoom(string roomAddress)
+        {
+            var isTracked = _changeNotificationService.IsTrackedForChanges(roomAddress);
+            var result = _meetingCacheService.TryGetUpcomingAppointmentsForRoom(roomAddress, isTracked)?.Result;
+            if (null == result)
+            {
+                try
+                {
+                    return ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
+                    {
+                        var apt = svc.FindAppointments(WellKnownFolderName.Calendar, new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))
+                        {
+                            // load enough properties that we don't have to make a second trip to the server
+                            PropertySet = new PropertySet(
+                                AppointmentSchema.Id,
+                                AppointmentSchema.LegacyFreeBusyStatus,
+                                AppointmentSchema.Start,
+                                AppointmentSchema.End,
+                                AppointmentSchema.IsAllDayEvent
+                            )
+                        }).ToList();
+                        __log.DebugFormat("Got {0} appointments for {1} via {2} with {3}", apt.Count, roomAddress, svc.GetHashCode(), svc.CookieContainer.GetCookieHeader(svc.Url));
+                        if (_ignoreFree)
+                        {
+                            apt = apt.Where(i => i.LegacyFreeBusyStatus != LegacyFreeBusyStatus.Free).ToList();
+                        }
+
+                        // short-circuit if we don't have any meetings
+                        if (!apt.Any())
+                        {
+                            return new Meeting[] { };
+                        }
+                        
+                        var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
+                        return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
+                    });
+                }
+                catch (ServiceResponseException ex)
+                {
+                    CheckForAccessDenied(roomAddress, ex);
+                    __log.DebugFormat("Unexpected error ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
+                    throw;
+                }
+            }
+            return result;
+        }
+        private static void CheckForAccessDenied(string roomAddress, ServiceResponseException ex)
+        {
+            if (ex.ErrorCode == ServiceError.ErrorFolderNotFound || ex.ErrorCode == ServiceError.ErrorNonExistentMailbox || ex.ErrorCode == ServiceError.ErrorAccessDenied)
+            {
+                __log.DebugFormat("Access denied ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
+                throw new AccessDeniedException("Folder/mailbox not found or access denied", ex);
+            }
+        }
+
+        public RoomStatusInfo GetStatus(string roomAddress, bool isSimple = false)
         {
             var now = _dateTimeService.Now;
-            var allMeetings = GetUpcomingAppointmentsForRoom(roomAddress)
+            var allMeetings = (isSimple ? GetSimpleUpcomingAppointmentsForRoom(roomAddress) : GetUpcomingAppointmentsForRoom(roomAddress))
                 .OrderBy(i => i.Start).ToList();
             var upcomingMeetings = allMeetings.Where(i => !i.IsCancelled && !i.IsEndedEarly && i.End > now);
             var meetings = upcomingMeetings
@@ -221,7 +328,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         public void StartMeeting(string roomAddress, string uniqueId, string securityKey)
         {
             SecurityCheck(roomAddress, uniqueId, securityKey);
-            log.DebugFormat("Starting {0} for {1}", uniqueId, roomAddress);
+            __log.DebugFormat("Starting {0} for {1}", uniqueId, roomAddress);
             _meetingRepository.StartMeeting(uniqueId);
             BroadcastUpdate(roomAddress);
         }
@@ -230,16 +337,28 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         {
             if (!_signatureService.VerifySignature(uniqueId, signature))
             {
-                log.ErrorFormat("Invalid signature: {0} for {1}", signature, uniqueId);
+                __log.ErrorFormat("Invalid signature: {0} for {1}", signature, uniqueId);
                 return false;
             }
-            log.DebugFormat("Starting {0} for {1}", uniqueId, roomAddress);
+            __log.DebugFormat("Starting {0} for {1}", uniqueId, roomAddress);
             _meetingRepository.StartMeeting(uniqueId);
             BroadcastUpdate(roomAddress);
             return true;
         }
 
-        public void WarnMeeting(string roomAddress, string uniqueId, string securityKey, Func<string, string> buildUrl)
+        public bool CancelMeetingFromClient(string roomAddress, string uniqueId, string signature)
+        {
+            if (!_signatureService.VerifySignature(uniqueId, signature))
+            {
+                __log.ErrorFormat("Invalid signature: {0} for {1}", signature, uniqueId);
+                return false;
+            }
+            __log.DebugFormat("Abandoning {0} for {1}", uniqueId, roomAddress);
+            CancelMeeting(roomAddress, uniqueId);
+            return true;
+        }
+
+        public void WarnMeeting(string roomAddress, string uniqueId, string securityKey, Func<string, string> buildStartUrl, Func<string, string> buildCancelUrl)
         {
             var meeting = SecurityCheck(roomAddress, uniqueId, securityKey);
             if (meeting.IsNotManaged)
@@ -247,10 +366,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 throw new Exception("Cannot manage this meeting");
             }
 
-            var item = _exchangeServiceManager.Execute(_impersonateForAllCalls ? roomAddress : "", svc => Appointment.Bind(svc, new ItemId(uniqueId)));
-            log.DebugFormat("Warning {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
-            var startUrl = buildUrl(_signatureService.GetSignature(uniqueId));
-            SendEmail(item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "Use the conference room management device to start the meeting ASAP, or go to " + startUrl + " .");
+            var item = ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc => Appointment.Bind(svc, new ItemId(uniqueId)));
+            __log.DebugFormat("Warning {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
+            var startUrl = buildStartUrl(_signatureService.GetSignature(uniqueId));
+            var cancelUrl = buildCancelUrl(_signatureService.GetSignature(uniqueId));
+            SendEmail(roomAddress, item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "<p>Please start your meeting by using the RoomNinja on the wall outside the room or simply <a href='" + startUrl + "'>click here to START the meeting</a>.</p><p><a href='" + cancelUrl + "'>Click here to RELEASE the room</a> if you no longer need it so that others can use it.</p>");
         }
 
         public void CancelMeeting(string roomAddress, string uniqueId, string securityKey)
@@ -260,12 +380,17 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 throw new Exception("Cannot manage this meeting");
             }
+            CancelMeeting(roomAddress, uniqueId);
+        }
+
+        private void CancelMeeting(string roomAddress, string uniqueId)
+        {
             _meetingRepository.CancelMeeting(uniqueId);
 
-            var item = _exchangeServiceManager.Execute(_impersonateForAllCalls ? roomAddress : "", svc =>
+            var item = ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
             {
                 var appt = Appointment.Bind(svc, new ItemId(uniqueId));
-                log.DebugFormat("Cancelling {0} for {1}, which should start at {2}", uniqueId, roomAddress, appt.Start);
+                __log.DebugFormat("Cancelling {0} for {1}, which should start at {2}", uniqueId, roomAddress, appt.Start);
                 var now = _dateTimeService.Now.TruncateToTheMinute();
                 if (now >= appt.Start)
                 {
@@ -279,7 +404,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 return appt;
             });
 
-            SendEmail(item, string.Format("Your meeting '{0}' in {1} has been cancelled.", item.Subject, item.Location), "If you want to keep the room, use the conference room management device to start a new meeting ASAP.");
+            SendEmail(roomAddress, item,
+                string.Format("Your meeting '{0}' in {1} has been cancelled.", item.Subject, item.Location),
+                "<p>If you want to keep the room, use the RoomNinja on the wall outside the room to start a new meeting ASAP.</p>");
 
             BroadcastUpdate(roomAddress);
         }
@@ -295,10 +422,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             var now = _dateTimeService.Now.TruncateToTheMinute();
 
-            _exchangeServiceManager.Execute(_impersonateForAllCalls ? roomAddress : "", svc =>
+            ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
             {
                 var item = Appointment.Bind(svc, new ItemId(uniqueId));
-                log.DebugFormat("Ending {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
+                __log.DebugFormat("Ending {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
                 if (now >= item.Start)
                 {
                     item.End = now;
@@ -321,8 +448,17 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 throw new Exception("Cannot manage this meeting");
             }
 
-            var item = _exchangeServiceManager.Execute(_impersonateForAllCalls ? roomAddress : "", svc => Appointment.Bind(svc, new ItemId(uniqueId), new PropertySet(AppointmentSchema.RequiredAttendees, AppointmentSchema.OptionalAttendees, AppointmentSchema.Location)));
-            var addresses = item.RequiredAttendees.Concat(item.OptionalAttendees).Select(i => i.Address).Where(i => i != null && i.ToLower().EndsWith("@rightpoint.com")).ToArray();
+            var item = ExchangeServiceExecuteWithImpersonationCheck(roomAddress,
+                svc =>
+                    Appointment.Bind(svc, new ItemId(uniqueId),
+                        new PropertySet(AppointmentSchema.RequiredAttendees,
+                            AppointmentSchema.OptionalAttendees,
+                            AppointmentSchema.Location)));
+            var addresses = item.RequiredAttendees.Concat(item.OptionalAttendees)
+                .Where(i => i.Address != null &&
+                            IsExternalAttendee(i) == false)
+                .Select(i => i.Address)
+                .ToArray();
 
             var smsAddresses = _smsAddressLookupService.LookupAddresses(addresses);
 
@@ -336,7 +472,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             }
         }
 
-        public void StartNewMeeting(string roomAddress, string securityKey, string title, int minutes)
+        public void StartNewMeeting(string roomAddress, string securityKey, string title, DateTime endTime)
         {
             if (_securityRepository.GetSecurityRights(roomAddress, securityKey) != SecurityStatus.Granted)
             {
@@ -348,20 +484,30 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 throw new Exception("Room is not free");
             }
 
-            var item = _exchangeServiceManager.Execute(_impersonateForAllCalls ? roomAddress : "", svc =>
+            var item = ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
             {
                 var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
 
                 var now = _dateTimeService.Now.TruncateToTheMinute();
-                minutes = Math.Max(0, Math.Min(minutes, Math.Min(120, status.NextMeeting.ChainIfNotNull(m => (int?)m.Start.Subtract(now).TotalMinutes) ?? 120)));
+                if (status.NextMeeting != null)
+                {
+                    if (endTime > status.NextMeeting.Start)
+                    {
+                        endTime = status.NextMeeting.Start;
+                    }
+                }
+                if (endTime.Subtract(now).TotalHours > 2)
+                {
+                    throw new ApplicationException("Cannot create a meeting for more than 2 hours");
+                }
 
                 var appt = new Appointment(svc);
                 appt.Start = now;
-                appt.End = now.AddMinutes(minutes);
+                appt.End = endTime;
                 appt.Subject = title;
                 appt.Body = "Scheduled via conference room management system";
                 appt.Save(calId, SendInvitationsMode.SendToNone);
-                log.DebugFormat("Created {0} for {1}", appt.Id.UniqueId, roomAddress);
+                __log.DebugFormat("Created {0} for {1}", appt.Id.UniqueId, roomAddress);
                 return appt;
             });
 
@@ -375,24 +521,27 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _broadcastService.BroadcastUpdate(roomAddress);
         }
 
-        private void SendEmail(Appointment item, string subject, string body)
+        private void SendEmail(string roomAddress, Appointment item, string subject, string body)
         {
-            _exchangeServiceManager.Execute("", svc =>
+            ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
             {
                 var msg = new EmailMessage(svc);
+                msg.From = new EmailAddress(roomAddress);
+                msg.ReplyTo.Add("noreply@" + roomAddress.Split('@').Last());
                 msg.Subject = subject;
                 msg.Body = body;
-                log.DebugFormat("Address: {0}, MailboxType: {1}", item.Organizer.Address, item.Organizer.MailboxType);
+                msg.Body.BodyType = BodyType.HTML;
+                __log.DebugFormat("Address: {0}, MailboxType: {1}", item.Organizer.Address, item.Organizer.MailboxType);
                 if (item.Organizer.MailboxType == MailboxType.Mailbox)
                 {
                     msg.ToRecipients.Add(item.Organizer);
                 }
                 foreach (var x in item.RequiredAttendees.Concat(item.OptionalAttendees))
                 {
-                    log.DebugFormat("Address: {0}, MailboxType: {1}, RoutingType: {2}", x.Address, x.MailboxType, x.RoutingType);
-                    if (x.RoutingType == "SMTP" && x.Address.EndsWith("@rightpoint.com"))
+                    __log.DebugFormat("Address: {0}, MailboxType: {1}, RoutingType: {2}", x.Address, x.MailboxType, x.RoutingType);
+                    if (x.RoutingType == "SMTP" && IsExternalAttendee(x) == false)
                     {
-                        log.DebugFormat("Also sending to {0} @ {1}", x.Name, x.Address);
+                        __log.DebugFormat("Also sending to {0} @ {1}", x.Name, x.Address);
                         msg.CcRecipients.Add(x.Name, x.Address);
                     }
                 }
@@ -402,10 +551,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         private Meeting SecurityCheck(string roomAddress, string uniqueId, string securityKey)
         {
-            if (_securityRepository.GetSecurityRights(roomAddress, securityKey) != SecurityStatus.Granted)
-            {
-                throw new UnauthorizedAccessException();
-            }
+            SecurityCheck(roomAddress, securityKey);
             var meeting = GetUpcomingAppointmentsForRoom(roomAddress).FirstOrDefault(i => i.UniqueId == uniqueId);
             if (null == meeting)
             {
@@ -414,28 +560,74 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             return meeting;
         }
 
-        private static Meeting BuildMeeting(Appointment i, MeetingInfo meetingInfo)
+        public void SecurityCheck(string roomAddress, string securityKey)
         {
-            var externalAttendees =
-                i.RequiredAttendees.Concat(i.OptionalAttendees)
-                    .Count(ii => null == ii.Address || !ii.Address.ToLower().EndsWith("@rightpoint.com"));
+            if (_securityRepository.GetSecurityRights(roomAddress, securityKey) != SecurityStatus.Granted)
+            {
+                throw new UnauthorizedAccessException();
+            }
+        }
 
-            return new Meeting
+        private bool IsExternalAttendee(Attendee attendee)
+        {
+            if (attendee.Address == null)
+            {
+                return true;
+            }
+            else
+            {
+                foreach (var emailDomain in _emailDomains)
+                {
+                    if (attendee.Address.ToLowerInvariant().EndsWith(emailDomain))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+
+        private Meeting BuildMeeting(Appointment i, MeetingInfo meetingInfo)
+        {
+            var fields = i.GetLoadedPropertyDefinitions().OfType<PropertyDefinition>().ToLookup(x => x.Name);
+
+            var externalAttendees = fields.Contains("RequiredAttendees") && fields.Contains("OptionalAttendees") ?
+                i.RequiredAttendees.Concat(i.OptionalAttendees).Count(IsExternalAttendee) : 0;
+
+            return new Meeting()
             {
                 UniqueId = i.Id.UniqueId,
-                Subject = i.Sensitivity != Sensitivity.Normal ? i.Sensitivity.ToString() :
-                    i.Subject != null && i.Subject.Trim() == i.Organizer.Name.Trim() ? null : i.Subject,
+                Subject = fields.Contains("Sensitivity") && fields.Contains("Subject") ? (
+                    i.Sensitivity != Sensitivity.Normal ? i.Sensitivity.ToString() :
+                    i.Subject != null && i.Subject.Trim() == i.Organizer.Name.Trim() ? null : i.Subject
+                    ) : null,
                 Start = i.Start,
                 End = i.End,
-                Organizer = i.Organizer.Name,
-                RequiredAttendees = i.RequiredAttendees.Count,
-                OptionalAttendees = i.OptionalAttendees.Count,
+                Organizer = fields.Contains("Organizer") ? i.Organizer.Name : string.Empty,
+                RequiredAttendees = fields.Contains("RequiredAttendees") ? i.RequiredAttendees.Count : 0,
+                OptionalAttendees = fields.Contains("OptionalAttendees") ? i.OptionalAttendees.Count : 0,
                 ExternalAttendees = externalAttendees,
                 IsStarted = meetingInfo.IsStarted,
                 IsEndedEarly = meetingInfo.IsEndedEarly,
                 IsCancelled = meetingInfo.IsCancelled,
                 IsNotManaged = i.IsAllDayEvent || Math.Abs(i.End.Subtract(i.Start).TotalHours) > 6, // all day events and events longer than 6 hours won't be auto-cancelled
             };
+        }
+
+        private TResult ExchangeServiceExecuteWithImpersonationCheck<TResult>(string roomAddress, Func<ExchangeService, TResult> action)
+        {
+            var targetUser = _impersonateForAllCalls
+                ? roomAddress
+                : string.Empty;
+            return _exchangeServiceManager.Execute(targetUser, action);
+        }
+
+        private void ExchangeServiceExecuteWithImpersonationCheck(string roomAddress, Action<ExchangeService> action)
+        {
+            var targetUser = _impersonateForAllCalls
+                ? roomAddress
+                : string.Empty;
+            _exchangeServiceManager.Execute(targetUser, action);
         }
 
         public static Func<ExchangeService> GetExchangeServiceBuilder(string username, string password, string serviceUrl)
@@ -447,13 +639,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 {
                     return serviceUrl;
                 }
-                var log = log4net.LogManager.GetLogger(MethodInfo.GetCurrentMethod().DeclaringType);
-                log.DebugFormat("serviceUrl wasn't configured in appSettings, running auto-discovery");
+                __log.DebugFormat("serviceUrl wasn't configured in appSettings, running auto-discovery");
                 var svc = new ExchangeService(ExchangeVersion.Exchange2010_SP1);
                 svc.Credentials = new WebCredentials(username, password);
                 svc.PreAuthenticate = true;
                 svc.AutodiscoverUrl(username, url => new Uri(url).Scheme == "https");
-                log.DebugFormat("Auto-discovery complete - found URL: {0}", svc.Url);
+                __log.DebugFormat("Auto-discovery complete - found URL: {0}", svc.Url);
                 return svc.Url.ToString();
             });
 

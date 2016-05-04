@@ -11,5 +11,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Services
     {
         Task<IEnumerable<Meeting>> GetUpcomingAppointmentsForRoom(string roomAddress, bool isTracked, Func<Task<IEnumerable<Meeting>>> loader);
         void ClearUpcomingAppointmentsForRoom(string roomAddress);
+        Task<IEnumerable<Meeting>> TryGetUpcomingAppointmentsForRoom(string roomAddress, bool isTracked);
     }
 }

@@ -4,9 +4,9 @@ xset s off
 xset -dpms
 xset s noblank
 
-# load calibration so that we don't have flipped coordinates :)
-. /etc/pointercal.xinput
+openbox --config-file ~pi/statusMonitor/scripts/openbox.xml &
 
-openbox --config-file ~rooms/.openbox.xml &
-epiphany-browser -a --profile ~rooms/.config http://rooms.labs.rightpoint.com/
+# hide mouse cursor when idle
+unclutter -idle 1 &
 
+chromium-browser --user-data-dir=~pi/.config --app=http://rooms/ --no-sandbox --disable-pinch --touch-events --kiosk

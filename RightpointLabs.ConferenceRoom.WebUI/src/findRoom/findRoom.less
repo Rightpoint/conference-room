@@ -1,0 +1,263 @@
+// bower-refonly:less
+// endbower
+
+@import "../variables.less";
+
+.find-room {
+  .loading-background, .loading-foreground {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1001;
+    .o-load {
+        background: url("../../images/rightpoint-circle.svg") no-repeat;
+        height: 65px;
+        width: 65px;
+        animation: loadSpin 3.5s cubic-bezier(.46,-.4,.2,4.75) infinite both;
+    }
+    .rp-logo-spinner {
+        width: 65px;
+        margin: 120px auto;
+    }
+
+    @keyframes loadSpin {
+        0% {
+            -moz-transform: rotate(0deg);
+            -o-transform: rotate(0deg);
+            -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+        }
+        100% {
+            -moz-transform: rotate(720deg);
+            -o-transform: rotate(720deg);
+            -webkit-transform: rotate(720deg);
+            transform: rotate(720deg);
+        }
+    }
+
+  }
+  .loading-background {
+    background-color: white;
+    opacity: 0.80;
+  }
+  
+  .rooms-area {
+        position: absolute;
+        top: 60px;
+        bottom: 115px;
+        right: 0;
+        left: 0;
+        background: @midBlue;
+
+        overflow-x: scroll;
+        overflow-y: hidden;
+
+        /** hide scrolbar **/
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        ul, li {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        & > ul {
+            display: block;
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .group {
+            position: relative;
+            display: inline-block;
+            height: 100%;
+            padding-left: 10px;
+            margin-right: 50px;
+            & > h2 {
+                padding: 0;
+                margin: 0;
+                position: absolute;
+                top: 50%;
+                bottom: 50%;
+                left: 10px;
+                transform: translateX(-50%) translateY(-50%) rotate(90deg);
+                span {
+                    display: block;
+                    font-family: 'Open Sans';
+                    color: white;
+                    font-size: 14px;
+
+                    &:after, &:before {
+                        content: ' ';
+                        position: absolute;
+                        top: 8px;
+                        border-top: 1px solid white;
+                    }
+                    &:before {
+                        left: -85px;
+                        right: 118%;
+                        margin-left: 20px;
+                    }
+                    &:after {
+                        left: 118%;
+                        right: -88px;
+                        margin-right: 20px;
+                    }
+                }
+            }
+            
+            .equipment {
+                text-align: center;
+                margin: 0.5em 0;
+                ul {
+                    display: inline-block;
+                    margin: 0;
+                    padding: 0;
+                    li {
+                        float: left;
+                        padding: 0 1em;
+                    }
+                    li.icon {
+                            color: @squash;
+                            margin-top: 0.25em;
+                        }
+                }
+            }
+            
+            .room-item {
+                float: left;
+                padding: 15px;
+                box-shadow: 0 10px 19px 0 @black;
+                height: 200px;
+                width: 330px;
+                background: white;
+                margin: 50px 20px 50px 20px;
+                h3 {
+                    margin-top: 0;
+                    text-align: center;
+                    font-family: 'Open Sans';
+                    font-weight: bold;
+                    font-size: 15px;
+                    color: @dark-blue;
+                    margin-bottom: 10px;
+                }
+                .for, .primary-duration, .secondary-duration {
+                    display: block;
+                    text-align: center;
+                    font-family: 'Open Sans';
+                    font-weight: 300;
+                    font-size: 15px;
+                    color: @dark-blue;
+                    line-height: 1.2em;
+                }
+                .primary-duration {
+                    font-size: 42px;
+                }
+                .secondary-duration {
+                    .bold {
+                        font-weight: bold;
+                    }
+                }
+                .accomodates {
+                    display: block;
+                    font-family: 'Open Sans';
+                    font-weight: 300;
+                    font-size: 12px;
+                    color: @dark-blue;
+                    line-height: 1.2em; 
+                }
+                a {
+                    position: absolute;
+                    display: block;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    text-transform: uppercase;
+                    text-align: center;
+                    padding: 8px;
+                    height: 40px;
+                    font-family: 'Open Sans';
+                    font-weight: 800;
+                    font-size: 18px;
+                    letter-spacing: 3.5px;
+                    color: @white;
+                    background: darkgoldenrod;
+                }
+            }
+        }
+    
+    }
+    
+    .search {
+        position: absolute;
+        height: 116px;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: @darkBlue;
+        
+        font-family: 'Open Sans';
+        font-weight: bold;
+        
+        .equipment-picker {
+            position: absolute;
+            top: 34px;
+            left: 32px;
+            div {
+                display: inline-block;
+                text-align: center;
+                width: 140px;
+                color: @bluey-grey;
+                position: relative;
+                top: -10px;
+                span {
+                    text-align: center;
+                    font-size: 32px;
+                    line-height: 24px;
+                    font-weight: normal;
+                    &.text {
+                        font-weight: bold;
+                        font-size: 15px;
+                    }
+                }
+                &.active {
+                    color: @squash;
+                }
+            }
+        }
+        .people-count-picker {
+            .value, .buttons, .buttons div {
+                display: inline-block;
+            }
+            position: absolute;
+            top: 34px;
+            right: 45px;
+            .value {
+                text-align: center;
+                color: @squash;
+                line-height: 18px;
+                margin-right: 8px;
+                .number {
+                    font-weight: 300;
+                    font-size: 42px;
+                }
+                .people {
+                    font-size: 15px;
+                }
+            }
+            .buttons {
+                position: relative;
+                top: -5px;
+                font-size: 40px;
+                color: @bluey-grey;
+                div {
+                    margin-left: 20px;
+                }
+            }
+        }
+    }
+}

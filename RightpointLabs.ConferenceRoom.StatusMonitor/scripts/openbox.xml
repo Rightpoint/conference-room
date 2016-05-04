@@ -1,6 +1,6 @@
 <openbox_config>
         <applications>
-                <application name="epiphany-browser" class="Epiphany-browser">
+                <application class="*">
                         <decor>no</decor>
                         <maximized>yes</maximized>
                 </application>

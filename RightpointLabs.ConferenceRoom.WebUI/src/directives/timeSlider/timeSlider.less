@@ -1,0 +1,36 @@
+@import "../../variables.less";
+
+.time-slider {
+    position: relative;
+    span {
+        display: block;
+        text-align: center;
+        font-family: 'Open Sans';
+        font-weight: 300;
+    }
+    .selected, .selectedMinutes {
+        margin: 0 auto;
+        color: @darkBlue;
+    }
+    .selected {
+        font-size: 32px;
+    }
+    .selectedMinutes {
+        font-size: 12px;
+        margin-top: -6px;
+    }
+    .prev, .next {
+        position: absolute;
+        top: 9px;
+        font-size: 25.8px;
+        color: @pinkish-grey;
+        width: 65px;
+        text-align: center;
+    }
+    .prev {
+        left: 0;
+    }
+    .next {
+        right: 0;
+    }
+}

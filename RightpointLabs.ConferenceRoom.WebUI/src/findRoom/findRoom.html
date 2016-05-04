@@ -1,0 +1,62 @@
+<div class="find-room">
+    <header data-title="Find a room"></header>
+    
+    <div class="rooms-area">
+        <ul ng-style="{ 'width': c.scrollWidth }">
+            <li ng-repeat="g in c.searchResults" class="group" ng-class="{ 'first': $index === 0 }">
+                <h2><span>{{ g.key }}</span></h2>
+                <ul>
+                    <li ng-repeat="i in g.rooms" class="room-item">
+                        <h3>{{ i.DisplayName }}</h3>
+                        <span class="for">for</span>
+                        <span ng-if="i.status.freeFor >= 60" class="primary-duration">{{ c.floor(i.status.freeFor / 60) }} hour<span ng-if="i.status.freeFor >= 120">s</span></span>
+                        <span ng-if="i.status.freeFor >= 60 && i.status.freeFor % 60 > 0" class="secondary-duration">and <span class="bold">{{ i.status.freeFor - c.floor(i.status.freeFor / 60) * 60 }}</span> minutes</span>
+                        <span ng-if="i.status.freeFor < 60" class="primary-duration">{{ i.status.freeFor }}</span>
+                        <span ng-if="i.status.freeFor < 60" class="secondary-duration">minutes</span>
+                        <div class="equipment">
+                            <ul ng-repeat="e in c.equipmentChoices" ng-if="c.roomHasEquipment(i, e)" title="{{ e.text }}">
+                                <li ng-class="e.icon" class="icon"></li>
+                            </ul>
+                            <span class="accomodates">Accomodates&nbsp;<span ng-if="i.Size">{{ i.Size }}</span></span>
+                        </div>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+
+        <div class="loading-background" ng-if="c.isLoading"></div>
+        <div class="loading-foreground" ng-if="c.isLoading">
+           <!--<big-spinner active="true"></big-spinner>-->
+           <div class="rp-logo-spinner">
+               <div class="o-load"></div>
+           </div>
+        </div>
+    </div>
+    
+    <div class="search">
+        <div class="container-fluid">
+            <div class="equipment-picker">
+                <div aria-role="button" ng-repeat="e in c.equipmentChoices" ng-click="c.toggleEquipment(e)" ng-class="{ 'active': c.equipmentSelected(e) }" title="{{ e.text }}">
+                    <span ng-class="e.icon"></span>
+                    <br/>
+                    <span class="text">{{ e.displayText || e.text }}</span>
+                </div>
+            </div>
+            <div class="people-count-picker">
+                <div class="value">
+                    <span class="number">{{ c.search.minSize }}</span>
+                    <br/>
+                    <span class="people">People</span>
+                </div>
+                <div class="buttons">
+                    <div aria-role="button" ng-click="c.biggerRoom()" ng-disabled="!c.hasBiggerRoom()">
+                        <span class="custom-icon-plus"></span>
+                    </div>
+                    <div aria-role="button" ng-click="c.smallerRoom()" ng-disabled="c.search.minSize <= 0">
+                        <span class="custom-icon-minus"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

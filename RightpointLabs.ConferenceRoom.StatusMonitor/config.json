@@ -2,8 +2,16 @@
     "apiServer": "http://localhost:63915/api",
     "signalRServer": "http://localhost:63915/signalR",
     "room": "jrupp@rightpoint.com",
-    "redPin": 115,
-    "greenPin": 117,
-    "bluePin": 111,
-	"speakerPin": 110
+    "green": {
+	    "pin": 18,
+	    "brightness": 0.9
+    },
+    "red": {
+	    "pin": 23,
+	    "brightness": 0.7
+    },
+    "blue": {
+	    "pin": 24,
+	    "brightness": 1
+    }
 }

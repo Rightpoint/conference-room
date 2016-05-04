@@ -1,4 +1,6 @@
-﻿using System.Configuration;
+﻿using log4net;
+using System.Configuration;
+using System.Reflection;
 using System.Threading;
 using System.Web.Http;
 
@@ -8,8 +10,14 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
     /// Operations dealing with settings
     /// </summary>
     [RoutePrefix("api/settings")]
-    public class SettingsController : ApiController
+    public class SettingsController : BaseController
     {
+        private static readonly ILog __log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        public SettingsController()
+            : base(__log)
+        { }
+
         /// <summary>
         /// Checks that the supplied code is correct.
         /// </summary>

@@ -202,3 +202,4 @@ FakesAssemblies/
 /RightpointLabs.ConferenceRoom.WebUI/dist
 /RightpointLabs.ConferenceRoom.Services/App_Data/*.xml
 /RightpointLabs.ConferenceRoom.StatusMonitor/.idea
+/RightpointLabs.ConferenceRoom.WebUI/custom-icons.css

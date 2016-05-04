@@ -11,9 +11,10 @@
                 </label>
             </li>
             <li class="list-group-item">
-                <label>Default room:
-                    <span ng-if="!!c.settings.defaultRoom"><span>{{ c.settings.defaultRoom}}</span> <button class="btn" ng-click="c.settings.defaultRoom = null">Clear</button></span>
+                <label>Room:
+                    <span ng-if="!!c.settings.defaultRoom">{{ c.settings.defaultRoom}} <span ng-if="!c.isAuthorized">(waiting for access)</span></span>
                     <span ng-if="!c.settings.defaultRoom">Not set</span>
+                    <button class="btn" ng-click="c.pickRoom()">Change</button>
                 </label>
             </li>
             <li class="list-group-item">
@@ -24,7 +25,7 @@
         </ul>
     </div>
     <div class="settings-nav">
-        <a ui-sref="home"><span class="glyphicon glyphicon-home"></span> Home</a>
+        <a ui-sref="room"><span class="glyphicon glyphicon-home"></span> Home</a>
         <a href ng-click="c.reload()"><span class="glyphicon glyphicon-refresh"></span> Reload</a>
     </div>
 </div>

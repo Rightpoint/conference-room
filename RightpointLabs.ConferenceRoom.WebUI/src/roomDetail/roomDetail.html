@@ -1,0 +1,17 @@
+<div class="modal-header">
+    <h3 class="modal-title">{{ c.room.DisplayName }}</h3>
+</div>
+<div class="modal-body room-detail">
+    <p ng-if="c.room.Location">{{ c.room.Location }}</p>
+    <p ng-if="c.room.Size">Size: {{ c.room.Size }}</p>
+    <div ng-if="c.room.Equipment">
+        <p>Equipment</p>
+        <ul>
+            <li ng-repeat="e in c.room.Equipment">{{ e }}</li>
+        </ul>
+    </div>
+    <div class="status" ng-class="c.statusClass">{{ c.status }}</div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" type="button" ng-click="$dismiss()">OK</button>
+</div>
