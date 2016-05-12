@@ -144,8 +144,21 @@ function start() {
     client.serviceHandlers.connected = function() {
         console.log('signalR connected');
     };
+    client.serviceHandlers.connectionLost = function() {
+        console.log('signalR connection lost');
+    };
+    client.serviceHandlers.connectFailed = function() {
+        console.log('signalR connection failed');
+    };
+    client.serviceHandlers.reconnecting = function() {
+        console.log('signalR reconnecting');
+	return true;
+    };
+    client.serviceHandlers.reconnected = function() {
+        console.log('signalR reconnected');
+    };
     client.serviceHandlers.onerror = function(error) {
         console.log('signalR error: ' + error);
-    }
+    };
 }
 // wait
