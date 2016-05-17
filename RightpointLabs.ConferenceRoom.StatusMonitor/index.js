@@ -130,6 +130,13 @@ function start() {
     setInterval(function() {
         updateIn(5000);
     }, 5 * 60 * 1000);
+    var gotConnected = false;
+    setTimeout(function() {
+        if(!gotConnected) {
+            console.log('Aborting - no connection');
+            process.exit(-1);
+        }
+    }, 30000);
 
     var client  = new signalR.client(
         config.signalRServer,
@@ -142,6 +149,7 @@ function start() {
         }
     });
     client.serviceHandlers.connected = function() {
+        gotConnected = true;
         console.log('signalR connected');
     };
     client.serviceHandlers.connectionLost = function() {
@@ -152,7 +160,7 @@ function start() {
     };
     client.serviceHandlers.reconnecting = function() {
         console.log('signalR reconnecting');
-	return true;
+        return true;
     };
     client.serviceHandlers.reconnected = function() {
         console.log('signalR reconnected');
