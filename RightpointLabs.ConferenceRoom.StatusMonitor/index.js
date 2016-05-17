@@ -156,7 +156,8 @@ function start() {
         console.log('signalR connection lost');
     };
     client.serviceHandlers.connectFailed = function() {
-        console.log('signalR connection failed');
+        console.log('signalR connection failed - aborting');
+        pricess.exit();
     };
     client.serviceHandlers.reconnecting = function() {
         console.log('signalR reconnecting');
