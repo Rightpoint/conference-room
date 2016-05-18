@@ -157,7 +157,7 @@ function start() {
     };
     client.serviceHandlers.connectFailed = function() {
         console.log('signalR connection failed - aborting');
-        pricess.exit();
+        process.exit();
     };
     client.serviceHandlers.reconnecting = function() {
         console.log('signalR reconnecting');
