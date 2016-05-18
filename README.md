@@ -1,5 +1,7 @@
 # Project structure
 
+Note: this branch is the last to contain the .Net windows service to control the LEDs, since we're not using that anymore.  Not positive it still works anyway.
+
 - .Net server application:
   - RightpointLabs.ConferenceRoom.Domain - domain layer
   - RightpointLabs.ConferenceRoom.Infrastructure - infrastructure
