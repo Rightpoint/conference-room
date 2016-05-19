@@ -168,6 +168,9 @@ function start() {
     };
     client.serviceHandlers.onerror = function(error) {
         console.log('signalR error: ' + error);
+        // signalR doesn't seem to detect and reconnect - so we'll force it by restarting
+        console.log('restarting');
+        process.exit();
     };
 }
 // wait
