@@ -9,6 +9,9 @@
                     $rootScope.$apply(function() {
                         $rootScope.$broadcast('roomRefresh', room);
                     });
+                },
+                'RefreshAll': function() {
+                    window.location.reload();
                 }
             },
             errorHandler: function (error) {

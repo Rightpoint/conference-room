@@ -123,6 +123,9 @@
                     });
                 }
             }, function() {
+                if(infoTimeout) {
+                    $timeout.cancel(infoTimeout);
+                }
                 infoTimeout = $timeout(loadInfo, 60 * 1000); // if load failed, try again in 60 seconds
             });
         }
@@ -170,7 +173,7 @@
                         soundService.play('resources/warn.mp3');
                     }, function() {
                         // well, the warning failed... maybe the item was deleted?  In any case, reloading the status will re-run us
-                        $timeout(loadStatus, 1000);
+                        loadStatus();
                     });
                 } else {
                     // ok, not time to warn yet - re-run once it's time
@@ -190,7 +193,7 @@
                     soundService.play('resources/cancel.mp3');
                 }, function() {
                     // well, the cancel failed... maybe the item was deleted?  In any case, reloading the status will re-run us
-                    $timeout(loadStatus, 1000);
+                    loadStatus();
                 });
             } else {
                 // we need to give them some more time
@@ -223,8 +226,14 @@
                 scheduleCancel();
 
                 var waitTime = data.NextChangeSeconds ? Math.min(5 * 60, data.NextChangeSeconds + 1) : (5 * 60);
+                if(statusTimeout) {
+                    $timeout.cancel(statusTimeout);
+                }
                 statusTimeout = $timeout(loadStatus, waitTime * 1000);
             }, function() {
+                if(statusTimeout) {
+                    $timeout.cancel(statusTimeout);
+                }
                 statusTimeout = $timeout(loadStatus, 60 * 1000);
             });
         }
