@@ -64,7 +64,7 @@ module.exports = function LedManager(config) {
     function setPins(newState) {
         if(debug) console.log('setPins', newState, currentState);
         var toSet = ['red', 'green', 'blue'].map(function(c) {
-            return { pin: config[c].pin, last: currentState[c], now: newState[c] };
+            return { pin: config[c].pin, last: currentState[c] * config[c].brightness, now: newState[c] * config[c].brightness };
         });
         
         // var toSet = [
