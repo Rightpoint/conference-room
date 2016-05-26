@@ -153,7 +153,8 @@ function start() {
         console.log('signalR connected');
     };
     client.serviceHandlers.connectionLost = function() {
-        console.log('signalR connection lost');
+        console.log('signalR connection lost - aborting');
+        process.exit();
     };
     client.serviceHandlers.connectFailed = function() {
         console.log('signalR connection failed - aborting');
