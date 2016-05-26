@@ -81,6 +81,14 @@
             return self.showEndEarly() && self.next && !self.next.IsNotManaged && self.minutesUntil(self.next.Start) <= early;
         };
         
+        self.isCurrentToday = function isCurrentToday() {
+            return self.current && moment(self.current.Start).diff(self.currentTime().startOf('day').add(1, 'day'), 'minutes') < 0;
+        };
+        
+        self.isNextToday = function isNextToday() {
+            return self.next && moment(self.next.Start).diff(self.currentTime().startOf('day').add(1, 'day'), 'minutes') < 0;
+        };
+        
         self.canManagePrev = function canManagePrev() {
             return self.prev && !self.prev.IsNotManaged;
         };
