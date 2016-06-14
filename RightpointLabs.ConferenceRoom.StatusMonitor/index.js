@@ -13,6 +13,18 @@ var config = JSON.parse(fs.readFileSync(configFile));
 var LedManager = require('./ledManager.js');
 var led = new LedManager(config);
 
+if(config.bluetooth) {
+	var beacon = require('eddystone-beacon');
+	var btOptions = {
+		name: 'Beacon',
+		txPowerLevel: -22,
+		tlmCount: 2,
+		tlmPeriod: 10
+	};
+	console.log('Starting bluetooth advertisement');
+	beacon.advertiseUid(config.bluetooth.namespace, config.bluetooth.uid, btOptions);
+}
+
 // test colors
 led.setColor(0, 0, 0, 0);
 led.setColor(1, 0, 0, 400);
