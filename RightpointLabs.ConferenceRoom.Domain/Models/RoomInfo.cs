@@ -17,5 +17,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models
         [JsonProperty("Equipment", ItemConverterType = typeof(StringEnumConverter))]
         public List<RoomEquipment> Equipment { get; set; }
         public bool HasControllableDoor { get; set; }
+        public string BeaconUid { get; set; }
     }
 }

@@ -132,6 +132,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 DistanceFromFloorOrigin = roomMetadata.DistanceFromFloorOrigin ?? new Point(),
                 Equipment = roomMetadata.Equipment,
                 HasControllableDoor = !string.IsNullOrEmpty(roomMetadata.GdoDeviceId),
+                BeaconUid = roomMetadata.BeaconUid,
             };
         }
 
