@@ -80,7 +80,7 @@
             allRooms.sort(function(a, b) { return a.DisplayName < b.DisplayName ? -1 : 1; });
             
             allRooms.forEach(function(r) {
-                r.Location = !r.BuildingId ? null : r.Floor ? r.BuildingId + " - " + r.Floor + 'th floor' : r.BuildingId; 
+                r.Location = !r.Building ? null : r.Floor ? r.Building + " - " + r.Floor + 'th floor' : r.Building; 
             });
             
             var defaultRoom = _.findWhere(allRooms, { Address: settings.defaultRoom });

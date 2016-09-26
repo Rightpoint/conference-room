@@ -34,6 +34,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly ISmsAddressLookupService _smsAddressLookupService;
         private readonly ISignatureService _signatureService;
         private readonly IRoomRepository _roomRepository;
+        private readonly IFloorRepository _floorRepository;
+        private readonly IBuildingRepository _buildingRepository;
         private readonly bool _ignoreFree;
         private readonly bool _useChangeNotification;
         private readonly bool _impersonateForAllCalls;
@@ -51,7 +53,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             ISmsMessagingService smsMessagingService,
             ISmsAddressLookupService smsAddressLookupService,
             ISignatureService signatureService,
-            IRoomRepository roomRepository)
+            IRoomRepository roomRepository,
+            IFloorRepository floorRepository,
+            IBuildingRepository buildingRepository)
         {
             _meetingRepository = meetingRepository;
             _securityRepository = securityRepository;
@@ -66,6 +70,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _smsAddressLookupService = smsAddressLookupService;
             _signatureService = signatureService;
             _roomRepository = roomRepository;
+            _floorRepository = floorRepository;
+            _buildingRepository = buildingRepository;
             _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
             _useChangeNotification = bool.Parse(ConfigurationManager.AppSettings["useChangeNotification"] ?? "true");
             _impersonateForAllCalls = bool.Parse(ConfigurationManager.AppSettings["impersonateForAllCalls"] ?? "true");
@@ -120,6 +126,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             }
 
             var roomMetadata = _roomRepository.GetRoomInfo(roomAddress) ?? new RoomMetadata();
+            var floor = _floorRepository.GetFloorInfo(roomMetadata.FloorId) ?? new FloorInfo();
+            var building = _buildingRepository.Get(roomMetadata.BuildingId) ?? new BuildingInfo();
 
             return new RoomInfo()
             {
@@ -128,34 +136,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 SecurityStatus = rights,
                 Size = roomMetadata.Size,
                 BuildingId = roomMetadata.BuildingId,
-                Floor = roomMetadata.Floor,
+                Building = building.Name,
+                FloorId = roomMetadata.FloorId,
+                Floor = floor.Name,
                 DistanceFromFloorOrigin = roomMetadata.DistanceFromFloorOrigin ?? new Point(),
                 Equipment = roomMetadata.Equipment,
                 HasControllableDoor = !string.IsNullOrEmpty(roomMetadata.GdoDeviceId),
                 BeaconUid = roomMetadata.BeaconUid,
             };
-        }
-
-        public void SetInfo(string roomAddress, RoomMetadata roomMetadata)
-        {
-            var room = ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc => svc.ResolveName(roomAddress).SingleOrDefault());
-
-            if (null == room)
-            {
-                throw new Exception(string.Format("Room \"{0}\" not found", roomAddress));
-            }
-
-            if (roomMetadata.DistanceFromFloorOrigin == null)
-            {
-                roomMetadata.DistanceFromFloorOrigin = new Point();
-            }
-            if (roomMetadata.Equipment == null ||
-                roomMetadata.Equipment.Count == 0)
-            {
-                roomMetadata.Equipment = new List<RoomEquipment>() {RoomEquipment.None,};
-            }
-
-            _roomRepository.SaveRoomInfo(roomAddress, roomMetadata);
         }
 
         public void RequestAccess(string roomAddress, string securityKey, string clientInfo)

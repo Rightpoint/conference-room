@@ -27,7 +27,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
                 .Set(i => i.Id, roomAddress)
                 .Set(i => i.Size, value.Size)
                 .Set(i => i.BuildingId, value.BuildingId)
-                .Set(i => i.Floor, value.Floor)
+                .Set(i => i.FloorId, value.FloorId)
                 .Set(i => i.DistanceFromFloorOrigin, value.DistanceFromFloorOrigin.Clone())
                 .Set(i => i.Equipment, value.Equipment.ToList())
                 .Set(i => i.GdoDeviceId, value.GdoDeviceId)

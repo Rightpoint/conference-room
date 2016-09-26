@@ -68,13 +68,11 @@
     <Compile Include="Models\FloorInfo.cs" />
     <Compile Include="Models\Rectangle.cs" />
     <Compile Include="Models\Point.cs" />
-    <Compile Include="Models\PostBuildingInfo.cs" />
     <Compile Include="Models\Entity.cs" />
     <Compile Include="Models\Meeting.cs" />
     <Compile Include="Models\MeetingInfo.cs" />
     <Compile Include="Models\RoomEquipment.cs" />
     <Compile Include="Models\RoomInfo.cs" />
-    <Compile Include="Models\PostRoomMetadata.cs" />
     <Compile Include="Models\BuildingInfo.cs" />
     <Compile Include="Models\RoomMetadata.cs" />
     <Compile Include="Models\RoomStatus.cs" />
@@ -82,6 +80,7 @@
     <Compile Include="Models\SecurityStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\IBuildingRepository.cs" />
+    <Compile Include="Repositories\IFloorRepository.cs" />
     <Compile Include="Repositories\IRoomRepository.cs" />
     <Compile Include="Repositories\IMeetingRepository.cs" />
     <Compile Include="Repositories\ISecurityRepository.cs" />
