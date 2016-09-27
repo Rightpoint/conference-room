@@ -8,6 +8,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.Exchange.WebServices.Data;
 using Microsoft.Practices.Unity;
 using System.Web.Http;
+using Newtonsoft.Json.Linq;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
@@ -28,47 +29,37 @@ namespace RightpointLabs.ConferenceRoom.Services
             var connectionStrings = System.Web.Configuration.WebConfigurationManager.ConnectionStrings;
             var connectionString = connectionStrings["Mongo"].ConnectionString;
             var providerName = connectionStrings["Mongo"].ProviderName;
-            var exchangeUsername = ConfigurationManager.AppSettings["username"];
-            var exchangePassword = ConfigurationManager.AppSettings["password"];
-            var exchangeServiceUrl = ConfigurationManager.AppSettings["serviceUrl"];
-            var plivoAuthId = ConfigurationManager.AppSettings["plivoAuthId"];
-            var plivoAuthToken = ConfigurationManager.AppSettings["plivoAuthToken"];
-            var plivoFrom = ConfigurationManager.AppSettings["plivoFrom"];
-            var gdoBaseUrl = ConfigurationManager.AppSettings["gdoBaseUrl"];
-            var gdoApiKey = ConfigurationManager.AppSettings["gdoApiKey"];
-            var gdoUsername = ConfigurationManager.AppSettings["gdoUsername"];
-            var gdoPassword = ConfigurationManager.AppSettings["gdoPassword"];
 
             container.RegisterType<IMongoConnectionHandler, MongoConnectionHandler>(
                 new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(connectionString, providerName));
 
-            var serviceBuilder = ExchangeConferenceRoomService.GetExchangeServiceBuilder(
-                exchangeUsername,
-                exchangePassword,
-                exchangeServiceUrl);
+            container.RegisterType<Func<ExchangeService>>(new HierarchicalLifetimeManager(),
+                new InjectionFactory(
+                    c =>
+                        CreateOrganizationalService(c, "Exchange",
+                            _ => ExchangeConferenceRoomService.GetExchangeServiceBuilder(_.Username, _.Password, _.ServiceUrl))));
 
             container.RegisterType<IInstantMessagingService>(new HierarchicalLifetimeManager(),
-                new InjectionFactory(c => new InstantMessagingService(
-                    exchangeUsername,
-                    exchangePassword)));
+                new InjectionFactory(
+                    c =>
+                        CreateOrganizationalService(c, "Exchange",
+                            _ => new InstantMessagingService(_.Username, _.Password))));
 
             container.RegisterType<ISmsMessagingService>(new HierarchicalLifetimeManager(),
-                new InjectionFactory(c => new SmsMessagingService(
-                    plivoAuthId,
-                    plivoAuthToken,
-                    plivoFrom)));
+                new InjectionFactory(
+                    c =>
+                        CreateOrganizationalService(c, "Plivo",
+                            _ => new SmsMessagingService(_.AuthId, _.AuthToken, _.From))));
 
             container.RegisterType<IGdoService>(new ContainerControlledLifetimeManager(),
-                new InjectionFactory(c => new GdoService(
-                    new Uri(gdoBaseUrl),
-                    gdoApiKey,
-                    gdoUsername,
-                    gdoPassword)));
+                new InjectionFactory(
+                    c =>
+                        CreateOrganizationalService(c, "Plivo",
+                            _ => new GdoService(new Uri(_.BaseUrl), _.ApiKey, _.Username, _.Password))));
 
             container.RegisterType<ISmsAddressLookupService, SmsAddressLookupService>(new HierarchicalLifetimeManager());
             container.RegisterType<ISignatureService, SignatureService>(new ContainerControlledLifetimeManager());
-            container.RegisterType<Func<ExchangeService>>(new HierarchicalLifetimeManager(), new InjectionFactory(c => serviceBuilder));
             container.RegisterType<IBroadcastService, SignalrBroadcastService>(new HierarchicalLifetimeManager());
             container.RegisterType<IConferenceRoomService, ExchangeConferenceRoomService>(new HierarchicalLifetimeManager());
             container.RegisterType<IMeetingRepository, MeetingRepository>(new HierarchicalLifetimeManager());
@@ -94,6 +85,21 @@ namespace RightpointLabs.ConferenceRoom.Services
             // e.g. container.RegisterType<ITestService, TestService>();
             
             GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(container);
+        }
+
+        private static T CreateOrganizationalService<T>(IUnityContainer container, string serviceName, Func<dynamic, T> builder)
+        {
+            var org = container.Resolve<IContextService>().CurrentOrganization;
+            if (null == org)
+            {
+                return default(T);
+            }
+            var config = container.Resolve<IOrganizationServiceConfigurationRepository>().Get(org.Id, serviceName);
+            if (null == config)
+            {
+                return default(T);
+            }
+            return builder(config.Parameters);
         }
 
         private class SignalrBroadcastService : IBroadcastService
