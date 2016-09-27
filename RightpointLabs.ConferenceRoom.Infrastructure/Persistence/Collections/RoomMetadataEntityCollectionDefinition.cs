@@ -1,19 +1,20 @@
 ﻿using System;
 using MongoDB.Bson.Serialization;
+using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Models;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections
 {
-    public class FloorInfoValuesCollectionDefinition : EntityCollectionDefinition<FloorInfoValues>
+    public class RoomMetadataEntityCollectionDefinition : EntityCollectionDefinition<RoomMetadataEntity>
     {
-        public FloorInfoValuesCollectionDefinition(IMongoConnectionHandler connectionHandler)
+        public RoomMetadataEntityCollectionDefinition(IMongoConnectionHandler connectionHandler)
             : base(connectionHandler)
         {
-            if (!BsonClassMap.IsClassMapRegistered(typeof(FloorInfoValues)))
+            if (!BsonClassMap.IsClassMapRegistered(typeof(RoomMetadataEntity)))
             {
                 try
                 {
-                    BsonClassMap.RegisterClassMap<FloorInfoValues>(
+                    BsonClassMap.RegisterClassMap<RoomMetadataEntity>(
                         cm =>
                         {
                             cm.AutoMap();

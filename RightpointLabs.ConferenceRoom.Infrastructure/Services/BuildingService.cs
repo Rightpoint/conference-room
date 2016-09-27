@@ -12,6 +12,7 @@ using Microsoft.Exchange.WebServices.Data;
 using Microsoft.Rtc.Collaboration;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Models;
+using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 using Task = System.Threading.Tasks.Task;
@@ -28,7 +29,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _buildingRepository = buildingRepository;
         }
 
-        public void Add(BuildingInfo buildingInfo)
+        public void Add(BuildingEntity buildingInfo)
         {
             if (string.IsNullOrWhiteSpace(buildingInfo.Id))
             {
@@ -38,9 +39,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _buildingRepository.Save(buildingInfo.Id, buildingInfo);
         }
 
-        public BuildingInfo Get(string buildingId)
+        public BuildingEntity Get(string buildingId)
         {
-            var buildingInfo = _buildingRepository.Get(buildingId) ?? new BuildingInfo();
+            var buildingInfo = _buildingRepository.Get(buildingId) ?? new BuildingEntity();
             if (buildingInfo == null ||
                 string.IsNullOrWhiteSpace(buildingInfo.Id))
             {
@@ -49,13 +50,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             return buildingInfo;
         }
 
-        public void Update(string buildingId, BuildingInfo buildingInfo)
+        public void Update(string buildingId, BuildingEntity buildingInfo)
         {
             if (string.IsNullOrWhiteSpace(buildingId))
             {
                 throw new ArgumentNullException("buildingId", "ID cannot be null or whitespace");
             }
-            var existingBuilding = _buildingRepository.Get(buildingId) ?? new BuildingInfo();
+            var existingBuilding = _buildingRepository.Get(buildingId) ?? new BuildingEntity();
             if (existingBuilding == null)
             {
                 throw  new NullReferenceException(string.Format("Building {0} not found", buildingId));
@@ -74,11 +75,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _buildingRepository.Save(existingBuilding.Id, existingBuilding);
         }
 
-        private void Normalize(BuildingInfo buildingInfo)
+        private void Normalize(BuildingEntity buildingInfo)
         {
             if (buildingInfo.Floors == null)
             {
-                buildingInfo.Floors = new List<FloorInfo>();
+                buildingInfo.Floors = new List<FloorEntity>();
             }
             foreach (var floor in buildingInfo.Floors.Where(_ => _.CoordinatesInImage == null))
             {

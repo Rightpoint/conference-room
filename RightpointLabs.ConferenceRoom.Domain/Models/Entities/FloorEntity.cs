@@ -1,9 +1,10 @@
 ﻿using System;
 
-namespace RightpointLabs.ConferenceRoom.Domain.Models
+namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
 {
-    public class FloorInfo : Entity, ICloneable
+    public class FloorEntity : ICloneable
     {
+        public int Floor { get; set; }
         public string Name { get; set; }
         public string Image { get; set; }
         public Rectangle CoordinatesInImage { get; set; }
@@ -13,11 +14,11 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models
             return this.Clone();
         }
 
-        public FloorInfo Clone()
+        public FloorEntity Clone()
         {
-            return new FloorInfo()
+            return new FloorEntity()
             {
-                Id = this.Id,
+                Floor = this.Floor,
                 Name = this.Name,
                 Image = this.Image,
                 CoordinatesInImage = (this.CoordinatesInImage ?? new Rectangle()).Clone(),

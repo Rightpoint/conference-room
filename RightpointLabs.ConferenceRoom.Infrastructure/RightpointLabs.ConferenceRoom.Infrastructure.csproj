@@ -104,17 +104,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Persistence\Collections\BuildingInfoValuesCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\FloorInfoValuesCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\RoomInfoValuesCollectionDefinition.cs" />
+    <Compile Include="Persistence\Collections\RoomMetadataEntityCollectionDefinition.cs" />
     <Compile Include="Persistence\Collections\SecurityRequestCollectionDefinition.cs" />
-    <Compile Include="Persistence\Models\BuildingInfoValues.cs" />
-    <Compile Include="Persistence\Models\FloorInfoValues.cs" />
-    <Compile Include="Persistence\Models\RoomInfoValues.cs" />
-    <Compile Include="Persistence\Models\MeetingInfoValues.cs" />
     <Compile Include="Persistence\Models\SecurityRequest.cs" />
     <Compile Include="Persistence\Repositories\BuildingRepository.cs" />
-    <Compile Include="Persistence\Repositories\FloorRepository.cs" />
-    <Compile Include="Persistence\Repositories\RoomRepository.cs" />
+    <Compile Include="Persistence\Repositories\RoomMetadataRepository.cs" />
     <Compile Include="Persistence\Repositories\MeetingRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Persistence\Collections\MeetingInfoValuesCollectionDefinition.cs" />

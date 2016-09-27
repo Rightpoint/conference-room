@@ -1,11 +1,12 @@
 ﻿using RightpointLabs.ConferenceRoom.Domain.Models;
+using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
 namespace RightpointLabs.ConferenceRoom.Domain.Services
 {
     public interface IBuildingService
     {
-        BuildingInfo Get(string buildingId);
-        void Add(BuildingInfo buildingInfo);
-        void Update(string buildingId, BuildingInfo buildingInfo);
+        BuildingEntity Get(string buildingId);
+        void Add(BuildingEntity buildingInfo);
+        void Update(string buildingId, BuildingEntity buildingInfo);
     }
 }

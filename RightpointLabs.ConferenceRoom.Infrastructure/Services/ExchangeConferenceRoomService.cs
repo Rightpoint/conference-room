@@ -12,6 +12,7 @@ using Microsoft.Exchange.WebServices.Data;
 using Microsoft.Rtc.Collaboration;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Models;
+using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 using Task = System.Threading.Tasks.Task;
@@ -33,8 +34,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly ISmsMessagingService _smsMessagingService;
         private readonly ISmsAddressLookupService _smsAddressLookupService;
         private readonly ISignatureService _signatureService;
-        private readonly IRoomRepository _roomRepository;
-        private readonly IFloorRepository _floorRepository;
+        private readonly IRoomMetadataRepository _roomRepository;
         private readonly IBuildingRepository _buildingRepository;
         private readonly bool _ignoreFree;
         private readonly bool _useChangeNotification;
@@ -53,8 +53,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             ISmsMessagingService smsMessagingService,
             ISmsAddressLookupService smsAddressLookupService,
             ISignatureService signatureService,
-            IRoomRepository roomRepository,
-            IFloorRepository floorRepository,
+            IRoomMetadataRepository roomRepository,
             IBuildingRepository buildingRepository)
         {
             _meetingRepository = meetingRepository;
@@ -70,7 +69,6 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _smsAddressLookupService = smsAddressLookupService;
             _signatureService = signatureService;
             _roomRepository = roomRepository;
-            _floorRepository = floorRepository;
             _buildingRepository = buildingRepository;
             _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
             _useChangeNotification = bool.Parse(ConfigurationManager.AppSettings["useChangeNotification"] ?? "true");
@@ -125,9 +123,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 _changeNotificationService.TrackRoom(roomAddress);
             }
 
-            var roomMetadata = _roomRepository.GetRoomInfo(roomAddress) ?? new RoomMetadata();
-            var floor = _floorRepository.GetFloorInfo(roomMetadata.FloorId) ?? new FloorInfo();
-            var building = _buildingRepository.Get(roomMetadata.BuildingId) ?? new BuildingInfo();
+            var roomMetadata = _roomRepository.GetRoomInfo(roomAddress) ?? new RoomMetadataEntity();
+            var building = _buildingRepository.Get(roomMetadata.BuildingId) ?? new BuildingEntity();
+            var floor = building.Floors.SingleOrDefault(_ => _.Floor == roomMetadata.Floor) ?? new FloorEntity();
 
             return new RoomInfo()
             {
@@ -136,9 +134,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 SecurityStatus = rights,
                 Size = roomMetadata.Size,
                 BuildingId = roomMetadata.BuildingId,
-                Building = building.Name,
-                FloorId = roomMetadata.FloorId,
-                Floor = floor.Name,
+                BuildingName = building.Name,
+                Floor = roomMetadata.Floor,
+                FloorName = floor.Name,
                 DistanceFromFloorOrigin = roomMetadata.DistanceFromFloorOrigin ?? new Point(),
                 Equipment = roomMetadata.Equipment,
                 HasControllableDoor = !string.IsNullOrEmpty(roomMetadata.GdoDeviceId),
@@ -188,7 +186,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                                 AppointmentSchema.OptionalAttendees));
 
                             var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
-                            return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
+                            return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingEntity() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
                         });
                     }
                     catch (ServiceResponseException ex)
@@ -235,7 +233,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                         }
                         
                         var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
-                        return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingInfo() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
+                        return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingEntity() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
                     });
                 }
                 catch (ServiceResponseException ex)
@@ -576,7 +574,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             }
         }
 
-        private Meeting BuildMeeting(Appointment i, MeetingInfo meetingInfo)
+        private Meeting BuildMeeting(Appointment i, MeetingEntity meetingInfo)
         {
             var fields = i.GetLoadedPropertyDefinitions().OfType<PropertyDefinition>().ToLookup(x => x.Name);
 

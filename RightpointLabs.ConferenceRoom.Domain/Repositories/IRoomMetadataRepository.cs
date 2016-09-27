@@ -3,9 +3,10 @@ using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
 namespace RightpointLabs.ConferenceRoom.Domain.Repositories
 {
-    public interface IBuildingRepository
+    public interface IRoomMetadataRepository
     {
-        BuildingEntity Get(string buildingId);
-        void Save(string buildingId, BuildingEntity value);
+        RoomMetadataEntity GetRoomInfo(string roomAddress);
+        void SaveRoomInfo(string roomAddress, RoomMetadataEntity value);
     }
+
 }

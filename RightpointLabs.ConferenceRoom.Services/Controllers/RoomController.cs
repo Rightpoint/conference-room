@@ -24,10 +24,10 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         private static readonly ILog __log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly IConferenceRoomService _conferenceRoomService;
-        private readonly IRoomRepository _roomRepository;
+        private readonly IRoomMetadataRepository _roomRepository;
         private readonly IGdoService _gdoService;
 
-        public RoomController(IConferenceRoomService conferenceRoomService, IRoomRepository roomRepository, IGdoService gdoService)
+        public RoomController(IConferenceRoomService conferenceRoomService, IRoomMetadataRepository roomRepository, IGdoService gdoService)
             : base(__log)
         {
             _conferenceRoomService = conferenceRoomService;

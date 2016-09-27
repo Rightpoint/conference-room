@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace RightpointLabs.ConferenceRoom.Domain.Models
+namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
 {
-    public class BuildingInfo : Entity
+    public class BuildingEntity : Entity
     {
         public string Name { get; set; }
         public string StreetAddress1 { get; set; }
@@ -10,6 +10,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models
         public string City { get; set; }
         public string StateOrProvence { get; set; }
         public string PostalCode { get; set; }
-        public List<FloorInfo> Floors { get; set; }
+        public List<FloorEntity> Floors { get; set; }
     }
 }
