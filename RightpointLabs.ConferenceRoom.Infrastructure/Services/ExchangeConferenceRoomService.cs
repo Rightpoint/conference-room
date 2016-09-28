@@ -119,7 +119,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             if (rights == SecurityStatus.Granted && _useChangeNotification)
             {
                 // make sure we track rooms we're controlling
-                _changeNotificationService.TrackRoom(roomAddress);
+                _changeNotificationService.TrackRoom(roomAddress, _exchangeServiceManager);
             }
 
             var roomMetadata = _roomRepository.GetRoomInfo(roomAddress) ?? new RoomMetadataEntity();

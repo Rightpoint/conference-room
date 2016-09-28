@@ -79,5 +79,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
         {
             return ObjectId.GenerateNewId(DateTime.Now).ToString();
         }
+
+        protected static void AssertAffected(WriteConcernResult result, int expectedAffected)
+        {
+            if (result.DocumentsAffected != expectedAffected)
+            {
+                throw new Exception($"Expected to affect {expectedAffected} documents, but affected {result.DocumentsAffected}");
+            }
+        }
     }
 }

@@ -112,15 +112,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\ExchangeConferenceRoomServiceConfiguration.cs" />
-    <Compile Include="Persistence\Collections\BuildingInfoValuesCollectionDefinition.cs" />
+    <Compile Include="Persistence\Collections\OrganizationServiceConfigurationEntityCollectionDefinition.cs" />
+    <Compile Include="Persistence\Collections\OrganizationEntityCollectionDefinition.cs" />
+    <Compile Include="Persistence\Collections\DeviceEntityCollectionDefinition.cs" />
+    <Compile Include="Persistence\Collections\BuildingEntityCollectionDefinition.cs" />
     <Compile Include="Persistence\Collections\RoomMetadataEntityCollectionDefinition.cs" />
     <Compile Include="Persistence\Collections\SecurityRequestCollectionDefinition.cs" />
     <Compile Include="Persistence\Models\SecurityRequest.cs" />
+    <Compile Include="Persistence\Repositories\OrganizationRepository.cs" />
+    <Compile Include="Persistence\Repositories\OrganizationServiceConfigurationRepository.cs" />
+    <Compile Include="Persistence\Repositories\DeviceRepository.cs" />
     <Compile Include="Persistence\Repositories\BuildingRepository.cs" />
     <Compile Include="Persistence\Repositories\RoomMetadataRepository.cs" />
     <Compile Include="Persistence\Repositories\MeetingRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Persistence\Collections\MeetingInfoValuesCollectionDefinition.cs" />
+    <Compile Include="Persistence\Collections\MeetingEntityCollectionDefinition.cs" />
     <Compile Include="Persistence\Repositories\SecurityRepository.cs" />
     <Compile Include="Persistence\Collections\EntityCollectionDefinition.cs" />
     <Compile Include="Persistence\Repositories\EntityRepository.cs" />
@@ -131,6 +137,7 @@
     <Compile Include="Services\ConnectionManager.cs" />
     <Compile Include="Services\BuildingService.cs" />
     <Compile Include="Services\ExchangeConferenceRoomService.cs" />
+    <Compile Include="Services\IChangeNotificationService.cs" />
     <Compile Include="Services\IExchangeServiceManager.cs" />
     <Compile Include="Services\GdoService.cs" />
     <Compile Include="Services\ITokenService.cs" />

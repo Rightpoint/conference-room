@@ -16,26 +16,24 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
     {
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private readonly Func<ExchangeService> _exchangeServiceBuilder;
         private readonly IBroadcastService _broadcastService;
         private readonly IMeetingCacheService _meetingCacheService;
 
-        public ChangeNotificationService(Func<ExchangeService> exchangeServiceBuilder, IBroadcastService broadcastService, IMeetingCacheService meetingCacheService)
+        public ChangeNotificationService(IBroadcastService broadcastService, IMeetingCacheService meetingCacheService)
         {
-            _exchangeServiceBuilder = exchangeServiceBuilder;
             _broadcastService = broadcastService;
             _meetingCacheService = meetingCacheService;
         }
 
         private Dictionary<string, Watcher> _roomsTracked = new Dictionary<string, Watcher>();
 
-        public void TrackRoom(string roomAddress)
+        public void TrackRoom(string roomAddress, IExchangeServiceManager exchangeServiceManager)
         {
             lock (_roomsTracked)
             {
                 if (_roomsTracked.ContainsKey(roomAddress))
                     return;
-                _roomsTracked.Add(roomAddress, new Watcher(_exchangeServiceBuilder, _broadcastService, _meetingCacheService, roomAddress));
+                _roomsTracked.Add(roomAddress, new Watcher(exchangeServiceManager, _broadcastService, _meetingCacheService, roomAddress));
             }
         }
 
@@ -48,7 +46,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         {
             private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-            private readonly Func<ExchangeService> _exchangeServiceBuilder;
+            private readonly IExchangeServiceManager _exchangeServiceManager;
             private readonly IBroadcastService _broadcastService;
             private readonly IMeetingCacheService _meetingCacheService;
             private readonly string _roomAddress;
@@ -58,11 +56,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             public bool IsActive { get; private set; }
 
-            public Watcher(Func<ExchangeService> exchangeServiceBuilder, IBroadcastService broadcastService, IMeetingCacheService meetingCacheService, string roomAddress)
+            public Watcher(IExchangeServiceManager exchangeServiceManager, IBroadcastService broadcastService, IMeetingCacheService meetingCacheService, string roomAddress)
             {
                 IsActive = false;
 
-                _exchangeServiceBuilder = exchangeServiceBuilder;
+                _exchangeServiceManager = exchangeServiceManager;
                 _broadcastService = broadcastService;
                 _meetingCacheService = meetingCacheService;
                 _roomAddress = roomAddress;
@@ -79,34 +77,36 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             private StreamingSubscriptionConnection StartNewConnection()
             {
-                var svc = _exchangeServiceBuilder();
-                var useImpersonation = bool.Parse(ConfigurationManager.AppSettings["useImpersonation"] ?? "false");
-                if (useImpersonation)
+                return _exchangeServiceManager.Execute(_roomAddress, svc =>
                 {
-                    svc.ImpersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, _roomAddress);
-                }
-                log.DebugFormat("Opening subscription to {0}, impersonation: {1}", _roomAddress, useImpersonation);
-                var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(_roomAddress));
-                var sub = svc.SubscribeToStreamingNotifications(
-                    new[] { calId },
-                    EventType.Created,
-                    EventType.Deleted,
-                    EventType.Modified,
-                    EventType.Moved,
-                    EventType.Copied,
-                    EventType.FreeBusyChanged);
+                    var useImpersonation = bool.Parse(ConfigurationManager.AppSettings["useImpersonation"] ?? "false");
+                    if (useImpersonation)
+                    {
+                        svc.ImpersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, _roomAddress);
+                    }
+                    log.DebugFormat("Opening subscription to {0}, impersonation: {1}", _roomAddress, useImpersonation);
+                    var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(_roomAddress));
+                    var sub = svc.SubscribeToStreamingNotifications(
+                        new[] { calId },
+                        EventType.Created,
+                        EventType.Deleted,
+                        EventType.Modified,
+                        EventType.Moved,
+                        EventType.Copied,
+                        EventType.FreeBusyChanged);
 
-                // Create a streaming connection to the service object, over which events are returned to the client.
-                // Keep the streaming connection open for 30 minutes.
-                var connection = new StreamingSubscriptionConnection(svc, 30);
-                connection.AddSubscription(sub);
-                connection.OnNotificationEvent += OnNotificationEvent;
-                connection.OnDisconnect += OnDisconnect;
-                connection.Open();
-                _meetingCacheService.ClearUpcomingAppointmentsForRoom(_roomAddress);
-                log.DebugFormat("Opened subscription to {0} via {1} with {2}", _roomAddress, svc.GetHashCode(), svc.CookieContainer.GetCookieHeader(svc.Url));
-                IsActive = true;
-                return connection;
+                    // Create a streaming connection to the service object, over which events are returned to the client.
+                    // Keep the streaming connection open for 30 minutes.
+                    var connection = new StreamingSubscriptionConnection(svc, 30);
+                    connection.AddSubscription(sub);
+                    connection.OnNotificationEvent += OnNotificationEvent;
+                    connection.OnDisconnect += OnDisconnect;
+                    connection.Open();
+                    _meetingCacheService.ClearUpcomingAppointmentsForRoom(_roomAddress);
+                    log.DebugFormat("Opened subscription to {0} via {1} with {2}", _roomAddress, svc.GetHashCode(), svc.CookieContainer.GetCookieHeader(svc.Url));
+                    IsActive = true;
+                    return connection;
+                });
             }
 
             private void OnDisconnect(object sender, SubscriptionErrorEventArgs args)
