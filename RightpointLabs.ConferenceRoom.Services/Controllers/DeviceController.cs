@@ -7,6 +7,7 @@ using System.Web.Http;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
+using RightpointLabs.ConferenceRoom.Infrastructure.Services;
 
 namespace RightpointLabs.ConferenceRoom.Services.Controllers
 {
@@ -15,11 +16,13 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
     {
         private readonly IOrganizationRepository _organizationRepository;
         private readonly IDeviceRepository _deviceRepository;
+        private readonly ITokenService _tokenService;
 
-        public DeviceController(IOrganizationRepository organizationRepository, IDeviceRepository deviceRepository)
+        public DeviceController(IOrganizationRepository organizationRepository, IDeviceRepository deviceRepository, ITokenService tokenService)
         {
             _organizationRepository = organizationRepository;
             _deviceRepository = deviceRepository;
+            _tokenService = tokenService;
         }
 
         [Route("create")]
@@ -44,7 +47,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
 
         private string CreateToken(DeviceEntity device)
         {
-            throw new NotImplementedException();
+            return _tokenService.CreateDeviceToken(device.Id);
         }
     }
 }
