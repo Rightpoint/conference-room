@@ -1,15 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RightpointLabs.ConferenceRoom.Services", "RightpointLabs.ConferenceRoom.Services\RightpointLabs.ConferenceRoom.Services.csproj", "{D542CB1E-F9B0-4E2D-920D-7D0909FDDC2A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RightpointLabs.ConferenceRoom.Domain", "RightpointLabs.ConferenceRoom.Domain\RightpointLabs.ConferenceRoom.Domain.csproj", "{AD5CB851-8AAD-4C68-832C-810E2C383EA6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RightpointLabs.ConferenceRoom.Infrastructure", "RightpointLabs.ConferenceRoom.Infrastructure\RightpointLabs.ConferenceRoom.Infrastructure.csproj", "{30948D84-111A-44B7-9FEE-3513CEA6FE3E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RightpointLabs.ConferenceRoom.StatusMonitorService", "RightpointLabs.ConferenceRoom.StatusMonitorService\RightpointLabs.ConferenceRoom.StatusMonitorService.csproj", "{1DE41AF2-D8C1-4DD2-A0B9-2FA1D40250D0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{44CCB45C-B227-4812-B59F-A6AFD8444C51}"
 EndProject
@@ -45,14 +43,6 @@ Global
 		{30948D84-111A-44B7-9FEE-3513CEA6FE3E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{30948D84-111A-44B7-9FEE-3513CEA6FE3E}.Release|x64.ActiveCfg = Release|x64
 		{30948D84-111A-44B7-9FEE-3513CEA6FE3E}.Release|x64.Build.0 = Release|x64
-		{1DE41AF2-D8C1-4DD2-A0B9-2FA1D40250D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1DE41AF2-D8C1-4DD2-A0B9-2FA1D40250D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1DE41AF2-D8C1-4DD2-A0B9-2FA1D40250D0}.Debug|x64.ActiveCfg = Debug|x64
-		{1DE41AF2-D8C1-4DD2-A0B9-2FA1D40250D0}.Debug|x64.Build.0 = Debug|x64
-		{1DE41AF2-D8C1-4DD2-A0B9-2FA1D40250D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1DE41AF2-D8C1-4DD2-A0B9-2FA1D40250D0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1DE41AF2-D8C1-4DD2-A0B9-2FA1D40250D0}.Release|x64.ActiveCfg = Release|x64
-		{1DE41AF2-D8C1-4DD2-A0B9-2FA1D40250D0}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
