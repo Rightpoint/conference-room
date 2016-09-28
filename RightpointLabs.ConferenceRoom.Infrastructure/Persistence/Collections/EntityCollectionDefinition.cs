@@ -13,7 +13,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections
         {
             if (connectionHandler == null) throw new ArgumentNullException("connectionHandler");
 
-            Collection = connectionHandler.Database.GetCollection<T>(typeof(T).Name.ToLower() + "s");
+            // ReSharper disable once VirtualMemberCallInConstructor
+            Collection = connectionHandler.Database.GetCollection<T>(CollectionName);
 
             // setup serialization
             if (!BsonClassMap.IsClassMapRegistered(typeof(Entity)))
@@ -36,5 +37,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections
         }
 
         public readonly MongoCollection<T> Collection;
+
+        protected virtual string CollectionName => typeof(T).Name.ToLower().Replace("Entity", "") + "s";
     }
 }
