@@ -1,5 +1,5 @@
 ﻿using System;
-using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens;
 using System.Web;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;

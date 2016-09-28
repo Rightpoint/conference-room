@@ -1,8 +1,8 @@
 ﻿using System;
-using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 {
@@ -20,7 +20,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         {
             _issuer = issuer;
             _algorithm = algorithm;
-            _signingKey = new JsonWebKey(signingKey);
+            var rsa = new RSACryptoServiceProvider();
+            rsa.ImportCspBlob(Convert.FromBase64String(signingKey));
+            _signingKey = new RsaSecurityKey(rsa);;
         }
 
         public JwtSecurityToken ValidateToken(string rawToken)
@@ -29,7 +31,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             var principal = new JwtSecurityTokenHandler().ValidateToken(rawToken, new TokenValidationParameters()
             {
                 ValidIssuer = _issuer,
-                IssuerSigningKey = new JsonWebKey()
+                IssuerSigningKey = _signingKey,
             }, out token);
             var realToken = token as JwtSecurityToken;
 
@@ -71,11 +73,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Issuer = _issuer,
-                IssuedAt = DateTime.UtcNow,
-                NotBefore = DateTime.UtcNow,
-                Expires = DateTime.UtcNow.Add(lifetime),
-                SigningCredentials = new SigningCredentials(_signingKey, _algorithm),
+                TokenIssuerName = _issuer,
+                //Issuer = _issuer,
+                //IssuedAt = DateTime.UtcNow,
+                //NotBefore = DateTime.UtcNow,
+                //Expires = DateTime.UtcNow.Add(lifetime),
+                SigningCredentials = new SigningCredentials(_signingKey, _algorithm, _algorithm),
             };
 
             var handler = new JwtSecurityTokenHandler();

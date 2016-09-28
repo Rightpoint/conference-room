@@ -1,4 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 {
