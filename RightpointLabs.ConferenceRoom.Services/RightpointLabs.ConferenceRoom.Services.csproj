@@ -231,6 +231,8 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Attributes\ErrorHandlerAttribute.cs" />
+    <Compile Include="Auth\CustomOpenIdConnectAuthenticationHandler.cs" />
+    <Compile Include="Auth\CustomOpenIdConnectAuthenticationMiddleware.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\ClientLogController.cs" />
     <Compile Include="Controllers\TokenController.cs" />

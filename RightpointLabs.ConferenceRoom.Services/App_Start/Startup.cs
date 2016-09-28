@@ -5,6 +5,7 @@ using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OpenIdConnect;
 using Owin;
 using RightpointLabs.ConferenceRoom.Services;
+using RightpointLabs.ConferenceRoom.Services.Auth;
 
 [assembly: OwinStartup(typeof(Startup))]
 
@@ -15,21 +16,20 @@ namespace RightpointLabs.ConferenceRoom.Services
         public void Configuration(IAppBuilder app)
         {
             app.MapSignalR();
-            app.SetDefaultSignInAsAuthenticationType(CookieAuthenticationDefaults.AuthenticationType);
-            app.UseCookieAuthentication(new CookieAuthenticationOptions());
+            app.SetDefaultSignInAsAuthenticationType("AzureAdAuthCookie");
+            app.UseCookieAuthentication(new CookieAuthenticationOptions() { AuthenticationType = "AzureAdAuthCookie" });
 
-            // this registers the OpenIdConnect Middleware, which has the AuthenticationHandler, which redirects all 401s via ApplyResponseChallengeAsync
-            // since we only want a single URL to cause that, we'll just override the middleware to build an overriden AuthenticationHandler,
-            //   which will override AuthenticateCoreAsync to add a hidden "log me in now" URL, which will redirect to "/" if not logged in,
-            //   and set a 401 and whitelist that in ApplyResponseChallengeAsync (so other 401s don't trigger that).
-            //   then, we'll be able to use all this auth code without it messing up the rest of our app
-            app.UseOpenIdConnectAuthentication(
-                new OpenIdConnectAuthenticationOptions
-                {
-                    ClientId = ConfigurationManager.AppSettings["ida:ClientId"],
-                    Authority = string.Format(ConfigurationManager.AppSettings["ida:AADInstance"], ConfigurationManager.AppSettings["ida:Tenant"]),
-                    PostLogoutRedirectUri = ConfigurationManager.AppSettings["ida:Audience"],
-                });
+            // requests to /azure-ad-auth will 302 to Azure AD, back to /azure-ad-auth, which will 302 to /
+            // which means our SPA can hit /api/tokens/get, and if it gets a 401, redirect to /azure-ad-auth to prompt the user for creds, which will then lead back to the SPA,
+            //   where /api/tokens/get should work.
+            var authOptions = new OpenIdConnectAuthenticationOptions
+            {
+                ClientId = ConfigurationManager.AppSettings["ida:ClientId"],
+                Authority = string.Format(ConfigurationManager.AppSettings["ida:AADInstance"], ConfigurationManager.AppSettings["ida:Tenant"]),
+                PostLogoutRedirectUri = ConfigurationManager.AppSettings["ida:Audience"],
+            };
+            //app.UseOpenIdConnectAuthentication(authOptions);
+            app.Use(typeof(CustomOpenIdConnectAuthenticationMiddleware), app, authOptions);
         }
     }
 }

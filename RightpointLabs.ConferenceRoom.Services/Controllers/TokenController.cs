@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
+using System.Text;
 using System.Web;
 using System.Web.Http;
 using Microsoft.Owin.Security;
@@ -28,28 +29,21 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             _tokenService = tokenService;
         }
 
-        [Authorize]
-        [Route("login")]
-        public object GetLogin()
-        {
-            return Redirect("/");
-        }
-
-        [Authorize]
         [Route("get")]
-        public object GetGet()
+        public HttpResponseMessage PostGet()
         {
             var cp = ClaimsPrincipal.Current;
-            var username = cp.Identities.FirstOrDefault()?.Name;
+            var username = cp.Identities.FirstOrDefault(_ => _.IsAuthenticated && _.AuthenticationType == "AzureAdAuthCookie")?.Name;
             if (string.IsNullOrEmpty(username))
             {
-                return StatusCode(HttpStatusCode.Forbidden);
+                return new HttpResponseMessage(HttpStatusCode.Forbidden);
             }
 
             var domain = username.Split('@').Last();
 
             var org = _organizationRepository.GetByUserDomain(domain);
-            return _tokenService.CreateUserToken(username, org.Id);
+            var token = _tokenService.CreateUserToken(username, org.Id);
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(token, Encoding.UTF8) };
         }
     }
 }
