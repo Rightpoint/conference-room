@@ -125,7 +125,7 @@
     <Compile Include="Persistence\Repositories\EntityRepository.cs" />
     <Compile Include="Persistence\IMongoConnectionHandler.cs" />
     <Compile Include="Persistence\MongoConnectionHandler.cs" />
-    <Compile Include="Services\AuthenticationService.cs" />
+    <Compile Include="Services\ContextService.cs" />
     <Compile Include="Services\ChangeNotificationService.cs" />
     <Compile Include="Services\ConnectionManager.cs" />
     <Compile Include="Services\BuildingService.cs" />
