@@ -1,17 +1,13 @@
 using System;
-using System.Configuration;
-using System.Data;
-using System.Reflection;
-using System.ServiceModel.Dispatcher;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.Exchange.WebServices.Data;
 using Microsoft.Practices.Unity;
 using System.Web.Http;
-using Newtonsoft.Json.Linq;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
+using RightpointLabs.ConferenceRoom.Infrastructure.Models;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories;
 using RightpointLabs.ConferenceRoom.Infrastructure.Services;
@@ -33,6 +29,17 @@ namespace RightpointLabs.ConferenceRoom.Services
             container.RegisterType<IMongoConnectionHandler, MongoConnectionHandler>(
                 new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(connectionString, providerName));
+
+            container.RegisterType<ExchangeConferenceRoomServiceConfiguration>(new HierarchicalLifetimeManager(),
+                new InjectionFactory(
+                    c =>
+                        CreateOrganizationalService(c, "Exchange",
+                            _ => new ExchangeConferenceRoomServiceConfiguration() {
+                                IgnoreFree = _.IgnoreFree,
+                                ImpersonateForAllCalls = _.ImpersonateForAllCalls,
+                                UseChangeNotification = _.UseChangeNotification,
+                                EmailDomains = _.EmailDomains,
+                            })));
 
             container.RegisterType<Func<ExchangeService>>(new HierarchicalLifetimeManager(),
                 new InjectionFactory(

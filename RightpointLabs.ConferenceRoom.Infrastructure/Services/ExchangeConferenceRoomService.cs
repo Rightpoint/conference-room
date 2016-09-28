@@ -15,6 +15,7 @@ using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
+using RightpointLabs.ConferenceRoom.Infrastructure.Models;
 using Task = System.Threading.Tasks.Task;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
@@ -54,7 +55,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             ISmsAddressLookupService smsAddressLookupService,
             ISignatureService signatureService,
             IRoomMetadataRepository roomRepository,
-            IBuildingRepository buildingRepository)
+            IBuildingRepository buildingRepository,
+            ExchangeConferenceRoomServiceConfiguration config)
         {
             _meetingRepository = meetingRepository;
             _securityRepository = securityRepository;
@@ -70,13 +72,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _signatureService = signatureService;
             _roomRepository = roomRepository;
             _buildingRepository = buildingRepository;
-            _ignoreFree = bool.Parse(ConfigurationManager.AppSettings["ignoreFree"] ?? "false");
-            _useChangeNotification = bool.Parse(ConfigurationManager.AppSettings["useChangeNotification"] ?? "true");
-            _impersonateForAllCalls = bool.Parse(ConfigurationManager.AppSettings["impersonateForAllCalls"] ?? "true");
-            _emailDomains = (ConfigurationManager.AppSettings["emailDomains"] ?? "")
-                .Split(';')
-                .Select(_ => _.StartsWith("@") ? _.ToLowerInvariant() : "@" + _.ToLowerInvariant())
-                .ToArray();
+            _ignoreFree = config.IgnoreFree;
+            _useChangeNotification = config.UseChangeNotification;
+            _impersonateForAllCalls = config.ImpersonateForAllCalls;
+            _emailDomains = config.EmailDomains;
         }
 
         /// <summary>

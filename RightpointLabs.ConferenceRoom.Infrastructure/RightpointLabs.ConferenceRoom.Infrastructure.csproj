@@ -111,6 +111,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\ExchangeConferenceRoomServiceConfiguration.cs" />
     <Compile Include="Persistence\Collections\BuildingInfoValuesCollectionDefinition.cs" />
     <Compile Include="Persistence\Collections\RoomMetadataEntityCollectionDefinition.cs" />
     <Compile Include="Persistence\Collections\SecurityRequestCollectionDefinition.cs" />
