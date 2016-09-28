@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>RightpointLabs.ConferenceRoom.Domain</RootNamespace>
     <AssemblyName>RightpointLabs.ConferenceRoom.Domain</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -65,7 +66,10 @@
     <Compile Include="ISmsAddressLookupService.cs" />
     <Compile Include="Models\AccessDeniedException.cs" />
     <Compile Include="Models\BaseObject.cs" />
+    <Compile Include="Models\Entities\DeviceEntity.cs" />
     <Compile Include="Models\Entities\FloorEntity.cs" />
+    <Compile Include="Models\Entities\OrganizationEntity.cs" />
+    <Compile Include="Models\Entities\OrganizationServiceConfigurationEntity.cs" />
     <Compile Include="Models\Rectangle.cs" />
     <Compile Include="Models\Point.cs" />
     <Compile Include="Models\Entities\Entity.cs" />
@@ -79,11 +83,15 @@
     <Compile Include="Models\RoomStatusInfo.cs" />
     <Compile Include="Models\SecurityStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\IDeviceRepository.cs" />
+    <Compile Include="Repositories\IOrganizationServiceConfigurationRepository.cs" />
+    <Compile Include="Repositories\IOrganizationRepository.cs" />
     <Compile Include="Repositories\IBuildingRepository.cs" />
     <Compile Include="Repositories\IRoomMetadataRepository.cs" />
     <Compile Include="Repositories\IMeetingRepository.cs" />
     <Compile Include="Repositories\ISecurityRepository.cs" />
     <Compile Include="Services\DateTimeService.cs" />
+    <Compile Include="Services\IContextService.cs" />
     <Compile Include="Services\IBroadcastService.cs" />
     <Compile Include="Services\IChangeNotificationService.cs" />
     <Compile Include="Services\IConcurrencyLimiter.cs" />
