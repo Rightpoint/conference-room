@@ -81,6 +81,10 @@ namespace RightpointLabs.ConferenceRoom.Services
             container.RegisterType<IRoomMetadataRepository, RoomMetadataRepository>(new HierarchicalLifetimeManager());
             container.RegisterType<IBuildingService, BuildingService>(new HierarchicalLifetimeManager());
             container.RegisterType<IBuildingRepository, BuildingRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IOrganizationRepository, OrganizationRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IOrganizationServiceConfigurationRepository, OrganizationServiceConfigurationRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IContextService, ContextService>(new HierarchicalLifetimeManager());
+            container.RegisterType<ITokenService, TokenService>(new HierarchicalLifetimeManager(), new InjectionFactory(c => new TokenService("", "{}", "md5")));
 
             // create change notifier in a child container and register as a singleton with the main container (avoids creating it's dependencies in the global container)
             var child = container.CreateChildContainer();

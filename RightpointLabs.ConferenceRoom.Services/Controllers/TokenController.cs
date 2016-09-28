@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Security.Claims;
+using System.Web;
 using System.Web.Http;
+using Microsoft.Owin.Security;
+using Microsoft.Owin.Security.OpenIdConnect;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Infrastructure.Services;
+using ClaimTypes = System.IdentityModel.Claims.ClaimTypes;
 
 namespace RightpointLabs.ConferenceRoom.Services.Controllers
 {
@@ -23,21 +28,24 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             _tokenService = tokenService;
         }
 
-        [Route("get")]
-        public object PostGet()
+        [Authorize]
+        [Route("login")]
+        public object GetLogin()
         {
-            var token = CreateToken(this.Request);
-            if (null == token)
+            return Redirect("/");
+        }
+
+        [Authorize]
+        [Route("get")]
+        public object GetGet()
+        {
+            var cp = ClaimsPrincipal.Current;
+            var username = cp.Identities.FirstOrDefault()?.Name;
+            if (string.IsNullOrEmpty(username))
             {
                 return StatusCode(HttpStatusCode.Forbidden);
             }
-            return token;
-        }
 
-        private string CreateToken(HttpRequestMessage message)
-        {
-            throw new NotImplementedException();
-            var username = "user@org.com";
             var domain = username.Split('@').Last();
 
             var org = _organizationRepository.GetByUserDomain(domain);
