@@ -24,7 +24,6 @@ namespace RightpointLabs.ConferenceRoom.Services
             //   where /api/tokens/get should work.
             var authOptions = new OpenIdConnectAuthenticationOptions
             {
-                RedirectUri = "http://localhost:63915/azure-ad-auth-callback",
                 ClientId = ConfigurationManager.AppSettings["ida:ClientId"],
                 Authority = string.Format(ConfigurationManager.AppSettings["ida:AADInstance"], ConfigurationManager.AppSettings["ida:Tenant"]),
                 PostLogoutRedirectUri = ConfigurationManager.AppSettings["ida:Audience"],
