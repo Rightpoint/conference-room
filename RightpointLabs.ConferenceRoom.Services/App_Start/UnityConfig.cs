@@ -2,12 +2,14 @@ using System;
 using System.Collections;
 using System.Configuration;
 using System.Linq;
+using System.Reflection;
 using System.Web;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.Exchange.WebServices.Data;
 using Microsoft.Practices.Unity;
 using System.Web.Http;
+using log4net;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
@@ -22,6 +24,8 @@ namespace RightpointLabs.ConferenceRoom.Services
 {
     public static class UnityConfig
     {
+        private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         public static void RegisterComponents()
         {
             var container = new UnityContainer();
@@ -115,11 +119,13 @@ namespace RightpointLabs.ConferenceRoom.Services
             var org = container.Resolve<IContextService>().CurrentOrganization;
             if (null == org)
             {
+                log.WarnFormat("Unable to load configuration for {0}, no current organization", serviceName);
                 return default(T);
             }
             var config = container.Resolve<IOrganizationServiceConfigurationRepository>().Get(org.Id, serviceName);
             if (null == config)
             {
+                log.WarnFormat("Unable to load configuration for {0}, no configuration found for current organization ({1})", serviceName, org.Id);
                 return default(T);
             }
             return builder(config.Parameters);
