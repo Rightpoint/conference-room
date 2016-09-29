@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IdentityModel.Protocols.WSTrust;
 using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Security.Claims;
@@ -48,7 +49,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         public string CreateDeviceToken(string deviceId)
         {
-            return CreateToken(TimeSpan.FromDays(365 * 1000), new Claim(ClaimKeyDeviceId, deviceId));
+            return CreateToken(TimeSpan.FromDays(365 * 20), new Claim(ClaimKeyDeviceId, deviceId));
         }
 
         public string CreateUserToken(string userId, string organizationId)
@@ -83,6 +84,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 Subject = new ClaimsIdentity(claims),
                 TokenIssuerName = _issuer,
                 AppliesToAddress = _audience,
+                Lifetime = new Lifetime(DateTime.UtcNow, DateTime.UtcNow.Add(lifetime)),
                 //Issuer = _issuer,
                 //IssuedAt = DateTime.UtcNow,
                 //NotBefore = DateTime.UtcNow,
