@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Configuration;
+using System.Linq;
 using System.Web;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
@@ -40,7 +42,7 @@ namespace RightpointLabs.ConferenceRoom.Services
                                 IgnoreFree = _.IgnoreFree,
                                 ImpersonateForAllCalls = _.ImpersonateForAllCalls,
                                 UseChangeNotification = _.UseChangeNotification,
-                                EmailDomains = _.EmailDomains,
+                                EmailDomains = ((IEnumerable)_.EmailDomains).Cast<string>().ToArray(),
                             })));
 
             container.RegisterType<Func<ExchangeService>>(new HierarchicalLifetimeManager(),
@@ -64,7 +66,7 @@ namespace RightpointLabs.ConferenceRoom.Services
             container.RegisterType<IGdoService>(new ContainerControlledLifetimeManager(),
                 new InjectionFactory(
                     c =>
-                        CreateOrganizationalService(c, "Plivo",
+                        CreateOrganizationalService(c, "GDO",
                             _ => new GdoService(new Uri(_.BaseUrl), _.ApiKey, _.Username, _.Password))));
 
             container.RegisterType<IBroadcastService, SignalrBroadcastService>(new HierarchicalLifetimeManager());

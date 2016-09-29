@@ -1,5 +1,9 @@
 ﻿using System;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Driver.GeoJsonObjectModel.Serializers;
+using Newtonsoft.Json.Linq;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Models;
 
@@ -18,6 +22,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections
                         cm =>
                         {
                             cm.AutoMap();
+                            cm.GetMemberMap(i => i.OrganizationId).SetSerializer(new StringSerializer(BsonType.ObjectId));
                         });
                 }
                 catch (ArgumentException)

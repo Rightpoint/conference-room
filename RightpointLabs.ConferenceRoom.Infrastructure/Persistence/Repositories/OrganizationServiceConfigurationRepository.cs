@@ -14,7 +14,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
 
         public OrganizationServiceConfigurationEntity Get(string organizationId, string serviceName)
         {
-            return this.Collection.FindOne(Query<OrganizationServiceConfigurationEntity>.Where(i => i.OrganizationId == organizationId && i.ServiceName == serviceName));
+            var q = Query<OrganizationServiceConfigurationEntity>.Where(i => i.OrganizationId == organizationId && i.ServiceName == serviceName);
+            return this.Collection.FindOne(q);
         }
     }
 }

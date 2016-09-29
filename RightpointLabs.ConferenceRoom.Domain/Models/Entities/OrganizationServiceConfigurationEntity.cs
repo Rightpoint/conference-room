@@ -6,6 +6,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
     {
         public string OrganizationId { get; set; }
         public string ServiceName { get; set; }
-        public JObject Parameters { get; set; }
+        public dynamic Parameters { get; set; }
     }
 }
