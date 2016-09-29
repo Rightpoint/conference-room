@@ -45,5 +45,11 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             var token = _tokenService.CreateUserToken(username, org.Id);
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(token, Encoding.UTF8) };
         }
+
+        [Route("get")]
+        public HttpResponseMessage GetGet()
+        {
+            return PostGet();
+        }
     }
 }

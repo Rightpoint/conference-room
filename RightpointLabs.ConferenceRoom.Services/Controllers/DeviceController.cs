@@ -27,7 +27,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         }
 
         [Route("create")]
-        public HttpResponseMessage GetCreate(string organizationId, string joinKey)
+        public HttpResponseMessage PostCreate(string organizationId, string joinKey)
         {
             var org = _organizationRepository.Get(organizationId);
 
@@ -43,6 +43,13 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
 
             var token = _tokenService.CreateDeviceToken(device.Id);
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(token, Encoding.UTF8) };
+        }
+
+
+        [Route("create")]
+        public HttpResponseMessage GetCreate(string organizationId, string joinKey)
+        {
+            return PostCreate(organizationId, joinKey);
         }
     }
 }
