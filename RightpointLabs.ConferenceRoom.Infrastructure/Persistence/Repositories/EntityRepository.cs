@@ -82,6 +82,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
 
         protected static void AssertAffected(WriteConcernResult result, int expectedAffected)
         {
+            if (null == result)
+            {
+                // um... why?
+                return;
+            }
+
             if (result.DocumentsAffected != expectedAffected)
             {
                 throw new Exception($"Expected to affect {expectedAffected} documents, but affected {result.DocumentsAffected}");

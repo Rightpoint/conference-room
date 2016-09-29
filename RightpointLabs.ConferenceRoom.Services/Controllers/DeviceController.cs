@@ -30,7 +30,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         {
             var org = _organizationRepository.Get(organizationId);
 
-            if (org?.JoinKey != joinKey)
+            if (null == org || org.JoinKey != joinKey)
             {
                 return new HttpResponseMessage(HttpStatusCode.Forbidden);
             }

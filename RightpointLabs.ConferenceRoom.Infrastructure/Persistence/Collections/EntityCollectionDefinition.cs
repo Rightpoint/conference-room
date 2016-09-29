@@ -1,6 +1,8 @@
 ﻿using System;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.IdGenerators;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Models;
@@ -26,7 +28,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections
                         {
                             cm.AutoMap();
                             cm.SetIdMember(cm.GetMemberMap(i => i.Id));
-                            cm.IdMemberMap.SetIdGenerator(StringObjectIdGenerator.Instance);
+                            cm.IdMemberMap.SetIdGenerator(StringObjectIdGenerator.Instance).SetSerializer(new StringSerializer(BsonType.ObjectId));
                         });
                 }
                 catch (ArgumentException)
@@ -38,6 +40,6 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections
 
         public readonly MongoCollection<T> Collection;
 
-        protected virtual string CollectionName => typeof(T).Name.ToLower().Replace("Entity", "") + "s";
+        protected virtual string CollectionName => typeof(T).Name.Replace("Entity", "").ToLower() + "s";
     }
 }

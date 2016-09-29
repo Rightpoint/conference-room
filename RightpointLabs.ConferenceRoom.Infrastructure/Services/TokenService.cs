@@ -9,17 +9,15 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
     public class TokenService : ITokenService
     {
         private readonly string _issuer;
-        private readonly string _algorithm;
         private readonly SecurityKey _signingKey;
 
         private static readonly string ClaimKeyDeviceId = "deviceid";
         private static readonly string ClaimKeyOrganizationId = "organizationid";
         private static readonly string ClaimKeyUserId = "userid";
 
-        public TokenService(string issuer, string signingKey, string algorithm)
+        public TokenService(string issuer, string signingKey)
         {
             _issuer = issuer;
-            _algorithm = algorithm;
             var rsa = new RSACryptoServiceProvider();
             rsa.ImportCspBlob(Convert.FromBase64String(signingKey));
             _signingKey = new RsaSecurityKey(rsa);;
@@ -78,7 +76,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 //IssuedAt = DateTime.UtcNow,
                 //NotBefore = DateTime.UtcNow,
                 //Expires = DateTime.UtcNow.Add(lifetime),
-                SigningCredentials = new SigningCredentials(_signingKey, _algorithm, _algorithm),
+                SigningCredentials = new SigningCredentials(_signingKey, SecurityAlgorithms.RsaSha1Signature, SecurityAlgorithms.Sha1Digest),
             };
 
             var handler = new JwtSecurityTokenHandler();
