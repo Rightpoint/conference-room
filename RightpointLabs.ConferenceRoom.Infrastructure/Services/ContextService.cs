@@ -29,13 +29,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         private JwtSecurityToken GetToken(HttpRequestBase request)
         {
-            var authHeaderValue = request.Headers["Authentication"];
-            if (string.IsNullOrEmpty(authHeaderValue))
+            var authHeaderValue = request.Headers["Authorization"];
+            if (string.IsNullOrEmpty(authHeaderValue) || !authHeaderValue.StartsWith("Bearer ") || authHeaderValue.Length < 8)
             {
                 return null;
             }
 
-            return _tokenService.ValidateToken(authHeaderValue);
+            return _tokenService.ValidateToken(authHeaderValue.Substring(7));
         }
 
         private DeviceEntity GetDevice()

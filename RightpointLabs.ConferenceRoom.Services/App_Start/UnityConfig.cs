@@ -1,5 +1,6 @@
 using System;
 using System.Configuration;
+using System.Web;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.Exchange.WebServices.Data;
@@ -70,6 +71,7 @@ namespace RightpointLabs.ConferenceRoom.Services
             container.RegisterType<IConnectionManager>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => GlobalHost.ConnectionManager));
             container.RegisterType<IDateTimeService>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => new DateTimeService(TimeSpan.FromHours(0))));
 
+            container.RegisterType<HttpRequestBase>(new HierarchicalLifetimeManager(), new InjectionFactory(c => new HttpRequestWrapper(HttpContext.Current.Request)));
 
             container.RegisterType<ISmsAddressLookupService, SmsAddressLookupService>(new HierarchicalLifetimeManager());
             container.RegisterType<ISignatureService, SignatureService>(new ContainerControlledLifetimeManager());
@@ -88,7 +90,9 @@ namespace RightpointLabs.ConferenceRoom.Services
             container.RegisterType<IContextService, ContextService>(new HierarchicalLifetimeManager());
             container.RegisterType<ITokenService, TokenService>(new HierarchicalLifetimeManager(), new InjectionFactory(c => 
                 new TokenService(
-                    ConfigurationManager.AppSettings["TokenIssuer"], ConfigurationManager.AppSettings["TokenKey"])));
+                    ConfigurationManager.AppSettings["TokenIssuer"],
+                    ConfigurationManager.AppSettings["TokenAudience"],
+                    ConfigurationManager.AppSettings["TokenKey"])));
 
             // create change notifier in a child container and register as a singleton with the main container (avoids creating it's dependencies in the global container)
             var child = container.CreateChildContainer();

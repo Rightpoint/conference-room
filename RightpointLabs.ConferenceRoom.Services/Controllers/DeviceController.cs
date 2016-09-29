@@ -27,7 +27,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         }
 
         [Route("create")]
-        public HttpResponseMessage PostCreate(string organizationId, string joinKey)
+        public HttpResponseMessage GetCreate(string organizationId, string joinKey)
         {
             var org = _organizationRepository.Get(organizationId);
 

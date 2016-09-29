@@ -9,15 +9,17 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
     public class TokenService : ITokenService
     {
         private readonly string _issuer;
+        private readonly string _audience;
         private readonly SecurityKey _signingKey;
 
         private static readonly string ClaimKeyDeviceId = "deviceid";
         private static readonly string ClaimKeyOrganizationId = "organizationid";
         private static readonly string ClaimKeyUserId = "userid";
 
-        public TokenService(string issuer, string signingKey)
+        public TokenService(string issuer, string audience, string signingKey)
         {
             _issuer = issuer;
+            _audience = audience;
             var rsa = new RSACryptoServiceProvider();
             rsa.ImportCspBlob(Convert.FromBase64String(signingKey));
             _signingKey = new RsaSecurityKey(rsa);;
@@ -26,14 +28,22 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         public JwtSecurityToken ValidateToken(string rawToken)
         {
             SecurityToken token;
-            var principal = new JwtSecurityTokenHandler().ValidateToken(rawToken, new TokenValidationParameters()
+            try
             {
-                ValidIssuer = _issuer,
-                IssuerSigningKey = _signingKey,
-            }, out token);
-            var realToken = token as JwtSecurityToken;
+                var principal = new JwtSecurityTokenHandler().ValidateToken(rawToken, new TokenValidationParameters()
+                {
+                    ValidIssuer = _issuer,
+                    ValidAudience = _audience,
+                    IssuerSigningKey = _signingKey,
+                }, out token);
+                var realToken = token as JwtSecurityToken;
 
-            return realToken;
+                return realToken;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         public string CreateDeviceToken(string deviceId)
@@ -72,6 +82,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 Subject = new ClaimsIdentity(claims),
                 TokenIssuerName = _issuer,
+                AppliesToAddress = _audience,
                 //Issuer = _issuer,
                 //IssuedAt = DateTime.UtcNow,
                 //NotBefore = DateTime.UtcNow,
