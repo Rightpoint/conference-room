@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Web.Http;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
@@ -26,7 +27,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         }
 
         [Route("create")]
-        public object PostCreate(string organizationId, string joinKey)
+        public HttpResponseMessage PostCreate(string organizationId, string joinKey)
         {
             var org = _organizationRepository.Get(organizationId);
 
@@ -40,14 +41,8 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
                 OrganizationId = org.Id
             });
 
-            var token = CreateToken(device);
-
-            return token;
-        }
-
-        private string CreateToken(DeviceEntity device)
-        {
-            return _tokenService.CreateDeviceToken(device.Id);
+            var token = _tokenService.CreateDeviceToken(device.Id);
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(token, Encoding.UTF8) };
         }
     }
 }
