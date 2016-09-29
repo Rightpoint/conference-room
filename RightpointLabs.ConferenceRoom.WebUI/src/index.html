@@ -14,7 +14,7 @@
   <!-- endinject -->
 </head>
 
-<body ng-app="app">
+<body>
 
   <div class="container-fluid main-content" ui-view>
   </div> <!-- /container -->
@@ -25,5 +25,12 @@
 
   <!-- inject:js -->
   <!-- endinject -->
+
+  <script type="text/javascript">
+    angular.element(document).ready(function() {
+      angular.module('app').value('authToken', window.location.hash.substring(1));
+      angular.bootstrap(document, ['app']);
+    });
+  </script>
 </body>
 </html>
