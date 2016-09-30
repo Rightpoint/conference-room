@@ -20,7 +20,7 @@
                 self.device = tokenInfo.device;
             }
             else {
-                $state.go('roomList');
+                $state.go('buildingList');
             }
         }
 

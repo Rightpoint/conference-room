@@ -57,7 +57,11 @@
             };
             
             // Delegate the work to the server (fallback no longer needed)
-            Restangular.all('room').one('all').one('status').get({ roomAddress: $stateParams.roomAddress || roomAddress }).then(function(data) {
+            var statusReq = Restangular.all('room').one('all').one('status');
+            if($stateParams.buildingId) {
+                statusReq = statusReq.one($stateParams.buildingId);
+            }
+            statusReq.get().then(function(data) {
                 return data.map(function(i) {
                     return angular.merge({ Address: i.Address }, i.Info, i.Status);
                 });

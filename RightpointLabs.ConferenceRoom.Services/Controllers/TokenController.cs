@@ -66,6 +66,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             {
                 organization = org?.Id,
                 device = device?.Id,
+                building = device?.BuildingId,
                 controlledRooms = device?.ControlledRoomAddresses,
                 user = userId,
             };

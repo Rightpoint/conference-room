@@ -174,28 +174,19 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         }
 
 
-        [Route("all/status")]
-        public object GetAllStatus(string roomAddress)
+        [Route("all/status/{buildingId}")]
+        public object GetAllStatus(string buildingId)
         {
-            var building = _buildingRepository.Get(_contextService.CurrentDevice?.BuildingId);
+            var building = _buildingRepository.Get(buildingId ?? _contextService.CurrentDevice?.BuildingId);
 
             var rooms =
-                (building?.RoomListAddresses ?? _conferenceRoomService.GetRoomLists().Select(_ => _.Address))
+                (building?.RoomListAddresses ?? new string[0])
                     .AsParallel()
                     .WithDegreeOfParallelism(256)
                     .SelectMany(_conferenceRoomService.GetRoomsFromRoomList)
                     .Select(i => new { i.Address, Info =  _conferenceRoomService.GetInfo(i.Address) })
                     .ToList();
-
-            if (!string.IsNullOrEmpty(roomAddress))
-            {
-                var room = rooms.FirstOrDefault(i => i.Address == roomAddress);
-                if (!string.IsNullOrEmpty(room?.Info.BuildingId))
-                {
-                    rooms = rooms.Where(i => i.Info.BuildingId == room.Info.BuildingId).ToList();
-                }
-            }
-
+            
             // ok, we have the filtered rooms list, now we need to get the status and smash it together with the room data
             return
                 rooms.AsParallel()

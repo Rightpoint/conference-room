@@ -1,7 +1,8 @@
 <div class="header">
     <h1 class="title">{{title}}</h3>
     <ul class="navigation">
-        <li ui-sref-active="active"><a href ui-sref="room">Home</a></li>
-        <li ui-sref-active="active"><a href ui-sref="findRoom">Find a Room</a></li>
+        <li ui-sref-active="active" ng-if="isDevice"><a href ui-sref="room({ roomAddress: defaultRoom })">Home</a></li>
+        <li ui-sref-active="active" ng-if="isDevice"><a href ui-sref="findRoom({ buildingId: building })">Find a Room</a></li>
+        <li ui-sref-active="active" ng-if="!isDevice"><a href ui-sref="buildingList">Find a Room</a></li>
     </ul>
 </div>
