@@ -6,6 +6,7 @@ using System.Timers;
 using log4net;
 using Microsoft.Exchange.WebServices.Data;
 using RightpointLabs.ConferenceRoom.Domain;
+using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 using Task = System.Threading.Tasks.Task;
 using Timer = System.Timers.Timer;
@@ -27,13 +28,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         private Dictionary<string, Watcher> _roomsTracked = new Dictionary<string, Watcher>();
 
-        public void TrackRoom(string roomAddress, IExchangeServiceManager exchangeServiceManager)
+        public void TrackRoom(string roomAddress, IExchangeServiceManager exchangeServiceManager, OrganizationEntity organization)
         {
             lock (_roomsTracked)
             {
                 if (_roomsTracked.ContainsKey(roomAddress))
                     return;
-                _roomsTracked.Add(roomAddress, new Watcher(exchangeServiceManager, _broadcastService, _meetingCacheService, roomAddress));
+                _roomsTracked.Add(roomAddress, new Watcher(exchangeServiceManager, _broadcastService, _meetingCacheService, roomAddress, organization));
             }
         }
 
@@ -50,13 +51,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             private readonly IBroadcastService _broadcastService;
             private readonly IMeetingCacheService _meetingCacheService;
             private readonly string _roomAddress;
+            private readonly OrganizationEntity _organization;
 
             private StreamingSubscriptionConnection _connection;
             private Timer _startConnectionTimer = new Timer(10000);
 
             public bool IsActive { get; private set; }
 
-            public Watcher(IExchangeServiceManager exchangeServiceManager, IBroadcastService broadcastService, IMeetingCacheService meetingCacheService, string roomAddress)
+            public Watcher(IExchangeServiceManager exchangeServiceManager, IBroadcastService broadcastService, IMeetingCacheService meetingCacheService, string roomAddress, OrganizationEntity organization)
             {
                 IsActive = false;
 
@@ -64,6 +66,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 _broadcastService = broadcastService;
                 _meetingCacheService = meetingCacheService;
                 _roomAddress = roomAddress;
+                _organization = organization;
                 _startConnectionTimer.Stop();
                 _startConnectionTimer.Elapsed += StartConnectionTimerOnElapsed;
                 Task.Run(() => UpdateConnection()); // don't wait for this to complete
@@ -114,7 +117,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             private void OnNotificationEvent(object sender, NotificationEventArgs args)
             {
                 _meetingCacheService.ClearUpcomingAppointmentsForRoom(_roomAddress);
-                _broadcastService.BroadcastUpdate(_roomAddress);
+                _broadcastService.BroadcastUpdate(_organization, _roomAddress);
             }
 
             private object _connectionLock = new object();

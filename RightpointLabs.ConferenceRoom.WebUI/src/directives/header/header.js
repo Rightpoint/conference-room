@@ -1,7 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').directive('header', ['tokenService', function(tokenService) {
+    angular.module('app').directive('header', ['tokenService', 'activityService', function(tokenService, activityService) {
         return {
             restrict: 'E',
             templateUrl: 'directives/header/header.html',

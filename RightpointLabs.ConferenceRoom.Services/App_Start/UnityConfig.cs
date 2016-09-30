@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Configuration;
+using System.IdentityModel.Metadata;
 using System.Linq;
 using System.Reflection;
 using System.Web;
@@ -11,6 +12,7 @@ using Microsoft.Practices.Unity;
 using System.Web.Http;
 using log4net;
 using RightpointLabs.ConferenceRoom.Domain;
+using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 using RightpointLabs.ConferenceRoom.Infrastructure.Models;
@@ -99,6 +101,9 @@ namespace RightpointLabs.ConferenceRoom.Services
                     ConfigurationManager.AppSettings["TokenAudience"],
                     ConfigurationManager.AppSettings["TokenKey"])));
 
+            container.RegisterType<IIOCContainer, UnityIOCContainer>(new TransientLifetimeManager(), new InjectionFactory(c => new UnityIOCContainer(c, false)));
+            container.RegisterType<ITokenProvider, HttpTokenProvider>(new HierarchicalLifetimeManager());
+
             // create change notifier in a child container and register as a singleton with the main container (avoids creating it's dependencies in the global container)
             var child = container.CreateChildContainer();
             var changeNotificationService = child.Resolve<ChangeNotificationService>();
@@ -111,6 +116,46 @@ namespace RightpointLabs.ConferenceRoom.Services
             // e.g. container.RegisterType<ITestService, TestService>();
             
             GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(container);
+        }
+
+        private class UnityIOCContainer : IIOCContainer
+        {
+            private readonly IUnityContainer _unityContainer;
+            private readonly bool _owned;
+
+            public UnityIOCContainer(IUnityContainer unityContainer, bool owned)
+            {
+                _unityContainer = unityContainer;
+                _owned = owned;
+            }
+
+            public IIOCContainer CreateChildContainer()
+            {
+                return new UnityIOCContainer(_unityContainer.CreateChildContainer(), true);
+            }
+
+            public object Resolve(Type type)
+            {
+                return _unityContainer.Resolve(type);
+            }
+
+            public T Resolve<T>()
+            {
+                return (T)Resolve(typeof(T));
+            }
+
+            public void Dispose()
+            {
+                if (_owned)
+                {
+                    _unityContainer.Dispose();
+                }
+            }
+
+            public void RegisterInstance<TI>(TI instance)
+            {
+                _unityContainer.RegisterInstance(typeof(TI), instance, new HierarchicalLifetimeManager());
+            }
         }
 
         private static T CreateOrganizationalService<T>(IUnityContainer container, string serviceName, Func<dynamic, T> builder)
@@ -127,11 +172,21 @@ namespace RightpointLabs.ConferenceRoom.Services
                 log.WarnFormat("Unable to load configuration for {0}, no configuration found for current organization ({1})", serviceName, org.Id);
                 return default(T);
             }
-            return builder(config.Parameters);
+            try
+            {
+                return builder(config.Parameters);
+            }
+            catch (Exception ex)
+            {
+                log.WarnFormat("Failed to create {0} for {1}: {2}", serviceName, org.Id, ex);
+                return default(T);
+            }
         }
 
         private class SignalrBroadcastService : IBroadcastService
         {
+            private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
             private readonly IConnectionManager _connectionManager;
 
             public SignalrBroadcastService(IConnectionManager connectionManager)
@@ -139,10 +194,13 @@ namespace RightpointLabs.ConferenceRoom.Services
                 _connectionManager = connectionManager;
             }
 
-            public void BroadcastUpdate(string roomAddress)
+            public void BroadcastUpdate(OrganizationEntity org, string roomAddress)
             {
                 var context = _connectionManager.GetHubContext<UpdateHub>();
-                context.Clients.All.Update(roomAddress);
+                var groupName = UpdateHub.GetGroupName(org, roomAddress);
+                log.DebugFormat("Broadcasting update to {0} for {1}", groupName, roomAddress);
+
+                context.Clients.Group(groupName).Update(roomAddress);
             }
         }
     }

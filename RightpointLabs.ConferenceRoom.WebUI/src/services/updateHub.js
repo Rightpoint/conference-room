@@ -1,7 +1,7 @@
 (function() {
     'use strict';
 
-    angular.module('app').factory('UpdateHub', function($rootScope, Hub, logger){
+    angular.module('app').factory('UpdateHub', ['$rootScope', 'Hub', 'logger', 'authToken', function($rootScope, Hub, logger, authToken){
         var isFirstEvent = true;
         var hub = new Hub('UpdateHub', {
             listeners: {
@@ -19,6 +19,7 @@
                     window.location.reload();
                 }
             },
+            methods: [ 'clientActive', 'authenticate' ],
             errorHandler: function (error) {
                 isFirstEvent = false;
                 logger.error(error);
@@ -31,6 +32,11 @@
                             logger.success('Live updates connected');
                         }
                         isFirstEvent = false;
+
+                        // let the server know who we are
+                        console.log('calling authenticate with ', authToken);
+                        hub.authenticate(authToken);
+
                         break;
                     case $.signalR.connectionState.disconnected:
                         isFirstEvent = false;
@@ -40,6 +46,6 @@
             }
         });
 
-        return {};
-    });
+        return hub;
+    }]);
 })();

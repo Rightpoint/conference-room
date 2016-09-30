@@ -119,7 +119,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             if (canControl && _useChangeNotification)
             {
                 // make sure we track rooms we're controlling
-                _changeNotificationService.TrackRoom(roomAddress, _exchangeServiceManager);
+                _changeNotificationService.TrackRoom(roomAddress, _exchangeServiceManager, _contextService.CurrentOrganization);
             }
 
             var roomMetadata = _roomRepository.GetRoomInfo(roomAddress, _contextService.CurrentOrganization?.Id) ?? new RoomMetadataEntity();
@@ -179,7 +179,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                                 AppointmentSchema.RequiredAttendees, 
                                 AppointmentSchema.OptionalAttendees));
 
-                            var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
+                            var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.UniqueId);
                             return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingEntity() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
                         });
                     }
@@ -491,7 +491,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private void BroadcastUpdate(string roomAddress)
         {
             _meetingCacheService.ClearUpcomingAppointmentsForRoom(roomAddress);
-            _broadcastService.BroadcastUpdate(roomAddress);
+            _broadcastService.BroadcastUpdate(_contextService.CurrentOrganization, roomAddress);
         }
 
         private void SendEmail(string roomAddress, Appointment item, string subject, string body)
@@ -528,6 +528,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             var meeting = GetUpcomingAppointmentsForRoom(roomAddress).FirstOrDefault(i => i.UniqueId == uniqueId);
             if (null == meeting)
             {
+                __log.InfoFormat("Unable to find meeting {0}", uniqueId);
                 throw new Exception();
             }
             return meeting;
@@ -538,6 +539,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             var canControl = _contextService.CurrentDevice?.ControlledRoomAddresses?.Contains(roomAddress) ?? false;
             if (!canControl)
             {
+                __log.DebugFormat("Failing security check for {0}", roomAddress);
                 throw new UnauthorizedAccessException();
             }
         }

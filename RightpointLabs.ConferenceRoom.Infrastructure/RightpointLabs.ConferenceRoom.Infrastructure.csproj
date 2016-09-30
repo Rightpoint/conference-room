@@ -140,9 +140,11 @@
     <Compile Include="Services\ConnectionManager.cs" />
     <Compile Include="Services\BuildingService.cs" />
     <Compile Include="Services\ExchangeConferenceRoomService.cs" />
+    <Compile Include="Services\HttpTokenProvider.cs" />
     <Compile Include="Services\IChangeNotificationService.cs" />
     <Compile Include="Services\IExchangeServiceManager.cs" />
     <Compile Include="Services\GdoService.cs" />
+    <Compile Include="Services\ITokenProvider.cs" />
     <Compile Include="Services\ITokenService.cs" />
     <Compile Include="Services\MeetingCacheService.cs" />
     <Compile Include="Services\InstantMessagingService.cs" />

@@ -1,7 +1,9 @@
-﻿namespace RightpointLabs.ConferenceRoom.Domain.Services
+﻿using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
+
+namespace RightpointLabs.ConferenceRoom.Domain.Services
 {
     public interface IBroadcastService
     {
-        void BroadcastUpdate(string roomAddress);
+        void BroadcastUpdate(OrganizationEntity org, string roomAddress);
     }
 }

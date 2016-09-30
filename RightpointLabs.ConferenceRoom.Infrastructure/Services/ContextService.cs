@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IdentityModel.Tokens;
 using System.Web;
+using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
@@ -9,6 +10,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 {
     public class ContextService : IContextService
     {
+        private readonly ITokenProvider _tokenProvider;
         private readonly ITokenService _tokenService;
         private readonly IDeviceRepository _deviceRepository;
         private readonly IOrganizationRepository _organizationRepository;
@@ -17,25 +19,32 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly Lazy<DeviceEntity> _device;
         private readonly Lazy<OrganizationEntity> _organization;
 
-        public ContextService(HttpRequestBase request, ITokenService tokenService, IDeviceRepository deviceRepository, IOrganizationRepository organizationRepository)
+        public ContextService(ITokenProvider tokenProvider, ITokenService tokenService, IDeviceRepository deviceRepository, IOrganizationRepository organizationRepository)
         {
+            _tokenProvider = tokenProvider;
             _tokenService = tokenService;
             _deviceRepository = deviceRepository;
             _organizationRepository = organizationRepository;
-            _token = new Lazy<JwtSecurityToken>(() => GetToken(request));
+            _token = new Lazy<JwtSecurityToken>(ValidateToken);
             _device = new Lazy<DeviceEntity>(GetDevice);
             _organization = new Lazy<OrganizationEntity>(GetOrganization);
         }
 
-        private JwtSecurityToken GetToken(HttpRequestBase request)
+        private JwtSecurityToken ValidateToken()
         {
-            var authHeaderValue = request.Headers["Authorization"];
-            if (string.IsNullOrEmpty(authHeaderValue) || !authHeaderValue.StartsWith("Bearer ") || authHeaderValue.Length < 8)
+            var rawToken = _tokenProvider.GetToken();
+            if (null == rawToken)
             {
-                return null;
+                throw new AccessDeniedException("No token supplied", null);
             }
 
-            return _tokenService.ValidateToken(authHeaderValue.Substring(7));
+            var token = _tokenService.ValidateToken(rawToken);
+            if (null == token)
+            {
+                throw new AccessDeniedException("Invalid token supplied", null);
+            }
+
+            return token;
         }
 
         private DeviceEntity GetDevice()
