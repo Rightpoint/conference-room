@@ -77,14 +77,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             private StreamingSubscriptionConnection StartNewConnection()
             {
-                return _exchangeServiceManager.Execute(_roomAddress, svc =>
+                return _exchangeServiceManager.ExecutePrivate(_roomAddress, svc =>
                 {
-                    var useImpersonation = bool.Parse(ConfigurationManager.AppSettings["useImpersonation"] ?? "false");
-                    if (useImpersonation)
-                    {
-                        svc.ImpersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, _roomAddress);
-                    }
-                    log.DebugFormat("Opening subscription to {0}, impersonation: {1}", _roomAddress, useImpersonation);
+                    log.DebugFormat("Opening subscription to {0}", _roomAddress);
                     var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(_roomAddress));
                     var sub = svc.SubscribeToStreamingNotifications(
                         new[] { calId },

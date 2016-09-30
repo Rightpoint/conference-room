@@ -42,6 +42,27 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             });
         }
 
+        public T ExecutePrivate<T>(string targetUser, Func<ExchangeService, T> action)
+        {
+            targetUser = targetUser ?? "";
+            log.DebugFormat("Creating new private connection for {0}", targetUser);
+            var cn = _connectionBuilder();
+            if (!string.IsNullOrEmpty(targetUser))
+            {
+                cn.ImpersonatedUserId = new ImpersonatedUserId(ConnectingIdType.SmtpAddress, targetUser);
+            }
+            return action(cn);
+        }
+
+        public void ExecutePrivate(string targetUser, Action<ExchangeService> action)
+        {
+            ExecutePrivate(targetUser, svc =>
+            {
+                action(svc);
+                return 0;
+            });
+        }
+
         private class ManagedConnection
         {
             private readonly BlockingCollection<ExchangeService> _queue;

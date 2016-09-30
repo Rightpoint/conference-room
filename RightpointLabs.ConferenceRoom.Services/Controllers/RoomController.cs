@@ -202,9 +202,9 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
                     .WithDegreeOfParallelism(256)
                     .Select(i =>
                     {
-                        __log.DebugFormat("Starting {0}", i);
+                        //__log.DebugFormat("Starting {0}", i.Address);
                         var status = _conferenceRoomService.GetStatus(i.Address, true);
-                        __log.DebugFormat("Got {0}", i);
+                        //__log.DebugFormat("Got {0}", i.Address);
                         return new {i.Address, i.Info, Status = status};
                     })
                     .ToList();

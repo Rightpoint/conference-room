@@ -131,6 +131,7 @@
                 }).filter(function(r) {
                     return r.match && r.group && r.status.freeFor > 0;
                 });
+                console.log(self.searchResults);
                 var roomCount = self.searchResults.length;
                 self.searchResults = _.pairs(_.groupBy(self.searchResults, 'group')).map(function(g) {
                     return {
@@ -167,6 +168,7 @@
                 });
                 var groupCount = self.searchResults.length;
                 self.scrollWidth = 30 + roomCount * (330 + 20*2) + groupCount * 60; // calculate the full width of the scrolling container based on the expected sizes of the various elements
+                console.log(self.searchResults);
             }
             
             $scope.$watch('[ c.rooms, c.search ]', applyFilter, true);

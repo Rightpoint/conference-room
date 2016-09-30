@@ -17,7 +17,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
 
         public RoomMetadataEntity GetRoomInfo(string roomAddress, string organizationId)
         {
-            return this.Collection.FindOne(Query<RoomMetadataEntity>.Where(i => i.RoomAddress == roomAddress && i.OrganizationId == organizationId));
+            var q = Query<RoomMetadataEntity>.Where(i => i.RoomAddress == roomAddress && i.OrganizationId == organizationId);
+            return this.Collection.FindOne(q);
         }
     }
 }

@@ -4,6 +4,7 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
 {
     public class BuildingEntity : Entity
     {
+        public string OrganizationId { get; set; }
         public string Name { get; set; }
         public string StreetAddress1 { get; set; }
         public string StreetAddress2 { get; set; }
