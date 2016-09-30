@@ -131,7 +131,6 @@
     <Compile Include="Persistence\Repositories\MeetingRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Persistence\Collections\MeetingEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Repositories\SecurityRepository.cs" />
     <Compile Include="Persistence\Collections\EntityCollectionDefinition.cs" />
     <Compile Include="Persistence\Repositories\EntityRepository.cs" />
     <Compile Include="Persistence\IMongoConnectionHandler.cs" />

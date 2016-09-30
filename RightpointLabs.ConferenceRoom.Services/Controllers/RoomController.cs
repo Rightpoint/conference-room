@@ -26,13 +26,17 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         private readonly IConferenceRoomService _conferenceRoomService;
         private readonly IRoomMetadataRepository _roomRepository;
         private readonly IGdoService _gdoService;
+        private readonly IContextService _contextService;
+        private readonly IBuildingRepository _buildingRepository;
 
-        public RoomController(IConferenceRoomService conferenceRoomService, IRoomMetadataRepository roomRepository, IGdoService gdoService)
+        public RoomController(IConferenceRoomService conferenceRoomService, IRoomMetadataRepository roomRepository, IGdoService gdoService, IContextService contextService, IBuildingRepository buildingRepository)
             : base(__log)
         {
             _conferenceRoomService = conferenceRoomService;
             _roomRepository = roomRepository;
             _gdoService = gdoService;
+            _contextService = contextService;
+            _buildingRepository = buildingRepository;
         }
 
         /// <summary>
@@ -41,9 +45,9 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         /// <param name="roomAddress">The room address returned from <see cref="RoomListController.GetRooms"/></param>
         /// <returns></returns>
         [Route("{roomAddress}/info")]
-        public object GetInfo(string roomAddress, string securityKey)
+        public object GetInfo(string roomAddress)
         {
-            var data = _conferenceRoomService.GetInfo(roomAddress, securityKey);
+            var data = _conferenceRoomService.GetInfo(roomAddress);
             return data;
         }
 
@@ -60,26 +64,15 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         }
 
         /// <summary>
-        /// Request access to control a room
-        /// </summary>
-        /// <param name="roomAddress">The room address returned from <see cref="RoomListController.GetRooms"/></param>
-        /// <param name="securityKey">The key that will be used to control the room in the future (if this request is approved)</param>
-        [Route("{roomAddress}/requestAccess")]
-        public void PostRequestAccess(string roomAddress, string securityKey)
-        {
-            _conferenceRoomService.RequestAccess(roomAddress, securityKey, GetClientIp());
-        }
-
-        /// <summary>
         /// Marks a meeting as started
         /// </summary>
         /// <param name="roomAddress">The address of the room</param>
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
         [Route("{roomAddress}/meeting/start")]
-        public void PostStartMeeting(string roomAddress, string securityKey, string uniqueId)
+        public void PostStartMeeting(string roomAddress, string uniqueId)
         {
-            _conferenceRoomService.StartMeeting(roomAddress, uniqueId, securityKey);
+            _conferenceRoomService.StartMeeting(roomAddress, uniqueId);
         }
 
         /// <summary>
@@ -109,9 +102,9 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
         [Route("{roomAddress}/meeting/warnAbandon")]
-        public void PostWarnAbandonMeeting(string roomAddress, string securityKey, string uniqueId)
+        public void PostWarnAbandonMeeting(string roomAddress, string uniqueId)
         {
-            _conferenceRoomService.WarnMeeting(roomAddress, uniqueId, securityKey,
+            _conferenceRoomService.WarnMeeting(roomAddress, uniqueId,
                 signature => new Uri(Request.RequestUri, Url.Route("StartFromClient", new { roomAddress, uniqueId, signature })).AbsoluteUri,
                 signature => new Uri(Request.RequestUri, Url.Route("CancelFromClient", new { roomAddress, uniqueId, signature })).AbsoluteUri);
         }
@@ -124,9 +117,9 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
         [Route("{roomAddress}/meeting/abandon")]
-        public void PostAbandonMeeting(string roomAddress, string securityKey, string uniqueId)
+        public void PostAbandonMeeting(string roomAddress, string uniqueId)
         {
-            _conferenceRoomService.CancelMeeting(roomAddress, uniqueId, securityKey);
+            _conferenceRoomService.CancelMeeting(roomAddress, uniqueId);
         }
 
         /// <summary>
@@ -156,9 +149,9 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         /// <param name="title">The title of the meeting</param>
         /// <param name="endTime">The time the meeting will end</param>
         [Route("{roomAddress}/meeting/startNew")]
-        public void PostStartNewMeeting(string roomAddress, string securityKey, string title, DateTime endTime)
+        public void PostStartNewMeeting(string roomAddress, string title, DateTime endTime)
         {
-            _conferenceRoomService.StartNewMeeting(roomAddress, securityKey, title, endTime);
+            _conferenceRoomService.StartNewMeeting(roomAddress, title, endTime);
         }
 
         /// <summary>
@@ -169,26 +162,28 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
         [Route("{roomAddress}/meeting/end")]
-        public void PostEndMeeting(string roomAddress, string securityKey, string uniqueId)
+        public void PostEndMeeting(string roomAddress, string uniqueId)
         {
-            _conferenceRoomService.EndMeeting(roomAddress, uniqueId, securityKey);
+            _conferenceRoomService.EndMeeting(roomAddress, uniqueId);
         }
 
         [Route("{roomAddress}/meeting/message")]
-        public void PostMessageMeeting(string roomAddress, string securityKey, string uniqueId)
+        public void PostMessageMeeting(string roomAddress, string uniqueId)
         {
-            _conferenceRoomService.MessageMeeting(roomAddress, uniqueId, securityKey);
+            _conferenceRoomService.MessageMeeting(roomAddress, uniqueId);
         }
 
 
         [Route("all/status")]
         public object GetAllStatus(string roomAddress)
         {
+            var building = _buildingRepository.Get(_contextService.CurrentDevice?.BuildingId);
+
             var rooms =
-                _conferenceRoomService.GetRoomLists()
+                (building?.RoomListAddresses ?? _conferenceRoomService.GetRoomLists().Select(_ => _.Address))
                     .AsParallel()
                     .WithDegreeOfParallelism(256)
-                    .SelectMany(i => _conferenceRoomService.GetRoomsFromRoomList(i.Address))
+                    .SelectMany(_conferenceRoomService.GetRoomsFromRoomList)
                     .Select(i => new { i.Address, Info =  _conferenceRoomService.GetInfo(i.Address) })
                     .ToList();
 
@@ -205,7 +200,13 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             return
                 rooms.AsParallel()
                     .WithDegreeOfParallelism(256)
-                    .Select(i => new {i.Address, i.Info, Status = _conferenceRoomService.GetStatus(i.Address, true)})
+                    .Select(i =>
+                    {
+                        __log.DebugFormat("Starting {0}", i);
+                        var status = _conferenceRoomService.GetStatus(i.Address, true);
+                        __log.DebugFormat("Got {0}", i);
+                        return new {i.Address, i.Info, Status = status};
+                    })
                     .ToList();
         }
 
@@ -215,10 +216,10 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         /// <param name="roomAddress">The address of the room</param>
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         [Route("{roomAddress}/door/open")]
-        public async System.Threading.Tasks.Task PostOpenDoor(string roomAddress, string securityKey)
+        public async System.Threading.Tasks.Task PostOpenDoor(string roomAddress)
         {
-            _conferenceRoomService.SecurityCheck(roomAddress, securityKey);
-            var info = _roomRepository.GetRoomInfo(roomAddress);
+            _conferenceRoomService.SecurityCheck(roomAddress);
+            var info = _roomRepository.GetRoomInfo(roomAddress, _contextService.CurrentOrganization?.Id);
             if (string.IsNullOrEmpty(info.GdoDeviceId))
             {
                 throw new ArgumentException("No door to control");
@@ -232,10 +233,10 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         /// <param name="roomAddress">The address of the room</param>
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         [Route("{roomAddress}/door/close")]
-        public async System.Threading.Tasks.Task PostCloseDoor(string roomAddress, string securityKey)
+        public async System.Threading.Tasks.Task PostCloseDoor(string roomAddress)
         {
-            _conferenceRoomService.SecurityCheck(roomAddress, securityKey);
-            var info = _roomRepository.GetRoomInfo(roomAddress);
+            _conferenceRoomService.SecurityCheck(roomAddress);
+            var info = _roomRepository.GetRoomInfo(roomAddress, _contextService.CurrentOrganization?.Id);
             if (string.IsNullOrEmpty(info?.GdoDeviceId))
             {
                 throw new ArgumentException("No door to control");

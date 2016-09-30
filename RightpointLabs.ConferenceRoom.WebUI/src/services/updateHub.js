@@ -10,6 +10,11 @@
                         $rootScope.$broadcast('roomRefresh', room);
                     });
                 },
+                'DeviceChanged': function (device) {
+                    $rootScope.$apply(function() {
+                        $rootScope.$broadcast('deviceChanged', device);
+                    });
+                },
                 'RefreshAll': function() {
                     window.location.reload();
                 }

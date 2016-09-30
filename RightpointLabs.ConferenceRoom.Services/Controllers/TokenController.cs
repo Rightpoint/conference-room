@@ -12,6 +12,7 @@ using Microsoft.Owin.Security.OpenIdConnect;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
+using RightpointLabs.ConferenceRoom.Domain.Services;
 using RightpointLabs.ConferenceRoom.Infrastructure.Services;
 using ClaimTypes = System.IdentityModel.Claims.ClaimTypes;
 
@@ -22,11 +23,13 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
     {
         private readonly IOrganizationRepository _organizationRepository;
         private readonly ITokenService _tokenService;
+        private readonly IContextService _contextService;
 
-        public TokenController(IOrganizationRepository organizationRepository, ITokenService tokenService)
+        public TokenController(IOrganizationRepository organizationRepository, ITokenService tokenService, IContextService contextService)
         {
             _organizationRepository = organizationRepository;
             _tokenService = tokenService;
+            _contextService = contextService;
         }
 
         [Route("get")]
@@ -50,6 +53,22 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         public HttpResponseMessage GetGet()
         {
             return PostGet();
+        }
+
+        [Route("info")]
+        public object GetInfo()
+        {
+            var org = _contextService.CurrentOrganization;
+            var device = _contextService.CurrentDevice;
+            var userId = _contextService.UserId;
+
+            return new
+            {
+                organization = org?.Id,
+                device = device?.Id,
+                controlledRooms = device?.ControlledRoomAddresses,
+                user = userId,
+            };
         }
     }
 }

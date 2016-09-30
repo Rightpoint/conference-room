@@ -98,7 +98,6 @@
     <Compile Include="Repositories\IBuildingRepository.cs" />
     <Compile Include="Repositories\IRoomMetadataRepository.cs" />
     <Compile Include="Repositories\IMeetingRepository.cs" />
-    <Compile Include="Repositories\ISecurityRepository.cs" />
     <Compile Include="Services\DateTimeService.cs" />
     <Compile Include="Services\IContextService.cs" />
     <Compile Include="Services\IBroadcastService.cs" />

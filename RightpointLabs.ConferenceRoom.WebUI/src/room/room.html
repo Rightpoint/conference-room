@@ -41,25 +41,6 @@
             <simple-calendar calendars="[ { DisplayName: c.displayName, NearTermMeetings: c.appointments, CurrentMeeting: c.current } ]" show-titles="false"></simple-calendar>
         </div>
     </div>
-    <div class="buttons btn-group-vertical dropup" ng-class="{ 'btn-group-lg': c.isSmallScreen }" ng-if="false">
-        <button class="btn btn-primary" ng-click="c.start(c.current)" ng-if="c.showStartEarly()">Start Early</button>
-        <button class="btn btn-primary" ng-click="c.start(c.current)" ng-if="c.showStart()">Start</button>
-        <button class="btn btn-primary" ng-click="c.cancel(c.current)" ng-if="c.showCancel()">Cancel</button>
-        <button class="btn btn-primary" ng-click="c.end(c.current)" ng-if="c.showEndEarly()">End early</button>
-        <button class="btn btn-primary" ng-click="c.endAndStartNext(c.current, c.next)" ng-if="c.showEndAndStartNext()">End early &<br/>start next</button>
-        <button class="btn btn-primary" ng-click="c.message(c.prev)" ng-if="c.showMessagePrev()">Tell previous<br/>"Time is Up"</button>
-        <button class="btn btn-primary" ng-if="c.showAddNew()" data-toggle="modal" data-target="#addMeetingModal">New meeting</button>
-        <div class="btn-group">
-            <button class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                More <span class="glyphicon glyphicon-chevron-left" style="font-size: 0.5em;"></span>
-            </button>
-            <div class="dropdown-menu" role="menu">
-                <div class="btn-group-vertical">
-                    <button class="btn btn-primary" ng-click="c.refresh()"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
-                </div>
-            </div>
-        </div>
-    </div>
     <div class="loading-background" ng-if="c.isLoading"></div>
     <div class="loading-foreground" ng-if="c.isLoading">
         <!--<big-spinner active="true"></big-spinner>-->

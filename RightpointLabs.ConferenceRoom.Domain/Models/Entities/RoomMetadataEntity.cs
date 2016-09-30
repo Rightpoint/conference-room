@@ -6,6 +6,7 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
 {
     public class RoomMetadataEntity : Entity
     {
+        public string RoomAddress { get; set; }
         public int Size { get; set; }
         public string BuildingId { get; set; }
         public int Floor { get; set; }
@@ -14,5 +15,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
         public List<RoomEquipment> Equipment { get; set; }
         public string GdoDeviceId { get; set; }
         public string BeaconUid { get; set; }
+        public string OrganizationId { get; set; }
     }
 }

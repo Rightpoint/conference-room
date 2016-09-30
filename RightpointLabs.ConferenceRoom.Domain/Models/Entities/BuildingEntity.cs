@@ -11,5 +11,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
         public string StateOrProvence { get; set; }
         public string PostalCode { get; set; }
         public List<FloorEntity> Floors { get; set; }
+        public string[] RoomListAddresses { get; set; }
     }
 }

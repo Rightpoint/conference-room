@@ -20,12 +20,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
 
         public MeetingEntity GetMeetingInfo(string uniqueId)
         {
-            return Collection.FindOne(Query<MeetingEntity>.Where(i => i.Id == uniqueId));
+            return Collection.FindOne(Query<MeetingEntity>.Where(i => i.UniqueId == uniqueId));
         }
 
         public MeetingEntity[] GetMeetingInfo(string[] uniqueIds)
         {
-            return Collection.Find(Query<MeetingEntity>.In(i => i.Id, uniqueIds)).Cast<MeetingEntity>().ToArray();
+            return Collection.Find(Query<MeetingEntity>.In(i => i.UniqueId, uniqueIds)).Cast<MeetingEntity>().ToArray();
         }
 
         public void StartMeeting(string uniqueId)
@@ -34,7 +34,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
                 .Set(i => i.IsStarted, true)
                 .Set(i => i.LastModified, DateTime.Now);
 
-            var result = Collection.Update(Query<MeetingEntity>.Where(i => i.Id == uniqueId), update, UpdateFlags.Upsert, WriteConcern.Acknowledged);
+            var result = Collection.Update(Query<MeetingEntity>.Where(i => i.UniqueId == uniqueId), update, UpdateFlags.Upsert, WriteConcern.Acknowledged);
             if (result.DocumentsAffected != 1)
             {
                 throw new Exception(string.Format("Expected to affect {0} documents, but affected {1}", 1, result.DocumentsAffected));
@@ -47,7 +47,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
                 .Set(i => i.IsCancelled, true)
                 .Set(i => i.LastModified, DateTime.Now);
 
-            var result = Collection.Update(Query<MeetingEntity>.Where(i => i.Id == uniqueId), update, UpdateFlags.Upsert, WriteConcern.Acknowledged);
+            var result = Collection.Update(Query<MeetingEntity>.Where(i => i.UniqueId == uniqueId), update, UpdateFlags.Upsert, WriteConcern.Acknowledged);
             if (result.DocumentsAffected != 1)
             {
                 throw new Exception(string.Format("Expected to affect {0} documents, but affected {1}", 1, result.DocumentsAffected));
@@ -60,7 +60,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
                 .Set(i => i.IsEndedEarly, true)
                 .Set(i => i.LastModified, DateTime.Now);
 
-            var result = Collection.Update(Query<MeetingEntity>.Where(i => i.Id == uniqueId), update, UpdateFlags.Upsert, WriteConcern.Acknowledged);
+            var result = Collection.Update(Query<MeetingEntity>.Where(i => i.UniqueId == uniqueId), update, UpdateFlags.Upsert, WriteConcern.Acknowledged);
             if (result.DocumentsAffected != 1)
             {
                 throw new Exception(string.Format("Expected to affect {0} documents, but affected {1}", 1, result.DocumentsAffected));

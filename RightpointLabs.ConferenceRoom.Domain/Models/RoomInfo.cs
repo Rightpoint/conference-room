@@ -9,7 +9,7 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models
     {
         public DateTime CurrentTime { get; set; }
         public string DisplayName { get; set; }
-        public SecurityStatus SecurityStatus { get; set; }
+        public bool CanControl { get; set; }
         public int Size { get; set; }
         public string BuildingId { get; set; }
         public string BuildingName { get; set; }

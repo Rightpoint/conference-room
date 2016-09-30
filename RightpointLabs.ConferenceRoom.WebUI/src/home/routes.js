@@ -3,10 +3,10 @@
 
     angular.module('app').config(['$stateProvider', function($stateProvider) {
         $stateProvider
-            .state('room', {
-                url: '/room/:roomAddress',
-                templateUrl: 'room/room.html',
-                controller: 'RoomController',
+            .state('home', {
+                url: '/',
+                templateUrl: 'home/home.html',
+                controller: 'HomeController',
                 controllerAs: 'c'
             });
     }])

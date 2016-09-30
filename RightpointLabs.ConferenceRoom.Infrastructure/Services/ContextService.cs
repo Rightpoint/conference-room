@@ -40,7 +40,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         private DeviceEntity GetDevice()
         {
-            var id = DeviceId;
+            var id = TokenDeviceId;
             if (string.IsNullOrEmpty(id))
             {
                 return null;
@@ -50,7 +50,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         private OrganizationEntity GetOrganization()
         {
-            var id = OrganizationId;
+            var id = TokenOrganizationId;
             if (string.IsNullOrEmpty(id))
             {
                 id = CurrentDevice?.OrganizationId;
@@ -77,9 +77,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             }
         }
 
-        public string DeviceId => _tokenService.GetDeviceId(_token.Value);
+        protected string TokenDeviceId => _tokenService.GetDeviceId(_token.Value);
 
-        public string OrganizationId => _tokenService.GetOrganizationId(_token.Value);
+        protected string TokenOrganizationId => _tokenService.GetOrganizationId(_token.Value);
 
         public string UserId => _tokenService.GetUserId(_token.Value);
 

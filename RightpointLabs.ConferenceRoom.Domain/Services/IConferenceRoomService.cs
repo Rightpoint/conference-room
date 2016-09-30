@@ -22,16 +22,15 @@ namespace RightpointLabs.ConferenceRoom.Domain.Services
         IEnumerable<Room> GetRoomsFromRoomList(string roomListAddress);
 
         RoomStatusInfo GetStatus(string roomAddress, bool isSimple = false);
-        void StartMeeting(string roomAddress, string uniqueId, string securityKey);
+        void StartMeeting(string roomAddress, string uniqueId);
         bool StartMeetingFromClient(string roomAddress, string uniqueId, string signature);
-        void WarnMeeting(string roomAddress, string uniqueId, string securityKey, Func<string, string> buildStartUrl, Func<string, string> buildCancelUrl);
-        void CancelMeeting(string roomAddress, string uniqueId, string securityKey);
-        void EndMeeting(string roomAddress, string uniqueId, string securityKey);
-        void StartNewMeeting(string roomAddress, string securityKey, string title, DateTime endTime);
-        RoomInfo GetInfo(string roomAddress, string securityKey = null);
-        void RequestAccess(string roomAddress, string securityKey, string clientInfo);
-        void MessageMeeting(string roomAddress, string uniqueId, string securityKey);
+        void WarnMeeting(string roomAddress, string uniqueId, Func<string, string> buildStartUrl, Func<string, string> buildCancelUrl);
+        void CancelMeeting(string roomAddress, string uniqueId);
+        void EndMeeting(string roomAddress, string uniqueId);
+        void StartNewMeeting(string roomAddress, string title, DateTime endTime);
+        RoomInfo GetInfo(string roomAddress = null);
+        void MessageMeeting(string roomAddress, string uniqueId);
         bool CancelMeetingFromClient(string roomAddress, string uniqueId, string signature);
-        void SecurityCheck(string roomAddress, string securityKey);
+        void SecurityCheck(string roomAddress);
     }
 }

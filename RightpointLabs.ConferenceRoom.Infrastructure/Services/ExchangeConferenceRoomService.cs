@@ -24,7 +24,6 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
     {
         private static readonly ILog __log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private readonly IMeetingRepository _meetingRepository;
-        private readonly ISecurityRepository _securityRepository;
         private readonly IBroadcastService _broadcastService;
         private readonly IDateTimeService _dateTimeService;
         private readonly IMeetingCacheService _meetingCacheService;
@@ -37,13 +36,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly ISignatureService _signatureService;
         private readonly IRoomMetadataRepository _roomRepository;
         private readonly IBuildingRepository _buildingRepository;
+        private readonly IContextService _contextService;
         private readonly bool _ignoreFree;
         private readonly bool _useChangeNotification;
         private readonly bool _impersonateForAllCalls;
         private readonly string[] _emailDomains;
 
         public ExchangeConferenceRoomService(IMeetingRepository meetingRepository,
-            ISecurityRepository securityRepository,
             IBroadcastService broadcastService,
             IDateTimeService dateTimeService,
             IMeetingCacheService meetingCacheService,
@@ -56,10 +55,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             ISignatureService signatureService,
             IRoomMetadataRepository roomRepository,
             IBuildingRepository buildingRepository,
+            IContextService contextService,
             ExchangeConferenceRoomServiceConfiguration config)
         {
             _meetingRepository = meetingRepository;
-            _securityRepository = securityRepository;
             _broadcastService = broadcastService;
             _dateTimeService = dateTimeService;
             _meetingCacheService = meetingCacheService;
@@ -72,6 +71,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _signatureService = signatureService;
             _roomRepository = roomRepository;
             _buildingRepository = buildingRepository;
+            _contextService = contextService;
             _ignoreFree = config.IgnoreFree;
             _useChangeNotification = config.UseChangeNotification;
             _impersonateForAllCalls = config.ImpersonateForAllCalls;
@@ -104,7 +104,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     .ToArray()))).Result;
         }
 
-        public RoomInfo GetInfo(string roomAddress, string securityKey = null)
+        public RoomInfo GetInfo(string roomAddress = null)
         {
             var room = _simpleTimedCache.GetCachedValue("RoomInfo_" + roomAddress,
                 TimeSpan.FromHours(24),
@@ -115,22 +115,22 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 return null;
             }
 
-            var rights = _securityRepository.GetSecurityRights(roomAddress, securityKey);
-            if (rights == SecurityStatus.Granted && _useChangeNotification)
+            var canControl = _contextService.CurrentDevice?.ControlledRoomAddresses?.Contains(roomAddress) ?? false;
+            if (canControl && _useChangeNotification)
             {
                 // make sure we track rooms we're controlling
                 _changeNotificationService.TrackRoom(roomAddress, _exchangeServiceManager);
             }
 
-            var roomMetadata = _roomRepository.GetRoomInfo(roomAddress) ?? new RoomMetadataEntity();
+            var roomMetadata = _roomRepository.GetRoomInfo(roomAddress, _contextService.CurrentOrganization?.Id) ?? new RoomMetadataEntity();
             var building = _buildingRepository.Get(roomMetadata.BuildingId) ?? new BuildingEntity();
-            var floor = building.Floors.SingleOrDefault(_ => _.Floor == roomMetadata.Floor) ?? new FloorEntity();
+            var floor = building.Floors?.SingleOrDefault(_ => _.Floor == roomMetadata.Floor) ?? new FloorEntity();
 
             return new RoomInfo()
             {
                 CurrentTime = _dateTimeService.Now,
                 DisplayName = (room.Mailbox.Name ?? "").Replace("(Meeting Room ", "("),
-                SecurityStatus = rights,
+                CanControl = canControl,
                 Size = roomMetadata.Size,
                 BuildingId = roomMetadata.BuildingId,
                 BuildingName = building.Name,
@@ -141,11 +141,6 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 HasControllableDoor = !string.IsNullOrEmpty(roomMetadata.GdoDeviceId),
                 BeaconUid = roomMetadata.BeaconUid,
             };
-        }
-
-        public void RequestAccess(string roomAddress, string securityKey, string clientInfo)
-        {
-            _securityRepository.RequestAccess(roomAddress, securityKey, clientInfo);
         }
 
         public IEnumerable<Meeting> GetUpcomingAppointmentsForRoom(string roomAddress)
@@ -311,9 +306,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             return info;
         }
 
-        public void StartMeeting(string roomAddress, string uniqueId, string securityKey)
+        public void StartMeeting(string roomAddress, string uniqueId)
         {
-            SecurityCheck(roomAddress, uniqueId, securityKey);
+            SecurityCheck(roomAddress, uniqueId);
             __log.DebugFormat("Starting {0} for {1}", uniqueId, roomAddress);
             _meetingRepository.StartMeeting(uniqueId);
             BroadcastUpdate(roomAddress);
@@ -344,9 +339,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             return true;
         }
 
-        public void WarnMeeting(string roomAddress, string uniqueId, string securityKey, Func<string, string> buildStartUrl, Func<string, string> buildCancelUrl)
+        public void WarnMeeting(string roomAddress, string uniqueId, Func<string, string> buildStartUrl, Func<string, string> buildCancelUrl)
         {
-            var meeting = SecurityCheck(roomAddress, uniqueId, securityKey);
+            var meeting = SecurityCheck(roomAddress, uniqueId);
             if (meeting.IsNotManaged)
             {
                 throw new Exception("Cannot manage this meeting");
@@ -359,18 +354,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             SendEmail(roomAddress, item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "<p>Please start your meeting by using the RoomNinja on the wall outside the room or simply <a href='" + startUrl + "'>click here to START the meeting</a>.</p><p><a href='" + cancelUrl + "'>Click here to RELEASE the room</a> if you no longer need it so that others can use it.</p>");
         }
 
-        public void CancelMeeting(string roomAddress, string uniqueId, string securityKey)
+        public void CancelMeeting(string roomAddress, string uniqueId)
         {
-            var meeting = SecurityCheck(roomAddress, uniqueId, securityKey);
+            var meeting = SecurityCheck(roomAddress, uniqueId);
             if (meeting.IsNotManaged)
             {
                 throw new Exception("Cannot manage this meeting");
             }
-            CancelMeeting(roomAddress, uniqueId);
-        }
-
-        private void CancelMeeting(string roomAddress, string uniqueId)
-        {
             _meetingRepository.CancelMeeting(uniqueId);
 
             var item = ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
@@ -397,9 +387,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             BroadcastUpdate(roomAddress);
         }
 
-        public void EndMeeting(string roomAddress, string uniqueId, string securityKey)
+        public void EndMeeting(string roomAddress, string uniqueId)
         {
-            var meeting = SecurityCheck(roomAddress, uniqueId, securityKey);
+            var meeting = SecurityCheck(roomAddress, uniqueId);
             if (meeting.IsNotManaged)
             {
                 throw new Exception("Cannot manage this meeting");
@@ -426,9 +416,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             BroadcastUpdate(roomAddress);
         }
 
-        public void MessageMeeting(string roomAddress, string uniqueId, string securityKey)
+        public void MessageMeeting(string roomAddress, string uniqueId)
         {
-            var meeting = SecurityCheck(roomAddress, uniqueId, securityKey);
+            var meeting = SecurityCheck(roomAddress, uniqueId);
             if (meeting.IsNotManaged)
             {
                 throw new Exception("Cannot manage this meeting");
@@ -458,12 +448,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             }
         }
 
-        public void StartNewMeeting(string roomAddress, string securityKey, string title, DateTime endTime)
+        public void StartNewMeeting(string roomAddress, string title, DateTime endTime)
         {
-            if (_securityRepository.GetSecurityRights(roomAddress, securityKey) != SecurityStatus.Granted)
-            {
-                throw new UnauthorizedAccessException();
-            }
+            SecurityCheck(roomAddress);
             var status = GetStatus(roomAddress);
             if (status.Status != RoomStatus.Free)
             {
@@ -535,9 +522,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             });
         }
 
-        private Meeting SecurityCheck(string roomAddress, string uniqueId, string securityKey)
+        private Meeting SecurityCheck(string roomAddress, string uniqueId)
         {
-            SecurityCheck(roomAddress, securityKey);
+            SecurityCheck(roomAddress);
             var meeting = GetUpcomingAppointmentsForRoom(roomAddress).FirstOrDefault(i => i.UniqueId == uniqueId);
             if (null == meeting)
             {
@@ -546,9 +533,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             return meeting;
         }
 
-        public void SecurityCheck(string roomAddress, string securityKey)
+        public void SecurityCheck(string roomAddress)
         {
-            if (_securityRepository.GetSecurityRights(roomAddress, securityKey) != SecurityStatus.Granted)
+            var canControl = _contextService.CurrentDevice?.ControlledRoomAddresses?.Contains(roomAddress) ?? false;
+            if (!canControl)
             {
                 throw new UnauthorizedAccessException();
             }

@@ -1,12 +1,7 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('RoomController', ['Restangular', '$timeout', '$interval', '$q', '$scope', 'matchmedia', 'UpdateHub', 'settings', 'timelineService', '$state', 'soundService', 'timeService', function(Restangular, $timeout, $interval, $q, $scope, matchmedia, UpdateHub, settings, timelineService, $state, soundService, timeService) {
-        if (!settings.defaultRoom) {
-            $state.go('settings');
-            return;
-        }
-
+    angular.module('app').controller('RoomController', ['Restangular', '$timeout', '$interval', '$q', '$scope', 'matchmedia', 'UpdateHub', 'timelineService', '$state', 'soundService', 'timeService', '$stateParams', function(Restangular, $timeout, $interval, $q, $scope, matchmedia, UpdateHub, timelineService, $state, soundService, timeService, $stateParams) {
         var self = this;
         self.isLoading = 0;
         self.meetNowTime = 30;
@@ -21,9 +16,8 @@
 
         self.moment = window.moment;
         self.displayName = 'Loading...';
-        self.roomAddress = settings.defaultRoom;
+        self.roomAddress = $stateParams.roomAddress;
         var room = Restangular.one('room', self.roomAddress);
-        var securityKey = settings.securityKey || '';
 
         self.currentTime = function currentTime() {
             return timeService.now().startOf('minute');
@@ -54,11 +48,11 @@
         };
         
         self.canManageCurrent = function canManageCurrent() {
-            return self.current && !self.current.IsNotManaged;
+            return self.canControl && self.current && !self.current.IsNotManaged;
         };
         
         self.showMeetNow = function showMeetNow() {
-            return !self.current || self.freeMinutes() > 10;
+            return self.canControl && (!self.current || self.freeMinutes() > 10);
         }
         
         self.isCurrentInFuture = function isCurrentInFuture() {
@@ -66,19 +60,19 @@
         };
         
         self.showStartEarly = function showStartEarly() {
-            return self.canManageCurrent() && !self.current.IsStarted && self.freeMinutes() <= early;
+            return self.canControl && self.canManageCurrent() && !self.current.IsStarted && self.freeMinutes() <= early;
         };
         
         self.showStart = function showStart() {
-            return self.canManageCurrent() && !self.current.IsStarted && self.freeMinutes() <= 0;
+            return self.canControl && self.canManageCurrent() && !self.current.IsStarted && self.freeMinutes() <= 0;
         };
         
         self.showEndEarly = function showEndEarly() {
-            return self.canManageCurrent() && self.current.IsStarted;
+            return self.canControl && self.canManageCurrent() && self.current.IsStarted;
         };
         
         self.showEndAndStartNext = function showEndAndStartNext() {
-            return self.showEndEarly() && self.next && !self.next.IsNotManaged && self.minutesUntil(self.next.Start) <= early;
+            return self.canControl && self.showEndEarly() && self.next && !self.next.IsNotManaged && self.minutesUntil(self.next.Start) <= early;
         };
         
         self.isCurrentToday = function isCurrentToday() {
@@ -90,45 +84,36 @@
         };
         
         self.canManagePrev = function canManagePrev() {
-            return self.prev && !self.prev.IsNotManaged;
+            return self.canControl && self.prev && !self.prev.IsNotManaged;
         };
         
         self.showMessagePrev = function showMessagePrev() {
-            return self.canManagePrev() && self.minutesUntil(self.prev.End) > -10 && self.minutesUntil(self.prev.End) <= 0;
+            return self.canControl && self.canManagePrev() && self.minutesUntil(self.prev.End) > -10 && self.minutesUntil(self.prev.End) <= 0;
         };
         
         self.showAddNew = function showAddNew() {
-            return !self.current || self.freeMinutes() > early;
+            return self.canControl && (!self.current || self.freeMinutes() > early);
         };
+
+
         
         var infoTimeout = null;
         function loadInfo() {
             if(infoTimeout) {
                 $timeout.cancel(infoTimeout);
             }
-            return $q.when(room.one('info').get({ securityKey: securityKey })).then(function(data) {
-                if (!data || data.error || data.SecurityStatus !== 3 /** granted **/) {
+            return $q.when(room.one('info').get({ })).then(function(data) {
+                if (!data || data.error) {
                     $state.go('settings');
                     return;
                 }
+                self.canControl = data.CanControl;
 
                 timeDelta = timeService.setCurrentTime(data.CurrentTime);
                 self.displayName = data.DisplayName;
-                self.hasControllableDoor = data.HasControllableDoor;
-                scheduleCancel();
-
-                if(!self.roomListAddress) {
-                    Restangular.all('roomList').getList().then(function(data) {
-                        angular.forEach(data, function(roomList) {
-                            Restangular.one('roomList', roomList.Address).getList('rooms').then(function(data) {
-                                angular.forEach(data, function(room) {
-                                   if(room.Address == self.roomAddress) {
-                                       self.roomListAddress = roomList.Address;
-                                   }
-                                });
-                            });
-                        });
-                    });
+                self.hasControllableDoor = self.canControl && data.HasControllableDoor;
+                if(self.canControl) {
+                    scheduleCancel();
                 }
             }, function() {
                 if(infoTimeout) {
@@ -147,6 +132,9 @@
             var current = self.current;
             if(cancelTimeout) {
                 $timeout.cancel(cancelTimeout);
+            }
+            if(!self.canControl) {
+                return; // can't control this room
             }
             if ($state.current.name != 'room') {
                 return; // already left this page - orphaned event
@@ -171,7 +159,7 @@
                 warnTime = moment(current.Start).add(5, 'minute');
                 if(!warnTime.isAfter(now)) {
                     // whoops, we should have done that already.... let's do it now.
-                    room.one('meeting').post('warnAbandon', {}, { securityKey: securityKey, uniqueId: current.UniqueId }).then(function () {
+                    room.one('meeting').post('warnAbandon', {}, { uniqueId: current.UniqueId }).then(function () {
                         // ok, we've told people, just remember what time it is so we give them a minute to start the meeting
                         warnings[current.UniqueId] = self.currentTime();
                         if(cancelTimeout) {
@@ -194,7 +182,7 @@
             var canCancelAt = warnTime.clone().add(2, 'minute');
             if(!canCancelAt.isAfter(now)) {
                 // they've taken too long - cancel it now
-                room.one('meeting').post('abandon', {}, { securityKey: securityKey, uniqueId: current.UniqueId }).then(function() {
+                room.one('meeting').post('abandon', {}, { uniqueId: current.UniqueId }).then(function() {
                     // ok, meeting is cancelled.  Just refresh
                     cancels[current.UniqueId] = self.currentTime();
                     loadStatus();
@@ -247,30 +235,30 @@
         }
 
         self.start = function(item) {
-            var p = room.one('meeting').post('start', {}, { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
+            var p = room.one('meeting').post('start', {}, { uniqueId: item.UniqueId }).then(function() {
                 soundService.play('resources/start.mp3');
                 return loadStatus();
             });
             showIndicator(p);
         };
         self.cancel = function(item) {
-            var p = room.one('meeting').post('abandon', {}, { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
+            var p = room.one('meeting').post('abandon', {}, { uniqueId: item.UniqueId }).then(function() {
                 soundService.play('resources/cancel.mp3');
                 return loadStatus();
             });
             showIndicator(p);
         };
         self.end = function(item) {
-            var p = room.one('meeting').post('end', {}, { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
+            var p = room.one('meeting').post('end', {}, { uniqueId: item.UniqueId }).then(function() {
                 soundService.play('resources/end.mp3');
                 return loadStatus();
             });
             showIndicator(p);
         };
         self.endAndStartNext = function(item, next) {
-            var p = room.one('meeting').post('end', {}, { securityKey: securityKey, uniqueId: item.UniqueId }).then(function() {
+            var p = room.one('meeting').post('end', {}, { uniqueId: item.UniqueId }).then(function() {
                 soundService.play('resources/end.mp3');
-                return room.one('meeting').post('start', {}, { securityKey: securityKey, uniqueId: next.UniqueId }).then(function() {
+                return room.one('meeting').post('start', {}, { uniqueId: next.UniqueId }).then(function() {
                     soundService.play('resources/start.mp3');
                     return loadStatus();
                 });
@@ -278,7 +266,7 @@
             showIndicator(p);
         };
         self.message = function(item) {
-            var p = room.one('meeting').post('message', {}, { securityKey: securityKey, uniqueId: item.UniqueId });
+            var p = room.one('meeting').post('message', {}, { uniqueId: item.UniqueId });
             showIndicator(p);
         };
         self.refresh = function() {
@@ -287,7 +275,7 @@
         };
 
         self.meetNow = function meetNow() {
-            var p = room.one('meeting').post('startNew', {}, { securityKey: securityKey, title: 'Local Meeting', endTime: self.meetNowTime }).then(function() {
+            var p = room.one('meeting').post('startNew', {}, { title: 'Local Meeting', endTime: self.meetNowTime }).then(function() {
                 soundService.play('resources/new.mp3');
                 self.meetNowMinutes = 30;
                 return loadStatus();
@@ -296,13 +284,13 @@
         };
 
         self.openDoor = function openDoor() {
-            var p = room.one('door').post('open', {}, { securityKey: securityKey }).then(function() {
+            var p = room.one('door').post('open', {}, { }).then(function() {
                 return loadStatus();
             });
             showIndicator(p);
         };
         self.closeDoor = function closeDoor() {
-            var p = room.one('door').post('close', {}, { securityKey: securityKey }).then(function() {
+            var p = room.one('door').post('close', {}, { }).then(function() {
                 return loadStatus();
             });
             showIndicator(p);
@@ -316,15 +304,6 @@
         }
 
         self.refresh();
-
-        self.isSmallScreen = false;
-        var smallScreenMediaQuery = '(max-width: 320px) and (max-height: 240px)';
-        $scope.$on('$destroy', matchmedia.on(smallScreenMediaQuery, function(mql) {
-            self.isSmallScreen = mql.matches || settings.isSmallScreen;
-        }));
-        $scope.$on('settingChanged.isSmallScreen', function() {
-            self.isSmallScreen = matchmedia.is(smallScreenMediaQuery) || settings.isSmallScreen;
-        });
 
         var infoInterval = $interval(loadInfo, 60 * 60 * 1000);
         var scopeCycleInterval = $interval(function() {}, 10 * 1000);
@@ -355,6 +334,24 @@
             }
         });
 
+        // this might not be our default room... check...
+        var redirectInterval = null;
+        function resetInterval() {
+            if(redirectInterval) {
+               $interval.cancel(redirectInterval);
+            }
+            redirectInterval = $interval(function() {
+                if(!self.canControl) {
+                    $state.go('home');
+                }
+            }, 30000);
+        }
+        resetInterval();
+        var resetEvents = 'mousedown mouseover mouseout mousemove';
+        angular.element(document).on(resetEvents, resetInterval);
+        $scope.$on('$destroy', function() {
+            angular.element(document).off(resetEvents, resetInterval);
+        });
 
     }]);
 })();

@@ -1,0 +1,9 @@
+<div class="home">
+    <h3 ng-if="c.device">Device: {{ c.device }}</h3>
+    <div class="loading-background" ng-if="c.isLoading"></div>
+    <div class="loading-foreground" ng-if="c.isLoading">
+        <div class="rp-logo-spinner">
+            <div class="o-load"></div>
+        </div>
+    </div>
+</div>
