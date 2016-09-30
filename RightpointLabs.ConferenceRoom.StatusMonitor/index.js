@@ -3,6 +3,7 @@ var http = require('http');
 var url = require('url');
 var Promise = require('promise');
 var path = require('path');
+var jwt_decode = require('jwt-decode');
 
 var configFile = path.join(__dirname, 'config.json');
 console.log('Loading configuration from ' + configFile);
@@ -28,11 +29,12 @@ setTimeout(function() {
     }, 500);
 }, 500);
 
+var deviceKeyFile = path.join(__dirname, 'devicekey');
 function start() {
-    var deviceKeyFile = path.join(__dirname, 'devicekey');
     if(!fs.existsSync(deviceKeyFile)) {
+        console.log('creating new device key for ' + deviceKeyFile);
         new Promise(function(resolve, reject) {
-            var options = url.parse(config.apiServer + "/device/create?organizationId=" + config.organizationId + "&joinKey=" + config.joinKey);
+            var options = url.parse(config.apiServer + "/devices/create?organizationId=" + config.organizationId + "&joinKey=" + config.joinKey);
             options.method = "POST";
             var data = "";
             return http.request(options, function(e) {
@@ -41,20 +43,27 @@ function start() {
             }).end();
         }).then(function(data) {
             if(!data) {
+                console.log('got no data for device key from server');
                 process.exit(-1);
             }
-            fs.writeFileSync(deviceKeyFile, data);
+            if(!jwt_decode(data)) {
+                console.log('unable to decode device key from server');
+                process.exit(-1);
+            }
+            fs.writeFileSync(deviceKeyFile, data, "utf8");
             execute();
         }, function() {
             console.log('error creating device', arguments);
             process.exit(-1);
         });
     } else {
+        console.log('using existing device key from ' + deviceKeyFile);
         execute();
     }
 }
 
 function execute(){
-    config.deviceKey = fs.readFileSync(deviceKeyFile);
-    require('./execute')(config, led);
+    config.deviceKey = fs.readFileSync(deviceKeyFile, "utf8");
+    var e = require('./execute');
+    e(config, led);
 }

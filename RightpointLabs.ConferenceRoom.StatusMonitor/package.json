@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "eddystone-beacon": "^1.0.6",
+    "jwt-decode": "^2.1.0",
     "pi-blaster.js": "^0.1.1",
     "promise": "^7.0.1",
     "signalr-client": "0.0.12"

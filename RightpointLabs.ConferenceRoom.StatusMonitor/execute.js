@@ -4,8 +4,10 @@ var url = require('url');
 var Promise = require('promise');
 var signalR = require('signalr-client');
 var path = require('path');
+var jwt_decode = require('jwt-decode');
 
-module.export = function execute(config, led) {
+module.exports = function execute(config, led) {
+    var deviceToken = jwt_decode(config.deviceKey);
     if(config.bluetooth) {
         var beacon = require('eddystone-beacon');
         var btOptions = {
@@ -15,7 +17,7 @@ module.export = function execute(config, led) {
             tlmPeriod: 10
         };
         console.log('Starting bluetooth advertisement');
-        beacon.advertiseUid(config.bluetooth.namespace, config.bluetooth.uid, btOptions);
+        beacon.advertiseUid(config.bluetooth.namespace, deviceToken.deviceid, btOptions);
     }
 
     function getStatus() {
@@ -72,6 +74,7 @@ module.export = function execute(config, led) {
                             break;
                         default:
                             console.log('invalid status: ' + status);
+                            quickCycle();
                             break;
                     }
                 }
@@ -85,6 +88,15 @@ module.export = function execute(config, led) {
                 }
             });
         }, delay);
+    }
+
+    function quickCycle() {
+        console.log('quickCycle');
+        led.setCycle([ 
+            { state: { red: 1, green: 0, blue: 0 }, duration: 500 }, 
+            { state: { red: 0, green: 1, blue: 0 }, duration: 500 }, 
+            { state: { red: 0, green: 0, blue: 1 }, duration: 500 }
+        ]);
     }
 
     function purple() {

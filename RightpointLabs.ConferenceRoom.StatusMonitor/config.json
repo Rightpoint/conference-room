@@ -1,6 +1,8 @@
 {
-    "apiServer": "http://rooms.labs.rightpoint.com/api",
-    "signalRServer": "http://rooms.labs.rightpoint.com/signalR",
+    "apiServer": "http://localhost:63915/api",
+    "signalRServer": "http://localhost:63915/signalR",
+    "organizationId": "",
+    "joinKey": "",
     "green": {
 	    "pin": 18,
 	    "brightness": 0.9
