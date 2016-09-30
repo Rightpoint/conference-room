@@ -9,4 +9,12 @@ openbox --config-file ~pi/statusMonitor/scripts/openbox.xml &
 # hide mouse cursor when idle
 unclutter -idle 1 &
 
-chromium-browser --user-data-dir=~pi/.config --app=http://rooms/ --no-sandbox --disable-pinch --touch-events --kiosk
+while -t ~pi/statusMonitor/deviceKey
+do
+    echo "waiting for device key"
+    sleep 3
+done
+
+APP=http://rooms.labs.rightpoint.com/#`~pi/statusMonitor/deviceKey`
+
+chromium-browser --user-data-dir=~pi/.config --app=$APP --no-sandbox --disable-pinch --touch-events --kiosk
