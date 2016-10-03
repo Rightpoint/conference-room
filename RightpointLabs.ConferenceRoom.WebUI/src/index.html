@@ -34,20 +34,38 @@
         authToken = null; // it's a URL, not a token
       }
 
-      // OPTION 2: POST to /api/tokens/get to get one
-      // TODO: implement
-
-      // OPTION 3: local storage (will be useful for local testing)
+      // OPTION 2: local storage (will be useful for local testing)
       authToken = authToken || (window.localStorage || { getItem: function() {} }).getItem('authToken');
 
-      // OPTION 4: redirect to /azure-ad-auth (which will log the user in and redirect them back here, which will make OPTION 2 work)
+
+      // OPTION 3: POST to /api/tokens/get to get one
       if(!authToken) {
-        window.location = '/azure-ad-auth';
-        return;
+        var r = new XMLHttpRequest();
+        r.onreadystatechange = function() { 
+          if(r.readyState == XMLHttpRequest.DONE) {
+            if(r.status === 200) {
+              authToken = r.responseText;
+              finishBootstrap();
+            } else {
+              console.log('error getting token');
+              console.log(r.responseText);
+            }
+          } 
+        }
+      } else {
+        finishBootstrap();
       }
 
-      angular.module('app').value('authToken', authToken);
-      angular.bootstrap(document, ['app']);
+      function finishBootstrap() {
+        // OPTION 4: redirect to /azure-ad-auth (which will log the user in and redirect them back here, which will make OPTION 2 work)
+        if(!authToken) {
+          window.location = '/azure-ad-auth';
+          return;
+        }
+
+        angular.module('app').value('authToken', authToken);
+        angular.bootstrap(document, ['app']);
+      }
     });
   </script>
 </body>
