@@ -16,7 +16,7 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.UserDomains)
+            @Html.DisplayFor(model => model.UserDomains, "StringArray")
         </dd>
 
         <dt>
@@ -24,11 +24,12 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.Administrators)
+            @Html.DisplayFor(model => model.Administrators, "StringArray")
         </dd>
     </dl>
 </div>
 <p>
     @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Edit JoinKey", "EditJoinKey", new { id = Model.Id }) |
     @Html.ActionLink("Back to List", "Index")
 </p>

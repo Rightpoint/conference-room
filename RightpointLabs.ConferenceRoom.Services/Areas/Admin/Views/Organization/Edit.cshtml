@@ -10,17 +10,9 @@
         @Html.HiddenFor(model => model.Id)
 
         <div class="form-group">
-            @Html.LabelFor(model => model.JoinKey, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.JoinKey, "Password", new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.JoinKey, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
             @Html.LabelFor(model => model.Administrators, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Administrators, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.EditorFor(model => model.Administrators, "StringArray", new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.Administrators, "", new { @class = "text-danger" })
             </div>
         </div>
@@ -28,7 +20,7 @@
         <div class="form-group">
             @Html.LabelFor(model => model.UserDomains, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.UserDomains, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.EditorFor(model => model.UserDomains, "StringArray", new { htmlAttributes = new { @class = "form-control" } })
                 @Html.ValidationMessageFor(model => model.UserDomains, "", new { @class = "text-danger" })
             </div>
         </div>

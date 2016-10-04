@@ -206,6 +206,9 @@
     <Content Include="Areas\Admin\Views\Organization\Edit.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\EditorTemplates\Password.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\DisplayTemplates\Password.cshtml" />
+    <Content Include="Areas\Admin\Views\Organization\EditJoinKey.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\EditorTemplates\StringArray.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\DisplayTemplates\StringArray.cshtml" />
     <None Include="Properties\PublishProfiles\local directory.pubxml" />
     <None Include="Scripts\jquery-3.1.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.1.0.js" />

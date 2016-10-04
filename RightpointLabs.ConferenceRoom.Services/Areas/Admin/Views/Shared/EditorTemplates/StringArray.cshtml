@@ -1,0 +1,79 @@
+﻿@model string[]
+@{
+    var id = Html.IdFor(_ => _);
+}
+
+@helper Row(string id, string value)
+{
+    <div>
+        @Html.Hidden("Index", id)
+        @Html.TextBox("[" + id + "]", value)
+        <button class="up"><span class="glyphicon glyphicon-arrow-up"></span></button>
+        <button class="down"><span class="glyphicon glyphicon-arrow-down"></span></button>
+        <button class="remove"><span class="glyphicon glyphicon-minus"></span> Remove</button>
+        <br />
+    </div>
+}
+
+<div id="@id">
+    <div class="items">
+        @foreach (var item in Model ?? new string[0])
+        {
+            @Row(Guid.NewGuid().ToString(), item)
+        }
+    </div>
+    <button class="add"><span class="glyphicon glyphicon-plus"></span> Add</button>
+    <script class="template" type="text/html">
+        @Row("__TEMPLATE__", "")
+    </script>
+    <script type="text/javascript">
+        $(function() {
+            var e = $("#@id");
+            var items = e.find('.items');
+            e.on('click',
+                '.remove',
+                function () {
+                    $(this).closest('div').remove();
+                    return false;
+                });
+            e.on('click',
+                '.up',
+                function () {
+                    var t = $(this).closest('div');
+                    if (t.prev().length) {
+                        t.insertBefore(t.prev());
+                    }
+                    return false;
+                });
+            e.on('click',
+                '.down',
+                function () {
+                    var t = $(this).closest('div');
+                    if (t.next().length) {
+                        t.insertAfter(t.next());
+                    }
+                    return false;
+                });
+            e.on('click',
+                '.add',
+                function() {
+                    console.log('add', this, arguments);
+                    var div = $("<div/>");
+                    items.prepend(div);
+                    div[0].outerHTML = $("#@id .template")[0].innerHTML.split('__TEMPLATE__').join('x' + (Math.random() + '').replace('.', ''));
+                    return false;
+                });
+        });
+    </script>
+</div>
+
+<style type="text/css">
+    #@id .items > div button{
+        margin-left: 10px;
+    }
+
+    #@id .items > :first-child .up,
+    #@id .items > :last-child .down {
+        display: none;
+    }
+</style>

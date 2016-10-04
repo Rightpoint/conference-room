@@ -62,7 +62,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Areas.Admin.Controllers
             {
                 return HttpNotFound();
             }
-            return View("Edit", org);
+            return View(org);
         }
 
         [HttpPost]
@@ -74,7 +74,28 @@ namespace RightpointLabs.ConferenceRoom.Services.Areas.Admin.Controllers
                 return HttpNotFound();
             }
 
-            _organizationRepository.Save(model);
+            org.Administrators = model.Administrators;
+            org.UserDomains = model.UserDomains;
+            _organizationRepository.Save(org);
+            return RedirectToAction("Index");
+        }
+
+        public ActionResult EditJoinKey(string id)
+        {
+            return Edit(id);
+        }
+
+        [HttpPost]
+        public ActionResult EditJoinKey(OrganizationEntity model)
+        {
+            var org = IsGlobalAdmin ? _organizationRepository.Get(model.Id) : MyOrganizations.Value.SingleOrDefault(_ => _.Id == model.Id);
+            if (null == org)
+            {
+                return HttpNotFound();
+            }
+
+            org.JoinKey = model.JoinKey;
+            _organizationRepository.Save(org);
             return RedirectToAction("Index");
         }
 

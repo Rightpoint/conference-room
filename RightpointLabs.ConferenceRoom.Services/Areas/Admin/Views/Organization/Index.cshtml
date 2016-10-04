@@ -1,10 +1,12 @@
-﻿@model List<RightpointLabs.ConferenceRoom.Domain.Models.Entities.OrganizationEntity>
+﻿@model IEnumerable<RightpointLabs.ConferenceRoom.Domain.Models.Entities.OrganizationEntity>
 @{ ViewBag.Title = "Organizations"; }
 
 <table class="table">
     <thead>
     <tr>
         <th>ID</th>
+        <th>@Html.DisplayNameFor(model => model.Administrators)</th>
+        <th>@Html.DisplayNameFor(model => model.UserDomains)</th>
         <th></th>
     </tr>
     </thead>
@@ -13,7 +15,9 @@
     {
         var cls = org.Id == ViewBag.CurrentOrg ? "current" : "";
         <tr class="@cls">
-            <td>@Html.ActionLink(org.Id, "Details", new {id = org.Id})</td>
+            <td>@Html.ActionLink(org.Id, "Details", new { id = org.Id })</td>
+            <td>@Html.DisplayFor(modelItem => org.Administrators, "StringArray")</td>
+            <td>@Html.DisplayFor(modelItem => org.UserDomains, "StringArray")</td>
             <td>@Html.ActionLink("Make Current", "SetAsCurrent", new {id = org.Id})</td>
         </tr>
     }
