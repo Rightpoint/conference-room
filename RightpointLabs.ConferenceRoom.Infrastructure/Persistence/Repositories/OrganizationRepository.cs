@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using MongoDB.Driver.Builders;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections;
@@ -21,6 +22,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
         public OrganizationEntity GetByUserDomain(string userDomain)
         {
             return this.Collection.FindOne(Query<OrganizationEntity>.Where(i => i.UserDomains.Contains(userDomain)));
+        }
+
+        public IEnumerable<OrganizationEntity> GetByAdministrator(string user)
+        {
+            return this.Collection.Find(Query<OrganizationEntity>.Where(i => i.Administrators.Contains(user))).ToArray();
         }
 
         public void Save(OrganizationEntity organization)

@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
 {
-    public class OrganizationEntity : Entity
+    public class GlobalAdministratorEntity : Entity
     {
-        public string JoinKey { get; set; }
-        public string[] UserDomains { get; set; }
-        public string[] Administrators { get; set; }
+        public string Username { get; set; }
     }
 }

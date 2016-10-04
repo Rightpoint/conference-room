@@ -1,0 +1,22 @@
+﻿@model List<RightpointLabs.ConferenceRoom.Domain.Models.Entities.OrganizationEntity>
+@{ ViewBag.Title = "Organizations"; }
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var org in Model)
+    {
+        var cls = org.Id == ViewBag.CurrentOrg ? "current" : "";
+        <tr class="@cls">
+            <td>@Html.ActionLink(org.Id, "Details", new {id = org.Id})</td>
+            <td>@Html.ActionLink("Make Current", "SetAsCurrent", new {id = org.Id})</td>
+        </tr>
+    }
+    </tbody>
+</table>
+<p>@Html.ActionLink("Create", "Create")</p>

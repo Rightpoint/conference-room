@@ -116,6 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\ExchangeConferenceRoomServiceConfiguration.cs" />
+    <Compile Include="Persistence\Collections\GlobalAdministratorEntityCollectionDefinition.cs" />
     <Compile Include="Persistence\Collections\OrganizationServiceConfigurationEntityCollectionDefinition.cs" />
     <Compile Include="Persistence\Collections\OrganizationEntityCollectionDefinition.cs" />
     <Compile Include="Persistence\Collections\DeviceEntityCollectionDefinition.cs" />
@@ -123,6 +124,7 @@
     <Compile Include="Persistence\Collections\RoomMetadataEntityCollectionDefinition.cs" />
     <Compile Include="Persistence\Collections\SecurityRequestCollectionDefinition.cs" />
     <Compile Include="Persistence\Models\SecurityRequest.cs" />
+    <Compile Include="Persistence\Repositories\GlobalAdministratorRepository.cs" />
     <Compile Include="Persistence\Repositories\OrganizationRepository.cs" />
     <Compile Include="Persistence\Repositories\OrganizationServiceConfigurationRepository.cs" />
     <Compile Include="Persistence\Repositories\DeviceRepository.cs" />

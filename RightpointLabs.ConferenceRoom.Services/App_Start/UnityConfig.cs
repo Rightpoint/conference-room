@@ -10,6 +10,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.Exchange.WebServices.Data;
 using Microsoft.Practices.Unity;
 using System.Web.Http;
+using System.Web.Mvc;
 using log4net;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
@@ -94,6 +95,7 @@ namespace RightpointLabs.ConferenceRoom.Services
             container.RegisterType<IDeviceRepository, DeviceRepository>(new HierarchicalLifetimeManager());
             container.RegisterType<IOrganizationRepository, OrganizationRepository>(new HierarchicalLifetimeManager());
             container.RegisterType<IOrganizationServiceConfigurationRepository, OrganizationServiceConfigurationRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IGlobalAdministratorRepository, GlobalAdministratorRepository>(new HierarchicalLifetimeManager());
             container.RegisterType<IContextService, ContextService>(new HierarchicalLifetimeManager());
             container.RegisterType<ITokenService, TokenService>(new HierarchicalLifetimeManager(), new InjectionFactory(c => 
                 new TokenService(
@@ -116,6 +118,7 @@ namespace RightpointLabs.ConferenceRoom.Services
             // e.g. container.RegisterType<ITestService, TestService>();
             
             GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(container);
+            DependencyResolver.SetResolver(new Unity.Mvc5.UnityDependencyResolver(container));
         }
 
         private class UnityIOCContainer : IIOCContainer
