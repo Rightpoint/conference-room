@@ -36,15 +36,24 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
         public HttpResponseMessage PostGet()
         {
             var cp = ClaimsPrincipal.Current;
+            if (null == cp)
+            {
+                return new HttpResponseMessage(HttpStatusCode.Forbidden) { Content = new StringContent("Not authenticated") };
+            }
+
             var username = cp.Identities.FirstOrDefault(_ => _.IsAuthenticated && _.AuthenticationType == "AzureAdAuthCookie")?.Name;
             if (string.IsNullOrEmpty(username))
             {
-                return new HttpResponseMessage(HttpStatusCode.Forbidden);
+                return new HttpResponseMessage(HttpStatusCode.Forbidden) { Content = new StringContent("No username available") };
             }
 
             var domain = username.Split('@').Last();
-
             var org = _organizationRepository.GetByUserDomain(domain);
+            if (null == cp)
+            {
+                return new HttpResponseMessage(HttpStatusCode.Forbidden) { Content = new StringContent("Domain not part of any organization")};
+            }
+
             var token = _tokenService.CreateUserToken(username, org.Id);
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(token, Encoding.UTF8) };
         }
