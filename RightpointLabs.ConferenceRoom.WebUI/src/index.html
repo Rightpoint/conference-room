@@ -49,9 +49,12 @@
             } else {
               console.log('error getting token');
               console.log(r.responseText);
+              finishBootstrap();
             }
           } 
         }
+        r.open('POST', '/api/tokens/get');
+        r.send(null);
       } else {
         finishBootstrap();
       }
