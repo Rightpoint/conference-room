@@ -33,14 +33,14 @@ namespace RightpointLabs.ConferenceRoom.Services.Areas.Admin.Controllers
             if (null == cp)
             {
                 // TODO: figure out how to redirect to trigger the auth
-                filterContext.Result = new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Not authenticated");
+                filterContext.Result = new HttpStatusCodeResult(HttpStatusCode.Unauthorized, "Not authenticated");
                 return;
             }
 
             var username = cp.Identities.FirstOrDefault(_ => _.IsAuthenticated && _.AuthenticationType == "AzureAdAuthCookie")?.Name;
             if (string.IsNullOrEmpty(username))
             {
-                filterContext.Result = new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Cannot find username");
+                filterContext.Result = new HttpStatusCodeResult(HttpStatusCode.Unauthorized, "Cannot find username");
                 return;
             }
 

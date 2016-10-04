@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.Owin;
 using Microsoft.Owin.Logging;
 using Microsoft.Owin.Security.OpenIdConnect;
 
@@ -37,7 +38,7 @@ namespace RightpointLabs.ConferenceRoom.Services.Auth
 
         protected override Task ApplyResponseCoreAsync()
         {
-            if ((this.Request.PathBase + this.Request.Path).ToString() == "/azure-ad-auth")
+            if ((this.Request.PathBase + this.Request.Path).ToString() == "/azure-ad-auth" || this.Request.Path.StartsWithSegments(new PathString("/admin")))
             {
                 return base.ApplyResponseCoreAsync();
             }

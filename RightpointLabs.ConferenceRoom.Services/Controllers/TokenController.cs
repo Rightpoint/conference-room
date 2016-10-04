@@ -38,13 +38,13 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             var cp = ClaimsPrincipal.Current;
             if (null == cp)
             {
-                return new HttpResponseMessage(HttpStatusCode.Forbidden) { Content = new StringContent("Not authenticated") };
+                return new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new StringContent("Not authenticated") };
             }
 
             var username = cp.Identities.FirstOrDefault(_ => _.IsAuthenticated && _.AuthenticationType == "AzureAdAuthCookie")?.Name;
             if (string.IsNullOrEmpty(username))
             {
-                return new HttpResponseMessage(HttpStatusCode.Forbidden) { Content = new StringContent("No username available") };
+                return new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new StringContent("No username available") };
             }
 
             var domain = username.Split('@').Last();
