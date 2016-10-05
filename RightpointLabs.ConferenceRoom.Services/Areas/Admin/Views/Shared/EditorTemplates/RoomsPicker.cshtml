@@ -1,0 +1,17 @@
+﻿@model string[]
+@Html.DropDownList("[]", new SelectListItem[0])
+
+<script type="text/javascript">
+    $(function () {
+        $.ajax({
+            url: '@Url.Action("Rooms", "Select")',
+            method: 'post',
+            success: function(data) {
+                $("#@Html.IdForModel()__")
+                    .select2({
+                        data: data
+                    }).val("@Model.FirstOrDefault()").trigger('change');
+            }
+        });
+    });
+</script>

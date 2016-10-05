@@ -222,6 +222,10 @@
     <Content Include="Areas\Admin\Views\Shared\EditorTemplates\FloorPicker.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\DisplayTemplates\RoomEquipment.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\EditorTemplates\RoomEquipment.cshtml" />
+    <Content Include="Areas\Admin\Views\Device\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Device\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\Device\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\EditorTemplates\RoomsPicker.cshtml" />
     <None Include="Properties\PublishProfiles\local directory.pubxml" />
     <None Include="Scripts\jquery-3.1.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.1.0.js" />
@@ -238,6 +242,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\BaseController.cs" />
+    <Compile Include="Areas\Admin\Controllers\DeviceController.cs" />
     <Compile Include="Areas\Admin\Controllers\RoomController.cs" />
     <Compile Include="Areas\Admin\Controllers\SelectController.cs" />
     <Compile Include="Areas\Admin\Controllers\FloorController.cs" />

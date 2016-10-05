@@ -1,0 +1,44 @@
+﻿@using RightpointLabs.ConferenceRoom.Domain
+@model IEnumerable<RightpointLabs.ConferenceRoom.Domain.Models.Entities.DeviceEntity>
+@{
+    var buildings = (Dictionary<string, string>)ViewBag.Buildings;
+    var rooms = (Dictionary<string, string>)ViewBag.Rooms;
+}
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Id)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.BuildingId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ControlledRoomAddresses)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @buildings.TryGetValue(item.Id)
+        </td>
+        <td>
+            @(null == item.BuildingId ? "" : buildings.TryGetValue(item.BuildingId))
+        </td>
+        <td>
+            @string.Join(", ", item.ControlledRoomAddresses.Select(_ => rooms.TryGetValue(_)))
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
+            @Html.ActionLink("Details", "Details", new { id=item.Id }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
+        </td>
+    </tr>
+}
+
+</table>

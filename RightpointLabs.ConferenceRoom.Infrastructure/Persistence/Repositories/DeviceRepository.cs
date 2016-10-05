@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver.Builders;
+﻿using System.Collections.Generic;
+using MongoDB.Driver.Builders;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
@@ -24,10 +25,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
             return this.Collection.FindOne(Query<DeviceEntity>.Where(i => i.Id == deviceId));
         }
 
-        public void Save(DeviceEntity device)
+        public IEnumerable<DeviceEntity> GetForOrganization(string organizationId)
         {
-            var result = this.Collection.Update(Query<DeviceEntity>.Where(i => i.Id == device.Id), Update<DeviceEntity>.Replace(device));
-            AssertAffected(result, 1);
+            return this.Collection.Find(Query<DeviceEntity>.Where(i => i.OrganizationId == organizationId));
         }
     }
 }
