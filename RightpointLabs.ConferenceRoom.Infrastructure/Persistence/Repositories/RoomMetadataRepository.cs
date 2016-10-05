@@ -16,6 +16,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
         {
         }
 
+        public RoomMetadataEntity GetRoomInfo(string roomId)
+        {
+            var q = Query<RoomMetadataEntity>.Where(i => i.Id == roomId);
+            return this.Collection.FindOne(q);
+        }
+
         public RoomMetadataEntity GetRoomInfo(string roomAddress, string organizationId)
         {
             var q = Query<RoomMetadataEntity>.Where(i => i.RoomAddress == roomAddress && i.OrganizationId == organizationId);
@@ -25,6 +31,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
         public IEnumerable<RoomMetadataEntity> GetRoomInfosForBuilding(string buildingId)
         {
             var q = Query<RoomMetadataEntity>.Where(i => i.BuildingId == buildingId);
+            return this.Collection.Find(q);
+        }
+
+        public IEnumerable<RoomMetadataEntity> GetRoomInfosForOrganization(string organizationId)
+        {
+            var q = Query<RoomMetadataEntity>.Where(i => i.OrganizationId == organizationId);
             return this.Collection.Find(q);
         }
     }

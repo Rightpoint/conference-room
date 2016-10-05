@@ -1,0 +1,17 @@
+﻿@using RightpointLabs.ConferenceRoom.Domain.Models
+@model IEnumerable<RoomEquipment>
+
+<ul class="enum-options">
+    @foreach (RoomEquipment v in Enum.GetValues(typeof(RoomEquipment)))
+    {
+        var chk = (Model ?? new RoomEquipment[0]).Contains(v) ? @"checked=""checked""" : "";
+        if (v == RoomEquipment.None)
+        {
+            continue;
+        }
+        <li>
+            <input name="@(Html.NameForModel())[]" type="checkbox" value="@v" @chk>
+            @v
+        </li>
+    }
+</ul>

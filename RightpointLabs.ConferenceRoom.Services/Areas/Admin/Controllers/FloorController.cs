@@ -61,12 +61,18 @@ namespace RightpointLabs.ConferenceRoom.Services.Areas.Admin.Controllers
         [HttpPost]
         public ActionResult Edit(FloorEntity model)
         {
-            if (_floorRepository.Get(model.Id)?.OrganizationId != CurrentOrganization.Id)
+            var floor = _floorRepository.Get(model.Id);
+            if (null == floor || floor.OrganizationId != CurrentOrganization.Id)
             {
                 return HttpNotFound();
             }
 
             model.OrganizationId = CurrentOrganization.Id;
+
+            // values to keep
+            model.Image = floor.Image;
+            model.CoordinatesInImage = floor.CoordinatesInImage;
+
             _floorRepository.Update(model);
             return RedirectToAction("Index");
         }

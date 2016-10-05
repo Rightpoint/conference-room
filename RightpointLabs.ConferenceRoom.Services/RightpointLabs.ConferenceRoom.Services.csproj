@@ -216,6 +216,12 @@
     <Content Include="Areas\Admin\Views\Floor\Edit.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\EditorTemplates\BuildingPicker.cshtml" />
     <Content Include="Areas\Admin\Views\Floor\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\Room\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Room\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\Room\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\EditorTemplates\FloorPicker.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\DisplayTemplates\RoomEquipment.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\EditorTemplates\RoomEquipment.cshtml" />
     <None Include="Properties\PublishProfiles\local directory.pubxml" />
     <None Include="Scripts\jquery-3.1.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.1.0.js" />
@@ -232,6 +238,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\BaseController.cs" />
+    <Compile Include="Areas\Admin\Controllers\RoomController.cs" />
     <Compile Include="Areas\Admin\Controllers\SelectController.cs" />
     <Compile Include="Areas\Admin\Controllers\FloorController.cs" />
     <Compile Include="Areas\Admin\Controllers\HomeController.cs" />

@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Net;
 using System.Web.Mvc;
+using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 
@@ -34,5 +35,12 @@ namespace RightpointLabs.ConferenceRoom.Services.Areas.Admin.Controllers
             var buildings = _buildingRepository.GetAll(CurrentOrganization.Id);
             return Json(buildings.Select(_ => new {id = _.Id, text = _.Name}).OrderBy(_ => _.text), JsonRequestBehavior.AllowGet);
         }
-   }
+
+        public JsonResult Floors()
+        {
+            var buildings = _buildingRepository.GetAll(CurrentOrganization.Id).ToDictionary(_ => _.Id, _ => _.Name);
+            var floors = _floorRepository.GetAllByOrganization(CurrentOrganization.Id);
+            return Json(floors.Select(_ => new { id = _.Id, text = string.Format("{0} - {1}", _.Name, buildings.TryGetValue(_.BuildingId)) }).OrderBy(_ => _.text), JsonRequestBehavior.AllowGet);
+        }
+    }
 }

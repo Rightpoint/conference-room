@@ -1,0 +1,51 @@
+﻿@model RightpointLabs.ConferenceRoom.Domain.Models.Entities.RoomMetadataEntity
+
+<div>
+    <h4>RoomMetadataEntity</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.FloorId)
+        </dt>
+
+        <dd>
+            @ViewBag.Building - @ViewBag.Floor
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.RoomAddress)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.RoomAddress)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Size)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Size)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.GdoDeviceId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.GdoDeviceId)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.BeaconUid)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.BeaconUid)
+        </dd>
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
