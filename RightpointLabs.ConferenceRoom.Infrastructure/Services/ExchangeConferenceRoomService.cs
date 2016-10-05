@@ -109,7 +109,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         public RoomInfo GetInfo(string roomAddress = null)
         {
-            var room = GetRoomName(roomAddress);
+            var room = GetRoomName(roomAddress).Result;
             if (null == room)
             {
                 return null;
@@ -129,23 +129,28 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             return BuildRoomInfo(room, canControl, roomMetadata, building, floor);
         }
 
-        private NameResolution GetRoomName(string roomAddress)
+        private Task<NameResolution> GetRoomName(string roomAddress)
         {
             return _simpleTimedCache.GetCachedValue("RoomInfo_" + roomAddress,
                 TimeSpan.FromHours(24),
-                () => Task.FromResult(ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc => svc.ResolveName(roomAddress).SingleOrDefault()))).Result;
+                () => Task.FromResult(ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc => svc.ResolveName(roomAddress).SingleOrDefault())));
         }
 
         public Dictionary<string, RoomInfo> GetInfoForRoomsInBuilding(string buildingId, string[] roomAddresses)
         {
+            // get these started in parallel while we load data from the repositories
+            var roomTasks = roomAddresses.ToDictionary(i => i, GetRoomName);
+
+            // repo data
             var building = _buildingRepository.Get(buildingId);
             var floors = _floorRepository.GetAllByBuilding(buildingId).ToDictionary(_ => _.Id);
             var roomMetadatas = _roomRepository.GetRoomInfosForBuilding(buildingId).ToDictionary(_ => _.RoomAddress);
 
+            // put it all together
             var results = new Dictionary<string, RoomInfo>();
             foreach (var roomAddress in roomAddresses)
             {
-                var room = GetRoomName(roomAddress);
+                var room = roomTasks[roomAddress].Result;
                 if (null == room)
                 {
                     continue;
