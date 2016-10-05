@@ -62,6 +62,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
 
         public virtual void Update(T entity)
         {
+            entity.LastModified = DateTime.Now;
             var result = Collection.Save(entity, WriteConcern.Acknowledged);
 
             if (result.HasLastErrorMessage)

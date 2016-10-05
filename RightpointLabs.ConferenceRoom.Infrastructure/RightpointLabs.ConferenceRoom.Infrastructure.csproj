@@ -142,7 +142,6 @@
     <Compile Include="Services\ContextService.cs" />
     <Compile Include="Services\ChangeNotificationService.cs" />
     <Compile Include="Services\ConnectionManager.cs" />
-    <Compile Include="Services\BuildingService.cs" />
     <Compile Include="Services\ExchangeConferenceRoomService.cs" />
     <Compile Include="Services\HttpTokenProvider.cs" />
     <Compile Include="Services\IChangeNotificationService.cs" />

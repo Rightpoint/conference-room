@@ -8,6 +8,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Repositories
     {
         BuildingEntity Get(string buildingId);
         IEnumerable<BuildingEntity> GetAll(string organizationId);
-        void Save(string buildingId, BuildingEntity value);
+        void Update(BuildingEntity value);
     }
 }

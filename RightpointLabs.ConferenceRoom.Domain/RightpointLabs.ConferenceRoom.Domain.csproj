@@ -105,7 +105,6 @@
     <Compile Include="Services\IContextService.cs" />
     <Compile Include="Services\IBroadcastService.cs" />
     <Compile Include="Services\IConcurrencyLimiter.cs" />
-    <Compile Include="Services\IBuildingService.cs" />
     <Compile Include="Services\IConferenceRoomService.cs" />
     <Compile Include="Services\IDateTimeService.cs" />
     <Compile Include="Services\IInstantMessagingService.cs" />
