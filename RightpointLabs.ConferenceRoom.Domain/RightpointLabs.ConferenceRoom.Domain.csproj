@@ -93,6 +93,7 @@
     <Compile Include="Models\RoomStatusInfo.cs" />
     <Compile Include="Models\SecurityStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\IFloorRepository.cs" />
     <Compile Include="Repositories\IDeviceRepository.cs" />
     <Compile Include="Repositories\IGlobalAdministratorRepository.cs" />
     <Compile Include="Repositories\IOrganizationServiceConfigurationRepository.cs" />

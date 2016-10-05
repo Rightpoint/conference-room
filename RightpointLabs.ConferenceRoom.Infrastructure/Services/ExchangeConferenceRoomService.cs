@@ -36,6 +36,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly ISignatureService _signatureService;
         private readonly IRoomMetadataRepository _roomRepository;
         private readonly IBuildingRepository _buildingRepository;
+        private readonly IFloorRepository _floorRepository;
         private readonly IContextService _contextService;
         private readonly bool _ignoreFree;
         private readonly bool _useChangeNotification;
@@ -55,6 +56,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             ISignatureService signatureService,
             IRoomMetadataRepository roomRepository,
             IBuildingRepository buildingRepository,
+            IFloorRepository floorRepository,
             IContextService contextService,
             ExchangeConferenceRoomServiceConfiguration config)
         {
@@ -71,6 +73,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _signatureService = signatureService;
             _roomRepository = roomRepository;
             _buildingRepository = buildingRepository;
+            _floorRepository = floorRepository;
             _contextService = contextService;
             _ignoreFree = config.IgnoreFree;
             _useChangeNotification = config.UseChangeNotification;
@@ -124,7 +127,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             var roomMetadata = _roomRepository.GetRoomInfo(roomAddress, _contextService.CurrentOrganization?.Id) ?? new RoomMetadataEntity();
             var building = _buildingRepository.Get(roomMetadata.BuildingId) ?? new BuildingEntity();
-            var floor = building.Floors?.SingleOrDefault(_ => _.Floor == roomMetadata.Floor) ?? new FloorEntity();
+            var floor = _floorRepository.Get(roomMetadata.FloorId) ?? new FloorEntity();
 
             return new RoomInfo()
             {
@@ -134,7 +137,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 Size = roomMetadata.Size,
                 BuildingId = roomMetadata.BuildingId,
                 BuildingName = building.Name,
-                Floor = roomMetadata.Floor,
+                FloorId = roomMetadata.FloorId,
                 FloorName = floor.Name,
                 DistanceFromFloorOrigin = roomMetadata.DistanceFromFloorOrigin ?? new Point(),
                 Equipment = roomMetadata.Equipment,

@@ -13,7 +13,7 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models
         public int Size { get; set; }
         public string BuildingId { get; set; }
         public string BuildingName { get; set; }
-        public int Floor { get; set; }
+        public string FloorId { get; set; }
         public string FloorName { get; set; }
         public Point DistanceFromFloorOrigin { get; set; }
         [JsonProperty("Equipment", ItemConverterType = typeof(StringEnumConverter))]

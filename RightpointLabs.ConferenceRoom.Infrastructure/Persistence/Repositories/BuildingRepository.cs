@@ -38,7 +38,6 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
                 .Set(i => i.City, value.City)
                 .Set(i => i.StateOrProvence, value.StateOrProvence)
                 .Set(i => i.PostalCode, value.PostalCode)
-                .Set(i => i.Floors, value.Floors.Select(_ => _.Clone()).ToList())
                 .Set(i => i.LastModified, DateTime.Now);
 
             var result = this.Collection.Update(Query<BuildingEntity>.Where(i => i.Id == buildingId), update, UpdateFlags.Upsert, WriteConcern.Acknowledged);

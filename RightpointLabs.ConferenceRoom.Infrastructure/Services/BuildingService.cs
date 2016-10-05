@@ -70,21 +70,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             existingBuilding.City = buildingInfo.City;
             existingBuilding.StateOrProvence = buildingInfo.StateOrProvence;
             existingBuilding.PostalCode = buildingInfo.PostalCode;
-            existingBuilding.Floors = buildingInfo.Floors.Select(_ => _.Clone()).ToList();
 
             _buildingRepository.Save(existingBuilding.Id, existingBuilding);
         }
 
         private void Normalize(BuildingEntity buildingInfo)
         {
-            if (buildingInfo.Floors == null)
-            {
-                buildingInfo.Floors = new List<FloorEntity>();
-            }
-            foreach (var floor in buildingInfo.Floors.Where(_ => _.CoordinatesInImage == null))
-            {
-                floor.CoordinatesInImage = new Rectangle();
-            }
         }
     }
 }
