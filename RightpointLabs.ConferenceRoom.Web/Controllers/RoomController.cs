@@ -1,20 +1,13 @@
-﻿using log4net;
-using RightpointLabs.ConferenceRoom.Domain.Models;
-using RightpointLabs.ConferenceRoom.Domain.Services;
-using System;
-using System.Configuration;
+﻿using System;
 using System.Linq;
-using System.Net.Http;
 using System.Reflection;
-using System.ServiceModel.Channels;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http;
+using log4net;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
+using RightpointLabs.ConferenceRoom.Domain.Services;
 
-namespace RightpointLabs.ConferenceRoom.Services.Controllers
+namespace RightpointLabs.ConferenceRoom.Web.Controllers
 {
     /// <summary>
     /// Operations dealing with a room

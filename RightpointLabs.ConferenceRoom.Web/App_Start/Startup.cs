@@ -4,12 +4,12 @@ using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OpenIdConnect;
 using Owin;
-using RightpointLabs.ConferenceRoom.Services;
-using RightpointLabs.ConferenceRoom.Services.Auth;
+using RightpointLabs.ConferenceRoom.Web;
+using RightpointLabs.ConferenceRoom.Web.Auth;
 
 [assembly: OwinStartup(typeof(Startup))]
 
-namespace RightpointLabs.ConferenceRoom.Services
+namespace RightpointLabs.ConferenceRoom.Web
 {
     public class Startup
     {

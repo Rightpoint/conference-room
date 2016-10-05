@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
-namespace RightpointLabs.ConferenceRoom.Services.Areas.HelpPage.ModelDescriptions
+namespace RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.ModelDescriptions
 {
     internal static class ModelNameHelper
     {

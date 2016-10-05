@@ -1,9 +1,9 @@
-﻿using log4net;
-using System;
+﻿using System;
 using System.Reflection;
 using System.Web.Http;
+using log4net;
 
-namespace RightpointLabs.ConferenceRoom.Services.Controllers
+namespace RightpointLabs.ConferenceRoom.Web.Controllers
 {
     /// <summary>
     /// Operations dealing with client log messages

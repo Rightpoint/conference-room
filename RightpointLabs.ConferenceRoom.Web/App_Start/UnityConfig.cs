@@ -1,17 +1,16 @@
 using System;
 using System.Collections;
 using System.Configuration;
-using System.IdentityModel.Metadata;
 using System.Linq;
 using System.Reflection;
 using System.Web;
+using System.Web.Http;
+using System.Web.Mvc;
+using log4net;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.Exchange.WebServices.Data;
 using Microsoft.Practices.Unity;
-using System.Web.Http;
-using System.Web.Mvc;
-using log4net;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
@@ -20,10 +19,10 @@ using RightpointLabs.ConferenceRoom.Infrastructure.Models;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories;
 using RightpointLabs.ConferenceRoom.Infrastructure.Services;
-using RightpointLabs.ConferenceRoom.Services.SignalR;
+using RightpointLabs.ConferenceRoom.Web.SignalR;
 using Unity.WebApi;
 
-namespace RightpointLabs.ConferenceRoom.Services
+namespace RightpointLabs.ConferenceRoom.Web
 {
     public static class UnityConfig
     {

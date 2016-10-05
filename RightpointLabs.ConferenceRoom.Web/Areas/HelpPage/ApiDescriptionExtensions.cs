@@ -3,7 +3,7 @@ using System.Text;
 using System.Web;
 using System.Web.Http.Description;
 
-namespace RightpointLabs.ConferenceRoom.Services.Areas.HelpPage
+namespace RightpointLabs.ConferenceRoom.Web.Areas.HelpPage
 {
     public static class ApiDescriptionExtensions
     {

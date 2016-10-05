@@ -1,6 +1,6 @@
 using RightpointLabs.ConferenceRoom.Infrastructure.Services;
 
-namespace RightpointLabs.ConferenceRoom.Services.SignalR
+namespace RightpointLabs.ConferenceRoom.Web.SignalR
 {
     public class SimpleTokenProvider : ITokenProvider
     {

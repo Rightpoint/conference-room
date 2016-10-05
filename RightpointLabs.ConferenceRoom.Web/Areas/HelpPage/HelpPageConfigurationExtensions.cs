@@ -11,10 +11,11 @@ using System.Net.Http.Headers;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Description;
-using RightpointLabs.ConferenceRoom.Services.Areas.HelpPage.ModelDescriptions;
-using RightpointLabs.ConferenceRoom.Services.Areas.HelpPage.Models;
+using RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.ModelDescriptions;
+using RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.Models;
+using RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.SampleGeneration;
 
-namespace RightpointLabs.ConferenceRoom.Services.Areas.HelpPage
+namespace RightpointLabs.ConferenceRoom.Web.Areas.HelpPage
 {
     public static class HelpPageConfigurationExtensions
     {

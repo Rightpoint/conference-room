@@ -11,7 +11,7 @@ using System.Web.Http.Description;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
 
-namespace RightpointLabs.ConferenceRoom.Services.Areas.HelpPage.ModelDescriptions
+namespace RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.ModelDescriptions
 {
     /// <summary>
     /// Generates model descriptions for given types.

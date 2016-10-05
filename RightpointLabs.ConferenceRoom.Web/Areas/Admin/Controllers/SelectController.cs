@@ -2,10 +2,9 @@
 using System.Net;
 using System.Web.Mvc;
 using RightpointLabs.ConferenceRoom.Domain;
-using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 
-namespace RightpointLabs.ConferenceRoom.Services.Areas.Admin.Controllers
+namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
 {
     public class SelectController : BaseController
     {

@@ -1,7 +1,8 @@
 using System.Web.Http;
 using System.Web.Mvc;
+using RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.App_Start;
 
-namespace RightpointLabs.ConferenceRoom.Services.Areas.HelpPage
+namespace RightpointLabs.ConferenceRoom.Web.Areas.HelpPage
 {
     public class HelpPageAreaRegistration : AreaRegistration
     {

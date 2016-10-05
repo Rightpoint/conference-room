@@ -1,15 +1,15 @@
-﻿using log4net;
-using RightpointLabs.ConferenceRoom.Domain.Models;
-using RightpointLabs.ConferenceRoom.Services.Controllers;
-using System;
+﻿using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.ServiceModel.Channels;
 using System.Web;
 using System.Web.Http.Filters;
+using log4net;
+using RightpointLabs.ConferenceRoom.Domain.Models;
+using RightpointLabs.ConferenceRoom.Web.Controllers;
 
-namespace RightpointLabs.ConferenceRoom.Services.Attributes
+namespace RightpointLabs.ConferenceRoom.Web.Attributes
 {
     /// <summary>
     /// Filter attribute for handling exceptions.

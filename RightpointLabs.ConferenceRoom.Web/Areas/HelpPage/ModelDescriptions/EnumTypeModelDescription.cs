@@ -1,7 +1,6 @@
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace RightpointLabs.ConferenceRoom.Services.Areas.HelpPage.ModelDescriptions
+namespace RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.ModelDescriptions
 {
     public class EnumTypeModelDescription : ModelDescription
     {

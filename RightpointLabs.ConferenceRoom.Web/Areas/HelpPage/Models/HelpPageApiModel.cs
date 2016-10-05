@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net.Http.Headers;
 using System.Web.Http.Description;
-using RightpointLabs.ConferenceRoom.Services.Areas.HelpPage.ModelDescriptions;
+using RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.ModelDescriptions;
 
-namespace RightpointLabs.ConferenceRoom.Services.Areas.HelpPage.Models
+namespace RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.Models
 {
     /// <summary>
     /// The model that represents an API displayed on the help page.

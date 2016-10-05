@@ -8,7 +8,7 @@ using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using AuthorizationContext = System.Web.Mvc.AuthorizationContext;
 
-namespace RightpointLabs.ConferenceRoom.Services.Areas.Admin.Controllers
+namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
 {
     public abstract class BaseController : Controller
     {

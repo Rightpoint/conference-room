@@ -1,4 +1,4 @@
-namespace RightpointLabs.ConferenceRoom.Services.Areas.HelpPage
+namespace RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.SampleGeneration
 {
     /// <summary>
     /// Indicates whether the sample is used for request or response

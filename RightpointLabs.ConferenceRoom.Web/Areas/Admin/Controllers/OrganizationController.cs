@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Net;
-using System.Web;
 using System.Web.Mvc;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 
-namespace RightpointLabs.ConferenceRoom.Services.Areas.Admin.Controllers
+namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
 {
     public class OrganizationController : BaseController
     {

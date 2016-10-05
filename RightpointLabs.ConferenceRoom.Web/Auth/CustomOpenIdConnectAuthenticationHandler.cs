@@ -6,7 +6,7 @@ using Microsoft.Owin;
 using Microsoft.Owin.Logging;
 using Microsoft.Owin.Security.OpenIdConnect;
 
-namespace RightpointLabs.ConferenceRoom.Services.Auth
+namespace RightpointLabs.ConferenceRoom.Web.Auth
 {
     public class CustomOpenIdConnectAuthenticationHandler : OpenIdConnectAuthenticationHandler
     {

@@ -4,7 +4,7 @@ using Microsoft.Owin.Security.Infrastructure;
 using Microsoft.Owin.Security.OpenIdConnect;
 using Owin;
 
-namespace RightpointLabs.ConferenceRoom.Services.Auth
+namespace RightpointLabs.ConferenceRoom.Web.Auth
 {
     public class CustomOpenIdConnectAuthenticationMiddleware : OpenIdConnectAuthenticationMiddleware
     {

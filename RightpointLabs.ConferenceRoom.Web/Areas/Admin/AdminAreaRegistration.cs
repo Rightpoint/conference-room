@@ -1,6 +1,6 @@
 ﻿using System.Web.Mvc;
 
-namespace RightpointLabs.ConferenceRoom.Services.Areas.Admin
+namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin
 {
     public class AdminAreaRegistration : AreaRegistration 
     {

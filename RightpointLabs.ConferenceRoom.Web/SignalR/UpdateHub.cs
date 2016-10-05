@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http;
 using log4net;
 using Microsoft.AspNet.SignalR;
@@ -11,7 +8,7 @@ using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 using RightpointLabs.ConferenceRoom.Infrastructure.Services;
 
-namespace RightpointLabs.ConferenceRoom.Services.SignalR
+namespace RightpointLabs.ConferenceRoom.Web.SignalR
 {
     public class UpdateHub : Hub
     {

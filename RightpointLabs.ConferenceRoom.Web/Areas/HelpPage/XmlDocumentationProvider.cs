@@ -5,9 +5,9 @@ using System.Reflection;
 using System.Web.Http.Controllers;
 using System.Web.Http.Description;
 using System.Xml.XPath;
-using RightpointLabs.ConferenceRoom.Services.Areas.HelpPage.ModelDescriptions;
+using RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.ModelDescriptions;
 
-namespace RightpointLabs.ConferenceRoom.Services.Areas.HelpPage
+namespace RightpointLabs.ConferenceRoom.Web.Areas.HelpPage
 {
     /// <summary>
     /// A custom <see cref="IDocumentationProvider"/> that reads the API documentation from an XML documentation file.

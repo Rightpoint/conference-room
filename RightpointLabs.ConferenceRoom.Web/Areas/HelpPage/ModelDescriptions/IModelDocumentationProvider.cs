@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace RightpointLabs.ConferenceRoom.Services.Areas.HelpPage.ModelDescriptions
+namespace RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.ModelDescriptions
 {
     public interface IModelDocumentationProvider
     {

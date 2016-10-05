@@ -1,6 +1,6 @@
 using System;
 
-namespace RightpointLabs.ConferenceRoom.Services.Areas.HelpPage.ModelDescriptions
+namespace RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.ModelDescriptions
 {
     /// <summary>
     /// Describes a type model.

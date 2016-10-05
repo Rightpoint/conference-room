@@ -1,11 +1,11 @@
-﻿using log4net;
-using RightpointLabs.ConferenceRoom.Services.Attributes;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.ServiceModel.Channels;
 using System.Web;
 using System.Web.Http;
+using log4net;
+using RightpointLabs.ConferenceRoom.Web.Attributes;
 
-namespace RightpointLabs.ConferenceRoom.Services.Controllers
+namespace RightpointLabs.ConferenceRoom.Web.Controllers
 {
     /// <summary>
     /// Operations dealing with client log messages

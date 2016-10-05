@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Web.Http;
-using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Infrastructure.Services;
 
-namespace RightpointLabs.ConferenceRoom.Services.Controllers
+namespace RightpointLabs.ConferenceRoom.Web.Controllers
 {
     [RoutePrefix("api/devices")]
     public class DeviceController : ApiController

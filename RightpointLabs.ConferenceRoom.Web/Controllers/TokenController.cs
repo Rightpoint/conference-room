@@ -1,22 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
-using System.Web;
 using System.Web.Http;
-using Microsoft.Owin.Security;
-using Microsoft.Owin.Security.OpenIdConnect;
-using RightpointLabs.ConferenceRoom.Domain.Models;
-using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 using RightpointLabs.ConferenceRoom.Infrastructure.Services;
-using ClaimTypes = System.IdentityModel.Claims.ClaimTypes;
 
-namespace RightpointLabs.ConferenceRoom.Services.Controllers
+namespace RightpointLabs.ConferenceRoom.Web.Controllers
 {
     [RoutePrefix("api/tokens")]
     public class TokenController : ApiController

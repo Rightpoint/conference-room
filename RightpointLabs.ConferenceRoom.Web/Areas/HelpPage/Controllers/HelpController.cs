@@ -1,10 +1,10 @@
 using System;
 using System.Web.Http;
 using System.Web.Mvc;
-using RightpointLabs.ConferenceRoom.Services.Areas.HelpPage.ModelDescriptions;
-using RightpointLabs.ConferenceRoom.Services.Areas.HelpPage.Models;
+using RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.ModelDescriptions;
+using RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.Models;
 
-namespace RightpointLabs.ConferenceRoom.Services.Areas.HelpPage.Controllers
+namespace RightpointLabs.ConferenceRoom.Web.Areas.HelpPage.Controllers
 {
     /// <summary>
     /// The controller that will handle requests for the help page.

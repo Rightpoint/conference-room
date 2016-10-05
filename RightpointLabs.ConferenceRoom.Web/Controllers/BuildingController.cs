@@ -1,11 +1,11 @@
 ﻿using System.Linq;
-using log4net;
-using RightpointLabs.ConferenceRoom.Domain.Services;
 using System.Reflection;
 using System.Web.Http;
+using log4net;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
+using RightpointLabs.ConferenceRoom.Domain.Services;
 
-namespace RightpointLabs.ConferenceRoom.Services.Controllers
+namespace RightpointLabs.ConferenceRoom.Web.Controllers
 {
     /// <summary>
     /// Operations dealing with room lists
