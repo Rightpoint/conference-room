@@ -109,16 +109,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         public RoomInfo GetInfo(string roomAddress = null)
         {
-            var room = _simpleTimedCache.GetCachedValue("RoomInfo_" + roomAddress,
-                TimeSpan.FromHours(24),
-                () => Task.FromResult(ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc => svc.ResolveName(roomAddress).SingleOrDefault()))).Result;
-
+            var room = GetRoomName(roomAddress);
             if (null == room)
             {
                 return null;
             }
 
-            var canControl = _contextService.CurrentDevice?.ControlledRoomAddresses?.Contains(roomAddress) ?? false;
+            var canControl = CanControl(roomAddress);
             if (canControl && _useChangeNotification)
             {
                 // make sure we track rooms we're controlling
@@ -129,6 +126,43 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             var building = _buildingRepository.Get(roomMetadata.BuildingId) ?? new BuildingEntity();
             var floor = _floorRepository.Get(roomMetadata.FloorId) ?? new FloorEntity();
 
+            return BuildRoomInfo(room, canControl, roomMetadata, building, floor);
+        }
+
+        private NameResolution GetRoomName(string roomAddress)
+        {
+            return _simpleTimedCache.GetCachedValue("RoomInfo_" + roomAddress,
+                TimeSpan.FromHours(24),
+                () => Task.FromResult(ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc => svc.ResolveName(roomAddress).SingleOrDefault()))).Result;
+        }
+
+        public Dictionary<string, RoomInfo> GetInfoForRoomsInBuilding(string buildingId, string[] roomAddresses)
+        {
+            var building = _buildingRepository.Get(buildingId);
+            var floors = _floorRepository.GetAllByBuilding(buildingId).ToDictionary(_ => _.Id);
+            var roomMetadatas = _roomRepository.GetRoomInfosForBuilding(buildingId).ToDictionary(_ => _.RoomAddress);
+
+            var results = new Dictionary<string, RoomInfo>();
+            foreach (var roomAddress in roomAddresses)
+            {
+                var room = GetRoomName(roomAddress);
+                if (null == room)
+                {
+                    continue;
+                }
+
+                var canControl = CanControl(roomAddress);
+                var roomMetadata = roomMetadatas.TryGetValue(roomAddress) ?? new RoomMetadataEntity();
+                var floor = floors.TryGetValue(roomMetadata.FloorId) ?? new FloorEntity();
+
+                results.Add(roomAddress, BuildRoomInfo(room, canControl, roomMetadata, building, floor));
+            }
+
+            return results;
+        }
+
+        private RoomInfo BuildRoomInfo(NameResolution room, bool canControl, RoomMetadataEntity roomMetadata, BuildingEntity building, FloorEntity floor)
+        {
             return new RoomInfo()
             {
                 CurrentTime = _dateTimeService.Now,
@@ -138,12 +172,18 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 BuildingId = roomMetadata.BuildingId,
                 BuildingName = building.Name,
                 FloorId = roomMetadata.FloorId,
+                Floor = floor.Number,
                 FloorName = floor.Name,
                 DistanceFromFloorOrigin = roomMetadata.DistanceFromFloorOrigin ?? new Point(),
                 Equipment = roomMetadata.Equipment,
                 HasControllableDoor = !string.IsNullOrEmpty(roomMetadata.GdoDeviceId),
                 BeaconUid = roomMetadata.BeaconUid,
             };
+        }
+
+        private bool CanControl(string roomAddress)
+        {
+            return _contextService.CurrentDevice?.ControlledRoomAddresses?.Contains(roomAddress) ?? false;
         }
 
         public IEnumerable<Meeting> GetUpcomingAppointmentsForRoom(string roomAddress)

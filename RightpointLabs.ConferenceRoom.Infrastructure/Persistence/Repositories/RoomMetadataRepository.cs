@@ -3,6 +3,7 @@ using MongoDB.Driver.Builders;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
@@ -19,6 +20,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
         {
             var q = Query<RoomMetadataEntity>.Where(i => i.RoomAddress == roomAddress && i.OrganizationId == organizationId);
             return this.Collection.FindOne(q);
+        }
+
+        public IEnumerable<RoomMetadataEntity> GetRoomInfosForBuilding(string buildingId)
+        {
+            var q = Query<RoomMetadataEntity>.Where(i => i.BuildingId == buildingId);
+            return this.Collection.Find(q);
         }
     }
 }

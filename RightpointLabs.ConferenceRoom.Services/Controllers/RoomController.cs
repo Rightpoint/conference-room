@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
+using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 
 namespace RightpointLabs.ConferenceRoom.Services.Controllers
@@ -173,18 +174,21 @@ namespace RightpointLabs.ConferenceRoom.Services.Controllers
             _conferenceRoomService.MessageMeeting(roomAddress, uniqueId);
         }
 
-
         [Route("all/status/{buildingId}")]
         public object GetAllStatus(string buildingId)
         {
             var building = _buildingRepository.Get(buildingId ?? _contextService.CurrentDevice?.BuildingId);
-
-            var rooms =
+            var roomAddresses =
                 (building?.RoomListAddresses ?? new string[0])
                     .AsParallel()
                     .WithDegreeOfParallelism(256)
                     .SelectMany(_conferenceRoomService.GetRoomsFromRoomList)
-                    .Select(i => new { i.Address, Info =  _conferenceRoomService.GetInfo(i.Address) })
+                    .ToList();
+
+            var roomInfos = _conferenceRoomService.GetInfoForRoomsInBuilding(buildingId, roomAddresses.Select(i => i.Address).ToArray());
+            var rooms =
+                roomAddresses
+                    .Select(i => new { i.Address, Info = roomInfos.TryGetValue(i.Address) })
                     .ToList();
             
             // ok, we have the filtered rooms list, now we need to get the status and smash it together with the room data
