@@ -195,11 +195,11 @@ FakesAssemblies/
 # Visual Studio 6 workspace options file
 *.opt
 /packages
-/RightpointLabs.ConferenceRoom.Web/AppSettings.config
-/RightpointLabs.ConferenceRoom.Web/logs
-/RightpointLabs.ConferenceRoom.Web/ConnectionStrings.config
-/RightpointLabs.ConferenceRoom.Web/.idea
-/RightpointLabs.ConferenceRoom.Web/dist
-/RightpointLabs.ConferenceRoom.Web/App_Data/*.xml
-/RightpointLabs.ConferenceRoom.StatusMonitor/.idea
-/RightpointLabs.ConferenceRoom.Web/custom-icons.css
+/Web/AppSettings.config
+/Web/logs
+/Web/ConnectionStrings.config
+/Web/.idea
+/Web/dist
+/Web/App_Data/*.xml
+/StatusMonitor/.idea
+/Web/custom-icons.css

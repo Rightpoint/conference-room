@@ -14,5 +14,14 @@
     "blue": {
 	    "pin": 24,
 	    "brightness": 1
+    },
+    "backlight": {
+        "controlFile": "C:\\projects\\Github\\conference-room\\RightpointLabs.ConferenceRoom.StatusMonitor\\control.txt",
+        "on": "200",
+        "off": "50",
+        "onOffPeak": "150",
+        "offOffPeak": "30",
+        "peakStart": 7,
+        "peakEnd": 18
     }
 }

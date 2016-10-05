@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RightpointLabs.ConferenceRoom.Web", "RightpointLabs.ConferenceRoom.Web\RightpointLabs.ConferenceRoom.Web.csproj", "{D542CB1E-F9B0-4E2D-920D-7D0909FDDC2A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web", "Web\RightpointLabs.ConferenceRoom.Web.csproj", "{D542CB1E-F9B0-4E2D-920D-7D0909FDDC2A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RightpointLabs.ConferenceRoom.Domain", "RightpointLabs.ConferenceRoom.Domain\RightpointLabs.ConferenceRoom.Domain.csproj", "{AD5CB851-8AAD-4C68-832C-810E2C383EA6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\RightpointLabs.ConferenceRoom.Domain.csproj", "{AD5CB851-8AAD-4C68-832C-810E2C383EA6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RightpointLabs.ConferenceRoom.Infrastructure", "RightpointLabs.ConferenceRoom.Infrastructure\RightpointLabs.ConferenceRoom.Infrastructure.csproj", "{30948D84-111A-44B7-9FEE-3513CEA6FE3E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\RightpointLabs.ConferenceRoom.Infrastructure.csproj", "{30948D84-111A-44B7-9FEE-3513CEA6FE3E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{44CCB45C-B227-4812-B59F-A6AFD8444C51}"
 EndProject
