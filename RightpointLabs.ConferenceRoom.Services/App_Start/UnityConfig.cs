@@ -33,13 +33,11 @@ namespace RightpointLabs.ConferenceRoom.Services
         {
             var container = new UnityContainer();
 
-            var connectionStrings = System.Web.Configuration.WebConfigurationManager.ConnectionStrings;
-            var connectionString = connectionStrings["Mongo"].ConnectionString;
-            var providerName = connectionStrings["Mongo"].ProviderName;
-
+            var connectionString = System.Web.Configuration.WebConfigurationManager.ConnectionStrings["Mongo"].ConnectionString;
+            var databaseName = ConfigurationManager.AppSettings["MongoDatabaseName"];
             container.RegisterType<IMongoConnectionHandler, MongoConnectionHandler>(
                 new ContainerControlledLifetimeManager(),
-                new InjectionConstructor(connectionString, providerName));
+                string.IsNullOrEmpty(databaseName) ? new InjectionConstructor(connectionString) : new InjectionConstructor(connectionString, databaseName));
 
             container.RegisterType<ExchangeConferenceRoomServiceConfiguration>(new HierarchicalLifetimeManager(),
                 new InjectionFactory(
