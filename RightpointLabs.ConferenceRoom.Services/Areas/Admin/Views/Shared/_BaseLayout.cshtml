@@ -12,9 +12,14 @@
         body {
             padding-top: 70px;
         }
+        .form-group select {
+            width: 100%;
+        }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css"/>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -33,9 +38,9 @@
                     <li><a href="@Url.Action("Index","Home")">Home</a></li>
                     <li><a href="@Url.Action("Index","Organization")">Organizations</a></li>
                     <li><a href="@Url.Action("Index","Building")">Buildings</a></li>
-                    <li><a href="@Url.Action("Index","Floor")">Rooms</a></li>
+                    <li><a href="@Url.Action("Index","Floor")">Floors</a></li>
                     <li><a href="@Url.Action("Index","Room")">Rooms</a></li>
-                    <li><a href="@Url.Action("Index","Device")">Rooms</a></li>
+                    <li><a href="@Url.Action("Index","Device")">Devices</a></li>
                     <li><a href="@Url.Action("Index","Service")">Services</a></li>
                 </ul>
             </div><!--/.nav-collapse -->

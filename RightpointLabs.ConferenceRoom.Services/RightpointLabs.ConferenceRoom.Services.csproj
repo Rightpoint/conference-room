@@ -212,6 +212,10 @@
     <Content Include="Areas\Admin\Views\Building\Index.cshtml" />
     <Content Include="Areas\Admin\Views\Building\Edit.cshtml" />
     <Content Include="Areas\Admin\Views\Building\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\Floor\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Floor\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\EditorTemplates\BuildingPicker.cshtml" />
+    <Content Include="Areas\Admin\Views\Floor\Details.cshtml" />
     <None Include="Properties\PublishProfiles\local directory.pubxml" />
     <None Include="Scripts\jquery-3.1.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.1.0.js" />
@@ -228,6 +232,8 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\BaseController.cs" />
+    <Compile Include="Areas\Admin\Controllers\SelectController.cs" />
+    <Compile Include="Areas\Admin\Controllers\FloorController.cs" />
     <Compile Include="Areas\Admin\Controllers\HomeController.cs" />
     <Compile Include="Areas\Admin\Controllers\BuildingController.cs" />
     <Compile Include="Areas\Admin\Controllers\OrganizationController.cs" />

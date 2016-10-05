@@ -1,0 +1,17 @@
+﻿@model string
+@Html.DropDownListFor(_ => _, new SelectListItem[0])
+
+<script type="text/javascript">
+    $(function () {
+        $.ajax({
+            url: '@Url.Action("Buildings", "Select")',
+            method: 'post',
+            success: function(data) {
+                $("#@Html.IdForModel()")
+                    .select2({
+                        data: data
+                    }).val("@Model").trigger('change');
+            }
+        });
+    });
+</script>
