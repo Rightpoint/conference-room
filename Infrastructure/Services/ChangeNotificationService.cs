@@ -6,6 +6,7 @@ using System.Timers;
 using log4net;
 using Microsoft.Exchange.WebServices.Data;
 using RightpointLabs.ConferenceRoom.Domain;
+using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 using Task = System.Threading.Tasks.Task;
@@ -28,19 +29,19 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         private Dictionary<string, Watcher> _roomsTracked = new Dictionary<string, Watcher>();
 
-        public void TrackRoom(string roomAddress, IExchangeServiceManager exchangeServiceManager, OrganizationEntity organization)
+        public void TrackRoom(IRoom room, IExchangeServiceManager exchangeServiceManager, OrganizationEntity organization)
         {
             lock (_roomsTracked)
             {
-                if (_roomsTracked.ContainsKey(roomAddress))
+                if (_roomsTracked.ContainsKey(room.RoomAddress))
                     return;
-                _roomsTracked.Add(roomAddress, new Watcher(exchangeServiceManager, _broadcastService, _meetingCacheService, roomAddress, organization));
+                _roomsTracked.Add(room.RoomAddress, new Watcher(exchangeServiceManager, _broadcastService, _meetingCacheService, room, organization));
             }
         }
 
-        public bool IsTrackedForChanges(string roomAddress)
+        public bool IsTrackedForChanges(IRoom room)
         {
-            return _roomsTracked.TryGetValue(roomAddress).ChainIfNotNull(i => i.IsActive);
+            return _roomsTracked.TryGetValue(room.RoomAddress).ChainIfNotNull(i => i.IsActive);
         }
 
         private class Watcher
@@ -50,7 +51,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             private readonly IExchangeServiceManager _exchangeServiceManager;
             private readonly IBroadcastService _broadcastService;
             private readonly IMeetingCacheService _meetingCacheService;
-            private readonly string _roomAddress;
+            private readonly IRoom _room;
             private readonly OrganizationEntity _organization;
 
             private StreamingSubscriptionConnection _connection;
@@ -58,14 +59,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             public bool IsActive { get; private set; }
 
-            public Watcher(IExchangeServiceManager exchangeServiceManager, IBroadcastService broadcastService, IMeetingCacheService meetingCacheService, string roomAddress, OrganizationEntity organization)
+            public Watcher(IExchangeServiceManager exchangeServiceManager, IBroadcastService broadcastService, IMeetingCacheService meetingCacheService, IRoom room, OrganizationEntity organization)
             {
                 IsActive = false;
 
                 _exchangeServiceManager = exchangeServiceManager;
                 _broadcastService = broadcastService;
                 _meetingCacheService = meetingCacheService;
-                _roomAddress = roomAddress;
+                _room = room;
                 _organization = organization;
                 _startConnectionTimer.Stop();
                 _startConnectionTimer.Elapsed += StartConnectionTimerOnElapsed;
@@ -80,10 +81,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             private StreamingSubscriptionConnection StartNewConnection()
             {
-                return _exchangeServiceManager.ExecutePrivate(_roomAddress, svc =>
+                return _exchangeServiceManager.ExecutePrivate(_room.RoomAddress, svc =>
                 {
-                    log.DebugFormat("Opening subscription to {0}", _roomAddress);
-                    var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(_roomAddress));
+                    log.DebugFormat("Opening subscription to {0}", _room.RoomAddress);
+                    var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(_room.RoomAddress));
                     var sub = svc.SubscribeToStreamingNotifications(
                         new[] { calId },
                         EventType.Created,
@@ -100,8 +101,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     connection.OnNotificationEvent += OnNotificationEvent;
                     connection.OnDisconnect += OnDisconnect;
                     connection.Open();
-                    _meetingCacheService.ClearUpcomingAppointmentsForRoom(_roomAddress);
-                    log.DebugFormat("Opened subscription to {0} via {1} with {2}", _roomAddress, svc.GetHashCode(), svc.CookieContainer.GetCookieHeader(svc.Url));
+                    _meetingCacheService.ClearUpcomingAppointmentsForRoom(_room.RoomAddress);
+                    log.DebugFormat("Opened subscription to {0} via {1} with {2}", _room.RoomAddress, svc.GetHashCode(), svc.CookieContainer.GetCookieHeader(svc.Url));
                     IsActive = true;
                     return connection;
                 });
@@ -109,15 +110,15 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             private void OnDisconnect(object sender, SubscriptionErrorEventArgs args)
             {
-                _meetingCacheService.ClearUpcomingAppointmentsForRoom(_roomAddress);
+                _meetingCacheService.ClearUpcomingAppointmentsForRoom(_room.RoomAddress);
                 IsActive = false;
                 UpdateConnection();
             }
 
             private void OnNotificationEvent(object sender, NotificationEventArgs args)
             {
-                _meetingCacheService.ClearUpcomingAppointmentsForRoom(_roomAddress);
-                _broadcastService.BroadcastUpdate(_organization, _roomAddress);
+                _meetingCacheService.ClearUpcomingAppointmentsForRoom(_room.RoomAddress);
+                _broadcastService.BroadcastUpdate(_organization, _room);
             }
 
             private object _connectionLock = new object();

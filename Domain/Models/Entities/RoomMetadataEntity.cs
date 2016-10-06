@@ -4,7 +4,7 @@ using Newtonsoft.Json.Converters;
 
 namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
 {
-    public class RoomMetadataEntity : Entity
+    public class RoomMetadataEntity : Entity, IRoom
     {
         public string RoomAddress { get; set; }
         public int Size { get; set; }

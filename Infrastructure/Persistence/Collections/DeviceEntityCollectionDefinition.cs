@@ -22,6 +22,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections
                             cm.AutoMap();
                             cm.GetMemberMap(i => i.OrganizationId).SetSerializer(new StringSerializer(BsonType.ObjectId));
                             cm.GetMemberMap(i => i.BuildingId).SetSerializer(new StringSerializer(BsonType.ObjectId));
+                            cm.GetMemberMap(i => i.ControlledRoomIds).SetSerializer(new ArraySerializer<string>(new StringSerializer(BsonType.ObjectId)));
                         });
                 }
                 catch (ArgumentException)

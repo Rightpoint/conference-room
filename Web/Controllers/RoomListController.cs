@@ -12,13 +12,12 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
     public class RoomListController : BaseController
     {
         private static readonly ILog __log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private readonly IConferenceRoomDiscoveryService _conferenceRoomDiscoveryService;
 
-        private readonly IConferenceRoomService _conferenceRoomService;
-
-        public RoomListController(IConferenceRoomService conferenceRoomService)
+        public RoomListController(IConferenceRoomDiscoveryService conferenceRoomDiscoveryService)
             : base(__log)
         {
-            _conferenceRoomService = conferenceRoomService;
+            _conferenceRoomDiscoveryService = conferenceRoomDiscoveryService;
         }
 
         /// <summary>
@@ -27,7 +26,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <returns></returns>
         public object GetAll()
         {
-            return _conferenceRoomService.GetRoomLists();
+            return _conferenceRoomDiscoveryService.GetRoomLists();
         }
 
         /// <summary>
@@ -39,7 +38,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         [HttpGet]
         public object GetRooms(string roomListAddress)
         {
-            return _conferenceRoomService.GetRoomsFromRoomList(roomListAddress);
+            return _conferenceRoomDiscoveryService.GetRoomsFromRoomList(roomListAddress);
         }
     }
 }

@@ -12,6 +12,7 @@ using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.Exchange.WebServices.Data;
 using Microsoft.Practices.Unity;
 using RightpointLabs.ConferenceRoom.Domain;
+using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
@@ -194,13 +195,13 @@ namespace RightpointLabs.ConferenceRoom.Web
                 _connectionManager = connectionManager;
             }
 
-            public void BroadcastUpdate(OrganizationEntity org, string roomAddress)
+            public void BroadcastUpdate(OrganizationEntity org, IRoom room)
             {
                 var context = _connectionManager.GetHubContext<UpdateHub>();
-                var groupName = UpdateHub.GetGroupName(org, roomAddress);
-                log.DebugFormat("Broadcasting update to {0} for {1}", groupName, roomAddress);
+                var groupName = UpdateHub.GetGroupName(org, room);
+                log.DebugFormat("Broadcasting update to {0} for {1}", groupName, room.Id);
 
-                context.Clients.Group(groupName).Update(roomAddress);
+                context.Clients.Group(groupName).Update(room.Id);
             }
         }
     }

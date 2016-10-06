@@ -142,6 +142,7 @@
     <Compile Include="Services\ContextService.cs" />
     <Compile Include="Services\ChangeNotificationService.cs" />
     <Compile Include="Services\ConnectionManager.cs" />
+    <Compile Include="Services\ExchangeConferenceRoomDiscoveryService.cs" />
     <Compile Include="Services\ExchangeConferenceRoomService.cs" />
     <Compile Include="Services\HttpTokenProvider.cs" />
     <Compile Include="Services\IChangeNotificationService.cs" />
@@ -162,7 +163,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RightpointLabs.ConferenceRoom.Domain\RightpointLabs.ConferenceRoom.Domain.csproj">
+    <ProjectReference Include="..\Domain\RightpointLabs.ConferenceRoom.Domain.csproj">
       <Project>{AD5CB851-8AAD-4C68-832C-810E2C383EA6}</Project>
       <Name>RightpointLabs.ConferenceRoom.Domain</Name>
     </ProjectReference>

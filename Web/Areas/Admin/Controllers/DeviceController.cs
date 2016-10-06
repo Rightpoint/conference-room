@@ -50,8 +50,8 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
         public ActionResult Create(DeviceEntity model)
         {
             var building = _buildingRepository.Get(model.BuildingId);
-            var room = _roomMetadataRepository.GetRoomInfo(model.ControlledRoomAddresses.FirstOrDefault(), CurrentOrganization.Id);
-            if (building.OrganizationId != CurrentOrganization.Id || (model.ControlledRoomAddresses.Any() && null == room))
+            var room = _roomMetadataRepository.GetRoomInfo(model.ControlledRoomIds.FirstOrDefault());
+            if (building.OrganizationId != CurrentOrganization.Id || (model.ControlledRoomIds.Any() && (null == room || room.OrganizationId != CurrentOrganization.Id)))
             {
                 return HttpNotFound();
             }
@@ -70,7 +70,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
                 return HttpNotFound();
             }
 
-            var room = _roomMetadataRepository.GetRoomInfo(model.ControlledRoomAddresses.FirstOrDefault(), CurrentOrganization.Id);
+            var room = _roomMetadataRepository.GetRoomInfo(model.ControlledRoomIds.FirstOrDefault());
             ViewBag.Building = _buildingRepository.Get(model.BuildingId)?.Name;
             ViewBag.Floor = _floorRepository.Get(room?.FloorId)?.Name;
             ViewBag.Room = room?.RoomAddress;
@@ -86,8 +86,8 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
                 return HttpNotFound();
             }
 
-            var room = _roomMetadataRepository.GetRoomInfo(model.ControlledRoomAddresses.FirstOrDefault(), CurrentOrganization.Id);
-            if (model.ControlledRoomAddresses.Any() && room == null)
+            var room = _roomMetadataRepository.GetRoomInfo(model.ControlledRoomIds.FirstOrDefault());
+            if (model.ControlledRoomIds.Any() && (null == room || room.OrganizationId != CurrentOrganization.Id))
             {
                 return HttpNotFound();
             }

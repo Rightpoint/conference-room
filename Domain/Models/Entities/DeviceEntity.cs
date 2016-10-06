@@ -10,6 +10,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
     {
         public string OrganizationId { get; set; }
         public string BuildingId { get; set; }
-        public string[] ControlledRoomAddresses { get; set; }
+        public string[] ControlledRoomIds { get; set; }
     }
 }

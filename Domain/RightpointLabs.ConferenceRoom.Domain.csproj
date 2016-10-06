@@ -78,6 +78,7 @@
     <Compile Include="Models\Entities\DeviceEntity.cs" />
     <Compile Include="Models\Entities\FloorEntity.cs" />
     <Compile Include="Models\Entities\GlobalAdministratorEntity.cs" />
+    <Compile Include="Models\IRoom.cs" />
     <Compile Include="Models\Entities\OrganizationEntity.cs" />
     <Compile Include="Models\Entities\OrganizationServiceConfigurationEntity.cs" />
     <Compile Include="Models\Rectangle.cs" />
@@ -107,6 +108,7 @@
     <Compile Include="Services\IConcurrencyLimiter.cs" />
     <Compile Include="Services\IConferenceRoomService.cs" />
     <Compile Include="Services\IDateTimeService.cs" />
+    <Compile Include="Services\IConferenceRoomDiscoveryService.cs" />
     <Compile Include="Services\IInstantMessagingService.cs" />
     <Compile Include="Services\IGdoService.cs" />
     <Compile Include="Services\IIOCContainer.cs" />

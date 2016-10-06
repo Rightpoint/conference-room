@@ -38,6 +38,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private readonly IBuildingRepository _buildingRepository;
         private readonly IFloorRepository _floorRepository;
         private readonly IContextService _contextService;
+        private readonly IConferenceRoomDiscoveryService _exchangeConferenceRoomDiscoveryService;
         private readonly bool _ignoreFree;
         private readonly bool _useChangeNotification;
         private readonly bool _impersonateForAllCalls;
@@ -58,6 +59,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             IBuildingRepository buildingRepository,
             IFloorRepository floorRepository,
             IContextService contextService,
+            IConferenceRoomDiscoveryService exchangeConferenceRoomDiscoveryService,
             ExchangeConferenceRoomServiceConfiguration config)
         {
             _meetingRepository = meetingRepository;
@@ -75,135 +77,78 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             _buildingRepository = buildingRepository;
             _floorRepository = floorRepository;
             _contextService = contextService;
+            _exchangeConferenceRoomDiscoveryService = exchangeConferenceRoomDiscoveryService;
             _ignoreFree = config.IgnoreFree;
             _useChangeNotification = config.UseChangeNotification;
             _impersonateForAllCalls = config.ImpersonateForAllCalls;
             _emailDomains = config.EmailDomains;
         }
 
-        /// <summary>
-        /// Get all room lists defined on the Exchange server.
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<RoomList> GetRoomLists()
+        public RoomInfo GetStaticInfo(IRoom room)
         {
-            return _simpleTimedCache.GetCachedValue("RoomLists", TimeSpan.FromHours(24),
-                () => Task.FromResult(_exchangeServiceManager.Execute(string.Empty, svc => svc.GetRoomLists()
-                    .Select(i => new RoomList {Address = i.Address, Name = i.Name})
-                    .ToArray()))).Result;
-        }
-
-        /// <summary>
-        /// Gets all the rooms in the specified room list.
-        /// </summary>
-        /// <param name="roomListAddress">The room list address returned from <see cref="GetRoomLists"/></param>
-        /// <returns></returns>
-        public IEnumerable<Room> GetRoomsFromRoomList(string roomListAddress)
-        {
-            return _simpleTimedCache.GetCachedValue("Rooms_" + roomListAddress,
-                TimeSpan.FromHours(24),
-                () => Task.FromResult(_exchangeServiceManager.Execute(string.Empty, svc => svc.GetRooms(roomListAddress)
-                    .Select(i => new Room {Address = i.Address, Name = i.Name})
-                    .ToArray()))).Result;
-        }
-
-        public RoomInfo GetInfo(string roomAddress = null)
-        {
-            var room = GetRoomName(roomAddress).Result;
-            if (null == room)
+            var roomName = _exchangeConferenceRoomDiscoveryService.GetRoomName(room.RoomAddress).Result;
+            if (null == roomName)
             {
                 return null;
             }
 
-            var canControl = CanControl(roomAddress);
+            var canControl = CanControl(room);
             if (canControl && _useChangeNotification)
             {
                 // make sure we track rooms we're controlling
-                _changeNotificationService.TrackRoom(roomAddress, _exchangeServiceManager, _contextService.CurrentOrganization);
+                _changeNotificationService.TrackRoom(room, _exchangeServiceManager, _contextService.CurrentOrganization);
             }
 
-            var roomMetadata = _roomRepository.GetRoomInfo(roomAddress, _contextService.CurrentOrganization?.Id) ?? new RoomMetadataEntity();
-            var building = _buildingRepository.Get(roomMetadata.BuildingId) ?? new BuildingEntity();
-            var floor = _floorRepository.Get(roomMetadata.FloorId) ?? new FloorEntity();
+            var building = _buildingRepository.Get(room.BuildingId) ?? new BuildingEntity();
+            var floor = _floorRepository.Get(room.FloorId) ?? new FloorEntity();
 
-            return BuildRoomInfo(room, canControl, roomMetadata, building, floor);
+            return BuildRoomInfo(roomName, canControl, (RoomMetadataEntity) room, building, floor);
         }
 
-        private Task<NameResolution> GetRoomName(string roomAddress)
+        public Dictionary<string, Tuple<RoomInfo, IRoom>> GetInfoForRoomsInBuilding(string buildingId)
         {
-            return _simpleTimedCache.GetCachedValue("RoomInfo_" + roomAddress,
-                TimeSpan.FromHours(24),
-                () => Task.FromResult(ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc => svc.ResolveName(roomAddress).SingleOrDefault())));
-        }
-
-        public Dictionary<string, RoomInfo> GetInfoForRoomsInBuilding(string buildingId, string[] roomAddresses)
-        {
-            // get these started in parallel while we load data from the repositories
-            var roomTasks = roomAddresses.ToDictionary(i => i, GetRoomName);
-
             // repo data
             var building = _buildingRepository.Get(buildingId);
             var floors = _floorRepository.GetAllByBuilding(buildingId).ToDictionary(_ => _.Id);
             var roomMetadatas = _roomRepository.GetRoomInfosForBuilding(buildingId).ToDictionary(_ => _.RoomAddress);
 
+            // get these started in parallel while we load data from the repositories
+            var roomTasks = roomMetadatas.ToDictionary(i => i.Key, i => _exchangeConferenceRoomDiscoveryService.GetRoomName(i.Key)).ToList();
+
             // put it all together
-            var results = new Dictionary<string, RoomInfo>();
-            foreach (var roomAddress in roomAddresses)
+            var results = new Dictionary<string, Tuple<RoomInfo, IRoom>>();
+            foreach (var kvp in roomTasks)
             {
-                var room = roomTasks[roomAddress].Result;
+                var roomAddress = kvp.Key;
+                var room = kvp.Value.Result;
                 if (null == room)
                 {
                     continue;
                 }
 
-                var canControl = CanControl(roomAddress);
                 var roomMetadata = roomMetadatas.TryGetValue(roomAddress) ?? new RoomMetadataEntity();
+                var canControl = CanControl(roomMetadata);
                 var floor = floors.TryGetValue(roomMetadata.FloorId) ?? new FloorEntity();
 
-                results.Add(roomAddress, BuildRoomInfo(room, canControl, roomMetadata, building, floor));
+                results.Add(roomAddress, new Tuple<RoomInfo, IRoom>(BuildRoomInfo(room, canControl, roomMetadata, building, floor), roomMetadata));
             }
 
             return results;
         }
 
-        private RoomInfo BuildRoomInfo(NameResolution room, bool canControl, RoomMetadataEntity roomMetadata, BuildingEntity building, FloorEntity floor)
+        public IEnumerable<Meeting> GetUpcomingAppointmentsForRoom(IRoom room)
         {
-            return new RoomInfo()
-            {
-                CurrentTime = _dateTimeService.Now,
-                DisplayName = (room.Mailbox.Name ?? "").Replace("(Meeting Room ", "("),
-                CanControl = canControl,
-                Size = roomMetadata.Size,
-                BuildingId = roomMetadata.BuildingId,
-                BuildingName = building.Name,
-                FloorId = roomMetadata.FloorId,
-                Floor = floor.Number,
-                FloorName = floor.Name,
-                DistanceFromFloorOrigin = roomMetadata.DistanceFromFloorOrigin ?? new Point(),
-                Equipment = roomMetadata.Equipment,
-                HasControllableDoor = !string.IsNullOrEmpty(roomMetadata.GdoDeviceId),
-                BeaconUid = roomMetadata.BeaconUid,
-            };
-        }
-
-        private bool CanControl(string roomAddress)
-        {
-            return _contextService.CurrentDevice?.ControlledRoomAddresses?.Contains(roomAddress) ?? false;
-        }
-
-        public IEnumerable<Meeting> GetUpcomingAppointmentsForRoom(string roomAddress)
-        {
-            var isTracked = _changeNotificationService.IsTrackedForChanges(roomAddress);
-            return _meetingCacheService.GetUpcomingAppointmentsForRoom(roomAddress, isTracked, () =>
+            var isTracked = _changeNotificationService.IsTrackedForChanges(room);
+            return _meetingCacheService.GetUpcomingAppointmentsForRoom(room.RoomAddress, isTracked, () =>
             {
                 return Task.Run(() =>
                 {
                     try
                     {
-                        return ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
+                        return ExchangeServiceExecuteWithImpersonationCheck(room.RoomAddress, svc =>
                         {
                             var apt = svc.FindAppointments(WellKnownFolderName.Calendar, new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2)) { PropertySet = new PropertySet(AppointmentSchema.Id, AppointmentSchema.LegacyFreeBusyStatus)}).ToList();
-                            __log.DebugFormat("Got {0} appointments for {1} via {2} with {3}", apt.Count, roomAddress, svc.GetHashCode(), svc.CookieContainer.GetCookieHeader(svc.Url));
+                            __log.DebugFormat("Got {0} appointments for {1} via {2} with {3}", apt.Count, room.RoomAddress, svc.GetHashCode(), svc.CookieContainer.GetCookieHeader(svc.Url));
                             if (_ignoreFree)
                             {
                                 apt = apt.Where(i => i.LegacyFreeBusyStatus != LegacyFreeBusyStatus.Free).ToList();
@@ -233,23 +178,23 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     }
                     catch (ServiceResponseException ex)
                     {
-                        CheckForAccessDenied(roomAddress, ex);
-                        __log.DebugFormat("Unexpected error ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
+                        CheckForAccessDenied(room, ex);
+                        __log.DebugFormat("Unexpected error ({0}) getting appointments for {1}", ex.ErrorCode, room.RoomAddress);
                         throw;
                     }
                 });
             }).Result;
         }
 
-        public IEnumerable<Meeting> GetSimpleUpcomingAppointmentsForRoom(string roomAddress)
+        public IEnumerable<Meeting> GetSimpleUpcomingAppointmentsForRoom(IRoom room)
         {
-            var isTracked = _changeNotificationService.IsTrackedForChanges(roomAddress);
-            var result = _meetingCacheService.TryGetUpcomingAppointmentsForRoom(roomAddress, isTracked)?.Result;
+            var isTracked = _changeNotificationService.IsTrackedForChanges(room);
+            var result = _meetingCacheService.TryGetUpcomingAppointmentsForRoom(room.RoomAddress, isTracked)?.Result;
             if (null == result)
             {
                 try
                 {
-                    return ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
+                    return ExchangeServiceExecuteWithImpersonationCheck(room.RoomAddress, svc =>
                     {
                         var apt = svc.FindAppointments(WellKnownFolderName.Calendar, new CalendarView(_dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2))
                         {
@@ -262,7 +207,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                                 AppointmentSchema.IsAllDayEvent
                             )
                         }).ToList();
-                        __log.DebugFormat("Got {0} appointments for {1} via {2} with {3}", apt.Count, roomAddress, svc.GetHashCode(), svc.CookieContainer.GetCookieHeader(svc.Url));
+                        __log.DebugFormat("Got {0} appointments for {1} via {2} with {3}", apt.Count, room.RoomAddress, svc.GetHashCode(), svc.CookieContainer.GetCookieHeader(svc.Url));
                         if (_ignoreFree)
                         {
                             apt = apt.Where(i => i.LegacyFreeBusyStatus != LegacyFreeBusyStatus.Free).ToList();
@@ -280,26 +225,26 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 }
                 catch (ServiceResponseException ex)
                 {
-                    CheckForAccessDenied(roomAddress, ex);
-                    __log.DebugFormat("Unexpected error ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
+                    CheckForAccessDenied(room, ex);
+                    __log.DebugFormat("Unexpected error ({0}) getting appointments for {1}", ex.ErrorCode, room.RoomAddress);
                     throw;
                 }
             }
             return result;
         }
-        private static void CheckForAccessDenied(string roomAddress, ServiceResponseException ex)
+        private static void CheckForAccessDenied(IRoom room, ServiceResponseException ex)
         {
             if (ex.ErrorCode == ServiceError.ErrorFolderNotFound || ex.ErrorCode == ServiceError.ErrorNonExistentMailbox || ex.ErrorCode == ServiceError.ErrorAccessDenied)
             {
-                __log.DebugFormat("Access denied ({0}) getting appointments for {1}", ex.ErrorCode, roomAddress);
+                __log.DebugFormat("Access denied ({0}) getting appointments for {1}/{2}", ex.ErrorCode, room.RoomAddress, room.Id);
                 throw new AccessDeniedException("Folder/mailbox not found or access denied", ex);
             }
         }
 
-        public RoomStatusInfo GetStatus(string roomAddress, bool isSimple = false)
+        public RoomStatusInfo GetStatus(IRoom room, bool isSimple = false)
         {
             var now = _dateTimeService.Now;
-            var allMeetings = (isSimple ? GetSimpleUpcomingAppointmentsForRoom(roomAddress) : GetUpcomingAppointmentsForRoom(roomAddress))
+            var allMeetings = (isSimple ? GetSimpleUpcomingAppointmentsForRoom(room) : GetUpcomingAppointmentsForRoom(room))
                 .OrderBy(i => i.Start).ToList();
             var upcomingMeetings = allMeetings.Where(i => !i.IsCancelled && !i.IsEndedEarly && i.End > now);
             var meetings = upcomingMeetings
@@ -308,7 +253,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             var prev = allMeetings.LastOrDefault(i => i.End < now);
             var current = meetings.FirstOrDefault();
-            var isTracked = _changeNotificationService.IsTrackedForChanges(roomAddress);
+            var isTracked = _changeNotificationService.IsTrackedForChanges(room);
 
             var info = new RoomStatusInfo
             {
@@ -354,67 +299,67 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             return info;
         }
 
-        public void StartMeeting(string roomAddress, string uniqueId)
+        public void StartMeeting(IRoom room, string uniqueId)
         {
-            SecurityCheck(roomAddress, uniqueId);
-            __log.DebugFormat("Starting {0} for {1}", uniqueId, roomAddress);
+            SecurityCheck(room, uniqueId);
+            __log.DebugFormat("Starting {0} for {1}", uniqueId, room.Id);
             _meetingRepository.StartMeeting(uniqueId);
-            BroadcastUpdate(roomAddress);
+            BroadcastUpdate(room);
         }
 
-        public bool StartMeetingFromClient(string roomAddress, string uniqueId, string signature)
+        public bool StartMeetingFromClient(IRoom room, string uniqueId, string signature)
         {
-            if (!_signatureService.VerifySignature(uniqueId, signature))
+            if (!_signatureService.VerifySignature(room, uniqueId, signature))
             {
                 __log.ErrorFormat("Invalid signature: {0} for {1}", signature, uniqueId);
                 return false;
             }
-            __log.DebugFormat("Starting {0} for {1}", uniqueId, roomAddress);
+            __log.DebugFormat("Starting {0} for {1}", uniqueId, room.Id);
             _meetingRepository.StartMeeting(uniqueId);
-            BroadcastUpdate(roomAddress);
+            BroadcastUpdate(room);
             return true;
         }
 
-        public bool CancelMeetingFromClient(string roomAddress, string uniqueId, string signature)
+        public bool CancelMeetingFromClient(IRoom room, string uniqueId, string signature)
         {
-            if (!_signatureService.VerifySignature(uniqueId, signature))
+            if (!_signatureService.VerifySignature(room, uniqueId, signature))
             {
                 __log.ErrorFormat("Invalid signature: {0} for {1}", signature, uniqueId);
                 return false;
             }
-            __log.DebugFormat("Abandoning {0} for {1}", uniqueId, roomAddress);
-            CancelMeeting(roomAddress, uniqueId);
+            __log.DebugFormat("Abandoning {0} for {1}/{2}", uniqueId, room.RoomAddress, room.Id);
+            CancelMeeting(room, uniqueId);
             return true;
         }
 
-        public void WarnMeeting(string roomAddress, string uniqueId, Func<string, string> buildStartUrl, Func<string, string> buildCancelUrl)
+        public void WarnMeeting(IRoom room, string uniqueId, Func<string, string> buildStartUrl, Func<string, string> buildCancelUrl)
         {
-            var meeting = SecurityCheck(roomAddress, uniqueId);
+            var meeting = SecurityCheck(room, uniqueId);
             if (meeting.IsNotManaged)
             {
                 throw new Exception("Cannot manage this meeting");
             }
 
-            var item = ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc => Appointment.Bind(svc, new ItemId(uniqueId)));
-            __log.DebugFormat("Warning {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
-            var startUrl = buildStartUrl(_signatureService.GetSignature(uniqueId));
-            var cancelUrl = buildCancelUrl(_signatureService.GetSignature(uniqueId));
-            SendEmail(roomAddress, item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "<p>Please start your meeting by using the RoomNinja on the wall outside the room or simply <a href='" + startUrl + "'>click here to START the meeting</a>.</p><p><a href='" + cancelUrl + "'>Click here to RELEASE the room</a> if you no longer need it so that others can use it.</p>");
+            var item = ExchangeServiceExecuteWithImpersonationCheck(room.RoomAddress, svc => Appointment.Bind(svc, new ItemId(uniqueId)));
+            __log.DebugFormat("Warning {0} for {1}/{2}, which should start at {3}", uniqueId, room.RoomAddress, room.Id, item.Start);
+            var startUrl = buildStartUrl(_signatureService.GetSignature(room, uniqueId));
+            var cancelUrl = buildCancelUrl(_signatureService.GetSignature(room, uniqueId));
+            SendEmail(room, item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "<p>Please start your meeting by using the RoomNinja on the wall outside the room or simply <a href='" + startUrl + "'>click here to START the meeting</a>.</p><p><a href='" + cancelUrl + "'>Click here to RELEASE the room</a> if you no longer need it so that others can use it.</p>");
         }
 
-        public void CancelMeeting(string roomAddress, string uniqueId)
+        public void CancelMeeting(IRoom room, string uniqueId)
         {
-            var meeting = SecurityCheck(roomAddress, uniqueId);
+            var meeting = SecurityCheck(room, uniqueId);
             if (meeting.IsNotManaged)
             {
                 throw new Exception("Cannot manage this meeting");
             }
             _meetingRepository.CancelMeeting(uniqueId);
 
-            var item = ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
+            var item = ExchangeServiceExecuteWithImpersonationCheck(room.RoomAddress, svc =>
             {
                 var appt = Appointment.Bind(svc, new ItemId(uniqueId));
-                __log.DebugFormat("Cancelling {0} for {1}, which should start at {2}", uniqueId, roomAddress, appt.Start);
+                __log.DebugFormat("Cancelling {0} for {1}/{2}, which should start at {3}", uniqueId, room.RoomAddress, room.Id, appt.Start);
                 var now = _dateTimeService.Now.TruncateToTheMinute();
                 if (now >= appt.Start)
                 {
@@ -428,16 +373,16 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 return appt;
             });
 
-            SendEmail(roomAddress, item,
+            SendEmail(room, item,
                 string.Format("Your meeting '{0}' in {1} has been cancelled.", item.Subject, item.Location),
                 "<p>If you want to keep the room, use the RoomNinja on the wall outside the room to start a new meeting ASAP.</p>");
 
-            BroadcastUpdate(roomAddress);
+            BroadcastUpdate(room);
         }
 
-        public void EndMeeting(string roomAddress, string uniqueId)
+        public void EndMeeting(IRoom room, string uniqueId)
         {
-            var meeting = SecurityCheck(roomAddress, uniqueId);
+            var meeting = SecurityCheck(room, uniqueId);
             if (meeting.IsNotManaged)
             {
                 throw new Exception("Cannot manage this meeting");
@@ -446,10 +391,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
             var now = _dateTimeService.Now.TruncateToTheMinute();
 
-            ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
+            ExchangeServiceExecuteWithImpersonationCheck(room.RoomAddress, svc =>
             {
                 var item = Appointment.Bind(svc, new ItemId(uniqueId));
-                __log.DebugFormat("Ending {0} for {1}, which should start at {2}", uniqueId, roomAddress, item.Start);
+                __log.DebugFormat("Ending {0} for {1}/{2}, which should start at {3}", uniqueId, room.RoomAddress, room.Id, item.Start);
                 if (now >= item.Start)
                 {
                     item.End = now;
@@ -461,18 +406,18 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 item.Update(ConflictResolutionMode.AlwaysOverwrite, SendInvitationsOrCancellationsMode.SendToNone);
             });
 
-            BroadcastUpdate(roomAddress);
+            BroadcastUpdate(room);
         }
 
-        public void MessageMeeting(string roomAddress, string uniqueId)
+        public void MessageMeeting(IRoom room, string uniqueId)
         {
-            var meeting = SecurityCheck(roomAddress, uniqueId);
+            var meeting = SecurityCheck(room, uniqueId);
             if (meeting.IsNotManaged)
             {
                 throw new Exception("Cannot manage this meeting");
             }
 
-            var item = ExchangeServiceExecuteWithImpersonationCheck(roomAddress,
+            var item = ExchangeServiceExecuteWithImpersonationCheck(room.RoomAddress,
                 svc =>
                     Appointment.Bind(svc, new ItemId(uniqueId),
                         new PropertySet(AppointmentSchema.RequiredAttendees,
@@ -496,18 +441,18 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             }
         }
 
-        public void StartNewMeeting(string roomAddress, string title, DateTime endTime)
+        public void StartNewMeeting(IRoom room, string title, DateTime endTime)
         {
-            SecurityCheck(roomAddress);
-            var status = GetStatus(roomAddress);
+            SecurityCheck(room);
+            var status = GetStatus(room);
             if (status.Status != RoomStatus.Free)
             {
                 throw new Exception("Room is not free");
             }
 
-            var item = ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
+            var item = ExchangeServiceExecuteWithImpersonationCheck(room.RoomAddress, svc =>
             {
-                var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(roomAddress));
+                var calId = new FolderId(WellKnownFolderName.Calendar, new Mailbox(room.RoomAddress));
 
                 var now = _dateTimeService.Now.TruncateToTheMinute();
                 if (status.NextMeeting != null)
@@ -528,27 +473,27 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 appt.Subject = title;
                 appt.Body = "Scheduled via conference room management system";
                 appt.Save(calId, SendInvitationsMode.SendToNone);
-                __log.DebugFormat("Created {0} for {1}", appt.Id.UniqueId, roomAddress);
+                __log.DebugFormat("Created {0} for {1}", appt.Id.UniqueId, room.RoomAddress);
                 return appt;
             });
 
             _meetingRepository.StartMeeting(item.Id.UniqueId);
-            BroadcastUpdate(roomAddress);
+            BroadcastUpdate(room);
         }
 
-        private void BroadcastUpdate(string roomAddress)
+        private void BroadcastUpdate(IRoom room)
         {
-            _meetingCacheService.ClearUpcomingAppointmentsForRoom(roomAddress);
-            _broadcastService.BroadcastUpdate(_contextService.CurrentOrganization, roomAddress);
+            _meetingCacheService.ClearUpcomingAppointmentsForRoom(room.RoomAddress);
+            _broadcastService.BroadcastUpdate(_contextService.CurrentOrganization, room);
         }
 
-        private void SendEmail(string roomAddress, Appointment item, string subject, string body)
+        private void SendEmail(IRoom room, Appointment item, string subject, string body)
         {
-            ExchangeServiceExecuteWithImpersonationCheck(roomAddress, svc =>
+            ExchangeServiceExecuteWithImpersonationCheck(room.RoomAddress, svc =>
             {
                 var msg = new EmailMessage(svc);
-                msg.From = new EmailAddress(roomAddress);
-                msg.ReplyTo.Add("noreply@" + roomAddress.Split('@').Last());
+                msg.From = new EmailAddress(room.RoomAddress);
+                msg.ReplyTo.Add("noreply@" + room.RoomAddress.Split('@').Last());
                 msg.Subject = subject;
                 msg.Body = body;
                 msg.Body.BodyType = BodyType.HTML;
@@ -570,10 +515,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             });
         }
 
-        private Meeting SecurityCheck(string roomAddress, string uniqueId)
+        private Meeting SecurityCheck(IRoom room, string uniqueId)
         {
-            SecurityCheck(roomAddress);
-            var meeting = GetUpcomingAppointmentsForRoom(roomAddress).FirstOrDefault(i => i.UniqueId == uniqueId);
+            SecurityCheck(room);
+            var meeting = GetUpcomingAppointmentsForRoom(room).FirstOrDefault(i => i.UniqueId == uniqueId);
             if (null == meeting)
             {
                 __log.InfoFormat("Unable to find meeting {0}", uniqueId);
@@ -582,12 +527,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             return meeting;
         }
 
-        public void SecurityCheck(string roomAddress)
+        public void SecurityCheck(IRoom room)
         {
-            var canControl = _contextService.CurrentDevice?.ControlledRoomAddresses?.Contains(roomAddress) ?? false;
+            var canControl = _contextService.CurrentDevice?.ControlledRoomIds?.Contains(room.Id) ?? false;
             if (!canControl)
             {
-                __log.DebugFormat("Failing security check for {0}", roomAddress);
+                __log.DebugFormat("Failing security check for {0}", room.Id);
                 throw new UnauthorizedAccessException();
             }
         }
@@ -680,6 +625,31 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                     PreAuthenticate = true,
                 };
 
+        }
+
+        private RoomInfo BuildRoomInfo(string roomName, bool canControl, RoomMetadataEntity roomMetadata, BuildingEntity building, FloorEntity floor)
+        {
+            return new RoomInfo()
+            {
+                CurrentTime = _dateTimeService.Now,
+                DisplayName = (roomName ?? "").Replace("(Meeting Room ", "("),
+                CanControl = canControl,
+                Size = roomMetadata.Size,
+                BuildingId = roomMetadata.BuildingId,
+                BuildingName = building.Name,
+                FloorId = roomMetadata.FloorId,
+                Floor = floor.Number,
+                FloorName = floor.Name,
+                DistanceFromFloorOrigin = roomMetadata.DistanceFromFloorOrigin ?? new Point(),
+                Equipment = roomMetadata.Equipment,
+                HasControllableDoor = !string.IsNullOrEmpty(roomMetadata.GdoDeviceId),
+                BeaconUid = roomMetadata.BeaconUid,
+            };
+        }
+
+        private bool CanControl(IRoom room)
+        {
+            return _contextService.CurrentDevice?.ControlledRoomIds?.Contains(room.Id) ?? false;
         }
     }
 }

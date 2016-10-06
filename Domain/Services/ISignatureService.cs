@@ -1,8 +1,10 @@
+using RightpointLabs.ConferenceRoom.Domain.Models;
+
 namespace RightpointLabs.ConferenceRoom.Domain.Services
 {
     public interface ISignatureService
     {
-        string GetSignature(string input);
-        bool VerifySignature(string input, string signature);
+        string GetSignature(IRoom room, string input);
+        bool VerifySignature(IRoom room, string input, string signature);
     }
 }

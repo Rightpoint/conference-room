@@ -4,6 +4,8 @@ using System.Reflection;
 using System.Web.Http;
 using log4net;
 using RightpointLabs.ConferenceRoom.Domain;
+using RightpointLabs.ConferenceRoom.Domain.Models;
+using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 
@@ -36,49 +38,68 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <summary>
         /// Gets the info for a single room.
         /// </summary>
-        /// <param name="roomAddress">The room address returned from <see cref="RoomListController.GetRooms"/></param>
+        /// <param name="roomId">The room address returned from <see cref="RoomListController.GetRooms"/></param>
         /// <returns></returns>
-        [Route("{roomAddress}/info")]
-        public object GetInfo(string roomAddress)
+        [Route("{roomId}/info")]
+        public object GetInfo(string roomId)
         {
-            var data = _conferenceRoomService.GetInfo(roomAddress);
+            var room = _roomRepository.GetRoomInfo(roomId);
+            AssertRoomIsFromOrg(room);
+            var data = _conferenceRoomService.GetStaticInfo(room);
             return data;
         }
 
         /// <summary>
         /// Gets the status for a single room.
         /// </summary>
-        /// <param name="roomAddress">The room address returned from <see cref="RoomListController.GetRooms"/></param>
+        /// <param name="roomId">The room address returned from <see cref="RoomListController.GetRooms"/></param>
         /// <returns></returns>
-        [Route("{roomAddress}/status")]
-        public object GetStatus(string roomAddress)
+        [Route("{roomId}/status")]
+        public object GetStatus(string roomId)
         {
-            var data = _conferenceRoomService.GetStatus(roomAddress);
+            var room = _roomRepository.GetRoomInfo(roomId);
+            AssertRoomIsFromOrg(room);
+            var data = _conferenceRoomService.GetStatus(room);
             return data;
         }
 
-        /// <summary>
-        /// Marks a meeting as started
-        /// </summary>
-        /// <param name="roomAddress">The address of the room</param>
-        /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
-        /// <param name="uniqueId">The unique ID of the meeting</param>
-        [Route("{roomAddress}/meeting/start")]
-        public void PostStartMeeting(string roomAddress, string uniqueId)
+        private void AssertRoomIsFromOrg(RoomMetadataEntity room)
         {
-            _conferenceRoomService.StartMeeting(roomAddress, uniqueId);
+            if (null == room)
+            {
+                throw new ArgumentException();
+            }
+            if (room.OrganizationId != _contextService.CurrentOrganization.Id)
+            {
+                throw new AccessDeniedException("Access Denied", null);
+            }
         }
 
         /// <summary>
         /// Marks a meeting as started
         /// </summary>
-        /// <param name="roomAddress">The address of the room</param>
+        /// <param name="roomId">The address of the room</param>
+        /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
+        /// <param name="uniqueId">The unique ID of the meeting</param>
+        [Route("{roomId}/meeting/start")]
+        public void PostStartMeeting(string roomId, string uniqueId)
+        {
+            var room = _roomRepository.GetRoomInfo(roomId);
+            AssertRoomIsFromOrg(room);
+            _conferenceRoomService.StartMeeting(room, uniqueId);
+        }
+
+        /// <summary>
+        /// Marks a meeting as started
+        /// </summary>
+        /// <param name="roomId">The address of the room</param>
         /// <param name="signature">The signature of the uniqueId - indicating it's allowed to do this</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
-        [Route("{roomAddress}/meeting/startFromClient", Name = "StartFromClient")]
-        public string GetStartMeeting(string roomAddress, string uniqueId, string signature)
+        [Route("{roomId}/meeting/startFromClient", Name = "StartFromClient")]
+        public string GetStartMeeting(string roomId, string uniqueId, string signature)
         {
-            if (_conferenceRoomService.StartMeetingFromClient(roomAddress, uniqueId, signature))
+            var room = _roomRepository.GetRoomInfo(roomId);
+            if (_conferenceRoomService.StartMeetingFromClient(room, uniqueId, signature))
             {
                 return "Meeting started";
             }
@@ -92,40 +113,45 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// Warn attendees this meeting will be marked as abandoned (not started in time) very soon.
         /// A client *must* call this.  If we lost connectivity to a client at a room, we'd rather let meetings continue normally than start cancelling them with no way for people to stop it.
         /// </summary>
-        /// <param name="roomAddress">The address of the room</param>
+        /// <param name="roomId">The address of the room</param>
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
-        [Route("{roomAddress}/meeting/warnAbandon")]
-        public void PostWarnAbandonMeeting(string roomAddress, string uniqueId)
+        [Route("{roomId}/meeting/warnAbandon")]
+        public void PostWarnAbandonMeeting(string roomId, string uniqueId)
         {
-            _conferenceRoomService.WarnMeeting(roomAddress, uniqueId,
-                signature => new Uri(Request.RequestUri, Url.Route("StartFromClient", new { roomAddress, uniqueId, signature })).AbsoluteUri,
-                signature => new Uri(Request.RequestUri, Url.Route("CancelFromClient", new { roomAddress, uniqueId, signature })).AbsoluteUri);
+            var room = _roomRepository.GetRoomInfo(roomId);
+            AssertRoomIsFromOrg(room);
+            _conferenceRoomService.WarnMeeting(room, uniqueId,
+                signature => new Uri(Request.RequestUri, Url.Route("StartFromClient", new { roomId, uniqueId, signature })).AbsoluteUri,
+                signature => new Uri(Request.RequestUri, Url.Route("CancelFromClient", new { roomId, uniqueId, signature })).AbsoluteUri);
         }
 
         /// <summary>
         /// Marks a meeting as abandoned (not started in time).
         /// A client *must* call this.  If we lost connectivity to a client at a room, we'd rather let meetings continue normally than start cancelling them with no way for people to stop it.
         /// </summary>
-        /// <param name="roomAddress">The address of the room</param>
+        /// <param name="roomId">The address of the room</param>
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
-        [Route("{roomAddress}/meeting/abandon")]
-        public void PostAbandonMeeting(string roomAddress, string uniqueId)
+        [Route("{roomId}/meeting/abandon")]
+        public void PostAbandonMeeting(string roomId, string uniqueId)
         {
-            _conferenceRoomService.CancelMeeting(roomAddress, uniqueId);
+            var room = _roomRepository.GetRoomInfo(roomId);
+            AssertRoomIsFromOrg(room);
+            _conferenceRoomService.CancelMeeting(room, uniqueId);
         }
 
         /// <summary>
         /// Marks a meeting as cancelled
         /// </summary>
-        /// <param name="roomAddress">The address of the room</param>
+        /// <param name="roomId">The address of the room</param>
         /// <param name="signature">The signature of the uniqueId - indicating it's allowed to do this</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
-        [Route("{roomAddress}/meeting/abandonFromClient", Name = "CancelFromClient")]
-        public string GetCancelMeeting(string roomAddress, string uniqueId, string signature)
+        [Route("{roomId}/meeting/abandonFromClient", Name = "CancelFromClient")]
+        public string GetCancelMeeting(string roomId, string uniqueId, string signature)
         {
-            if (_conferenceRoomService.CancelMeetingFromClient(roomAddress, uniqueId, signature))
+            var room = _roomRepository.GetRoomInfo(roomId);
+            if (_conferenceRoomService.CancelMeetingFromClient(room, uniqueId, signature))
             {
                 return "Meeting abandoned";
             }
@@ -138,62 +164,62 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <summary>
         /// Start a new meeting
         /// </summary>
-        /// <param name="roomAddress">The address of the room</param>
+        /// <param name="roomId">The address of the room</param>
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         /// <param name="title">The title of the meeting</param>
         /// <param name="endTime">The time the meeting will end</param>
-        [Route("{roomAddress}/meeting/startNew")]
-        public void PostStartNewMeeting(string roomAddress, string title, DateTime endTime)
+        [Route("{roomId}/meeting/startNew")]
+        public void PostStartNewMeeting(string roomId, string title, DateTime endTime)
         {
-            _conferenceRoomService.StartNewMeeting(roomAddress, title, endTime);
+            var room = _roomRepository.GetRoomInfo(roomId);
+            AssertRoomIsFromOrg(room);
+            _conferenceRoomService.StartNewMeeting(room, title, endTime);
         }
 
         /// <summary>
         /// Marks a meeting as ended early.
         /// A client *must* call this.  If we lost connectivity to a client at a room, we'd rather let meetings continue normally than start cancelling them with no way for people to stop it.
         /// </summary>
-        /// <param name="roomAddress">The address of the room</param>
+        /// <param name="roomId">The address of the room</param>
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
-        [Route("{roomAddress}/meeting/end")]
-        public void PostEndMeeting(string roomAddress, string uniqueId)
+        [Route("{roomId}/meeting/end")]
+        public void PostEndMeeting(string roomId, string uniqueId)
         {
-            _conferenceRoomService.EndMeeting(roomAddress, uniqueId);
+            var room = _roomRepository.GetRoomInfo(roomId);
+            AssertRoomIsFromOrg(room);
+            _conferenceRoomService.EndMeeting(room, uniqueId);
         }
 
-        [Route("{roomAddress}/meeting/message")]
-        public void PostMessageMeeting(string roomAddress, string uniqueId)
+        [Route("{roomId}/meeting/message")]
+        public void PostMessageMeeting(string roomId, string uniqueId)
         {
-            _conferenceRoomService.MessageMeeting(roomAddress, uniqueId);
+            var room = _roomRepository.GetRoomInfo(roomId);
+            AssertRoomIsFromOrg(room);
+            _conferenceRoomService.MessageMeeting(room, uniqueId);
         }
 
         [Route("all/status/{buildingId}")]
         public object GetAllStatus(string buildingId)
         {
             var building = _buildingRepository.Get(buildingId ?? _contextService.CurrentDevice?.BuildingId);
-            var roomAddresses =
-                (building?.RoomListAddresses ?? new string[0])
-                    .AsParallel()
-                    .WithDegreeOfParallelism(256)
-                    .SelectMany(_conferenceRoomService.GetRoomsFromRoomList)
-                    .ToList();
+            if (null == building || building.OrganizationId != _contextService.CurrentOrganization?.Id)
+            {
+                return NotFound();
+            }
 
-            var roomInfos = _conferenceRoomService.GetInfoForRoomsInBuilding(buildingId, roomAddresses.Select(i => i.Address).ToArray());
-            var rooms =
-                roomAddresses
-                    .Select(i => new { i.Address, Info = roomInfos.TryGetValue(i.Address) })
-                    .ToList();
+            var roomInfos = _conferenceRoomService.GetInfoForRoomsInBuilding(buildingId);
             
             // ok, we have the filtered rooms list, now we need to get the status and smash it together with the room data
             return
-                rooms.AsParallel()
+                roomInfos.AsParallel()
                     .WithDegreeOfParallelism(256)
                     .Select(i =>
                     {
                         //__log.DebugFormat("Starting {0}", i.Address);
-                        var status = _conferenceRoomService.GetStatus(i.Address, true);
+                        var status = _conferenceRoomService.GetStatus(i.Value.Item2, true);
                         //__log.DebugFormat("Got {0}", i.Address);
-                        return new {i.Address, i.Info, Status = status};
+                        return new {Address = i.Key, i.Value.Item1, Status = status};
                     })
                     .ToList();
         }
@@ -201,35 +227,37 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <summary>
         /// Open a GDO
         /// </summary>
-        /// <param name="roomAddress">The address of the room</param>
+        /// <param name="roomId">The address of the room</param>
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
-        [Route("{roomAddress}/door/open")]
-        public async System.Threading.Tasks.Task PostOpenDoor(string roomAddress)
+        [Route("{roomId}/door/open")]
+        public async System.Threading.Tasks.Task PostOpenDoor(string roomId)
         {
-            _conferenceRoomService.SecurityCheck(roomAddress);
-            var info = _roomRepository.GetRoomInfo(roomAddress, _contextService.CurrentOrganization?.Id);
-            if (string.IsNullOrEmpty(info.GdoDeviceId))
+            var room = _roomRepository.GetRoomInfo(roomId);
+            AssertRoomIsFromOrg(room);
+            _conferenceRoomService.SecurityCheck(room);
+            if (string.IsNullOrEmpty(room.GdoDeviceId))
             {
                 throw new ArgumentException("No door to control");
             }
-            await _gdoService.Open(info.GdoDeviceId);
+            await _gdoService.Open(room.GdoDeviceId);
         }
 
         /// <summary>
         /// Close a GDO
         /// </summary>
-        /// <param name="roomAddress">The address of the room</param>
+        /// <param name="roomId">The address of the room</param>
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
-        [Route("{roomAddress}/door/close")]
-        public async System.Threading.Tasks.Task PostCloseDoor(string roomAddress)
+        [Route("{roomId}/door/close")]
+        public async System.Threading.Tasks.Task PostCloseDoor(string roomId)
         {
-            _conferenceRoomService.SecurityCheck(roomAddress);
-            var info = _roomRepository.GetRoomInfo(roomAddress, _contextService.CurrentOrganization?.Id);
-            if (string.IsNullOrEmpty(info?.GdoDeviceId))
+            var room = _roomRepository.GetRoomInfo(roomId);
+            AssertRoomIsFromOrg(room);
+            _conferenceRoomService.SecurityCheck(room);
+            if (string.IsNullOrEmpty(room.GdoDeviceId))
             {
                 throw new ArgumentException("No door to control");
             }
-            await _gdoService.Close(info.GdoDeviceId);
+            await _gdoService.Close(room.GdoDeviceId);
         }
     }
 }

@@ -333,11 +333,11 @@
     <Folder Include="Areas\Admin\Models\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RightpointLabs.ConferenceRoom.Domain\RightpointLabs.ConferenceRoom.Domain.csproj">
+    <ProjectReference Include="..\Domain\RightpointLabs.ConferenceRoom.Domain.csproj">
       <Project>{AD5CB851-8AAD-4C68-832C-810E2C383EA6}</Project>
       <Name>RightpointLabs.ConferenceRoom.Domain</Name>
     </ProjectReference>
-    <ProjectReference Include="..\RightpointLabs.ConferenceRoom.Infrastructure\RightpointLabs.ConferenceRoom.Infrastructure.csproj">
+    <ProjectReference Include="..\Infrastructure\RightpointLabs.ConferenceRoom.Infrastructure.csproj">
       <Project>{30948D84-111A-44B7-9FEE-3513CEA6FE3E}</Project>
       <Name>RightpointLabs.ConferenceRoom.Infrastructure</Name>
     </ProjectReference>

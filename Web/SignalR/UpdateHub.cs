@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using log4net;
 using Microsoft.AspNet.SignalR;
+using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
+using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 using RightpointLabs.ConferenceRoom.Infrastructure.Services;
 
@@ -27,8 +29,9 @@ namespace RightpointLabs.ConferenceRoom.Web.SignalR
                 var c = (IIOCContainer)scope.GetService(typeof(IIOCContainer));
                 c.RegisterInstance<ITokenProvider>(new SimpleTokenProvider(token));
                 var svc = c.Resolve<IContextService>();
+                var roomRepo = c.Resolve<IRoomMetadataRepository>();
                 var org = svc.CurrentOrganization;
-                var room = (svc.CurrentDevice?.ControlledRoomAddresses ?? new string[0]).FirstOrDefault();
+                var room = (svc.CurrentDevice?.ControlledRoomIds ?? new string[0]).Select(roomRepo.GetRoomInfo).FirstOrDefault();
 
                 var groups = new[] {GetGroupName(org), GetGroupName(org, room)}.Where(_ => _ != null).ToArray();
 
@@ -47,8 +50,9 @@ namespace RightpointLabs.ConferenceRoom.Web.SignalR
                 var c = (IIOCContainer)scope.GetService(typeof(IIOCContainer));
                 c.RegisterInstance<ITokenProvider>(new SimpleTokenProvider(token));
                 var svc = c.Resolve<IContextService>();
+                var roomRepo = c.Resolve<IRoomMetadataRepository>();
                 var org = svc.CurrentOrganization;
-                var rooms = svc.CurrentDevice?.ControlledRoomAddresses ?? new string[0];
+                var rooms = (svc.CurrentDevice?.ControlledRoomIds ?? new string[0]).Select(roomRepo.GetRoomInfo).ToList();
 
                 foreach (var room in rooms)
                 {
@@ -68,12 +72,20 @@ namespace RightpointLabs.ConferenceRoom.Web.SignalR
 
         }
 
-        public static string GetGroupName(OrganizationEntity org, string roomAddress)
+        public static string GetGroupName(OrganizationEntity org, IRoom room)
         {
-            if (null == org || string.IsNullOrEmpty(roomAddress))
+            if (null == org || null == room)
                 return null;
 
-            return $"org_{org.Id}_{roomAddress}";
+            return $"org_{org.Id}_R_{room.Id}";
+        }
+
+        public static string GetGroupName(OrganizationEntity org, DeviceEntity device)
+        {
+            if (null == org || null == device)
+                return null;
+
+            return $"org_{org.Id}_D_{device.Id}";
         }
     }
 }
