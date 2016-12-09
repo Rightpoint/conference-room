@@ -6,12 +6,7 @@
         self.isLoading = true;
 
         tokenService.tokenInfo.then(function(tokenInfo) {
-            if(!tokenInfo.controlledRooms || !tokenInfo.controlledRooms.length) {
-                $state.go('home');
-                return;
-            }
-
-            var roomAddress = tokenInfo.controlledRooms[0];
+            var roomAddress = tokenInfo && tokenInfo.controlledRooms && tokenInfo.controlledRooms.length && tokenInfo.controlledRooms[0];
 
             self.rooms = [];
             self.search = {

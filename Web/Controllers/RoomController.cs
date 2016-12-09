@@ -219,7 +219,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
                         //__log.DebugFormat("Starting {0}", i.Address);
                         var status = _conferenceRoomService.GetStatus(i.Value.Item2, true);
                         //__log.DebugFormat("Got {0}", i.Address);
-                        return new {Address = i.Key, i.Value.Item1, Status = status};
+                        return new {Address = i.Key, Info = i.Value.Item1, Status = status};
                     })
                     .ToList();
         }
