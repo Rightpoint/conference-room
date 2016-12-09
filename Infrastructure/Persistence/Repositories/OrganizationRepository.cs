@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections;
@@ -31,7 +32,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
 
         public void Save(OrganizationEntity organization)
         {
-            var result = this.Collection.Update(Query<OrganizationEntity>.Where(i => i.Id == organization.Id), Update<OrganizationEntity>.Replace(organization));
+            var result = organization.Id == null ?
+                this.Collection.Insert(organization) :
+                this.Collection.Update(Query<OrganizationEntity>.Where(i => i.Id == organization.Id), Update<OrganizationEntity>.Replace(organization), UpdateFlags.Upsert);
             AssertAffected(result, 1);
         }
     }
