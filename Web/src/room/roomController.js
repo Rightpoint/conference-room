@@ -1,7 +1,17 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('RoomController', ['Restangular', '$timeout', '$interval', '$q', '$scope', 'matchmedia', 'UpdateHub', 'timelineService', '$state', 'soundService', 'timeService', '$stateParams', function(Restangular, $timeout, $interval, $q, $scope, matchmedia, UpdateHub, timelineService, $state, soundService, timeService, $stateParams) {
+    angular.module('app').controller('RoomController', ['Restangular', '$timeout', '$interval', '$q', '$scope', 'matchmedia', 'UpdateHub', 'timelineService', '$state', 'soundService', 'timeService', '$stateParams', 'tokenService', function (Restangular, $timeout, $interval, $q, $scope, matchmedia, UpdateHub, timelineService, $state, soundService, timeService, $stateParams, tokenService) {
+
+        tokenService.tokenInfo.then(function(tokenInfo) {
+            if (!tokenInfo ||
+                !tokenInfo.controlledRooms ||
+                !tokenInfo.controlledRooms.length ||
+                !_.any(tokenInfo.controlledRooms, function(d) { return d == $stateParams.roomAddress; })) {
+                $state.go('home');
+            }
+        });
+
         var self = this;
         self.isLoading = 0;
         self.meetNowTime = 30;
