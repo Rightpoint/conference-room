@@ -25,13 +25,13 @@
 @foreach (var item in Model) {
     <tr>
         <td>
-            @buildings.TryGetValue(item.Id)
+            @item.Id
         </td>
         <td>
             @(null == item.BuildingId ? "" : buildings.TryGetValue(item.BuildingId))
         </td>
         <td>
-            @string.Join(", ", item.ControlledRoomIds.Select(_ => rooms.TryGetValue(_)))
+            @string.Join(", ", (item.ControlledRoomIds ?? new string[0]).Select(_ => rooms.TryGetValue(_)))
         </td>
         <td>
             @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
