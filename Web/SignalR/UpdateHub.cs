@@ -58,7 +58,7 @@ namespace RightpointLabs.ConferenceRoom.Web.SignalR
                 {
                     var groupName = GetGroupName(org, room);
                     log.DebugFormat("Sending ClientActive to {0}", groupName);
-                    this.Clients.Group(groupName).ClientActive(room);
+                    this.Clients.Group(groupName).ClientActive(room.Id);
                 }
             }
         }
