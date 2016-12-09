@@ -19,7 +19,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Auth
             // don't think this is thread-safe, but it's not like we're likely to get calls from different URLs interchangibly - just looking to not have to set this in each environment
             this.Options.RedirectUri = new Uri(this.Request.Uri, "/azure-ad-auth-callback").AbsoluteUri;
 
-            if ((this.Request.PathBase + this.Request.Path).ToString() == "/azure-ad-auth")
+            if ((this.Request.PathBase + this.Request.Path).ToString().TrimEnd('/') == "/azure-ad-auth")
             {
                 // see if we have the auth info we need - if so, we can send the user to /
                 if (ClaimsPrincipal.Current.Identities.Any(_ => _.IsAuthenticated && _.AuthenticationType == "AzureAdAuthCookie"))
@@ -38,7 +38,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Auth
 
         protected override Task ApplyResponseCoreAsync()
         {
-            if ((this.Request.PathBase + this.Request.Path).ToString() == "/azure-ad-auth" || this.Request.Path.StartsWithSegments(new PathString("/admin")))
+            if ((this.Request.PathBase + this.Request.Path).ToString().TrimEnd('/') == "/azure-ad-auth" || this.Request.Path.StartsWithSegments(new PathString("/admin")))
             {
                 return base.ApplyResponseCoreAsync();
             }

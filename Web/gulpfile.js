@@ -262,7 +262,7 @@ gulp.task('index-release', ['scripts-release', 'styles-release', 'resources'], f
 
 var server = args.live ? 'http://rooms.labs.rightpoint.com' : args.beta ? 'http://beta.rooms.labs.rightpoint.com' : 'http://localhost:63915'; 
 
-gulp.task('server', ['index'], function() {
+gulp.task('server', ['index'], function () {
     connect.server({ 
         livereload: { port: 8785 },
         port: PORT, 
@@ -271,6 +271,8 @@ gulp.task('server', ['index'], function() {
             return [
                 c().use('/bower_components', c.static('./bower_components')),
                 c().use('/api', proxy(url.parse(server + '/api'))),
+                c().use('/azure-ad-auth', proxy(url.parse(server + '/azure-ad-auth'))),
+                c().use('/azure-ad-auth-callback', proxy(url.parse(server + '/azure-ad-auth-callback'))),
                 c().use('/signalr', proxy(url.parse(server + '/signalr')))
             ];
         }
