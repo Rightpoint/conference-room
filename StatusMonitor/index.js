@@ -9,7 +9,7 @@ var configFile = path.join(__dirname, 'config.json');
 console.log('Loading configuration from ' + configFile);
 var config = JSON.parse(fs.readFileSync(configFile));
 
-var LedManager = require('./ledManager.js');
+var LedManager = (config.red || config.green || config.blue) ? require('./ledManager.js') : require('./fakeLedManager.js');
 var led = new LedManager(config);
 
 // test colors
@@ -29,7 +29,7 @@ setTimeout(function() {
     }, 500);
 }, 500);
 
-var deviceKeyFile = path.join(__dirname, 'devicekey');
+var deviceKeyFile = config.deviceKeyFile || path.join(__dirname, 'devicekey');
 function start() {
     if(!fs.existsSync(deviceKeyFile)) {
         console.log('creating new device key for ' + deviceKeyFile);
