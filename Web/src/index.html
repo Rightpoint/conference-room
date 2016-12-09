@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -33,10 +33,12 @@
       if(authToken.indexOf('/') >= 0) {
         authToken = null; // it's a URL, not a token
       }
+      if (authToken) {
+          angular.element(document.body).addClass('is-device');
+      }
 
       // OPTION 2: local storage (will be useful for local testing)
       authToken = authToken || (window.localStorage || { getItem: function() {} }).getItem('authToken');
-
 
       // OPTION 3: POST to /api/tokens/get to get one
       if(!authToken) {
