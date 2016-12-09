@@ -16,11 +16,17 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections
             if (connectionHandler == null) throw new ArgumentNullException("connectionHandler");
 
             // ReSharper disable once VirtualMemberCallInConstructor
-            Collection = connectionHandler.Database.GetCollection<T>(CollectionName);
+            Collection = connectionHandler.Database.GetCollection<T>(CollectionName, new MongoCollectionSettings() { AssignIdOnInsert = true});
 
             // setup serialization
             if (!BsonClassMap.IsClassMapRegistered(typeof(Entity)))
             {
+                if (!Collection.Exists())
+                {
+                    // ReSharper disable once VirtualMemberCallInConstructor
+                    Collection.Database.CreateCollection(CollectionName);
+                }
+
                 try
                 {
                     BsonClassMap.RegisterClassMap<Entity>(
