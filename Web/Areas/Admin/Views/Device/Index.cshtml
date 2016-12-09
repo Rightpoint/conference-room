@@ -17,7 +17,7 @@
             @Html.DisplayNameFor(model => model.BuildingId)
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.ControlledRoomAddresses)
+            @Html.DisplayNameFor(model => model.ControlledRoomIds)
         </th>
         <th></th>
     </tr>
@@ -31,7 +31,7 @@
             @(null == item.BuildingId ? "" : buildings.TryGetValue(item.BuildingId))
         </td>
         <td>
-            @string.Join(", ", item.ControlledRoomAddresses.Select(_ => rooms.TryGetValue(_)))
+            @string.Join(", ", item.ControlledRoomIds.Select(_ => rooms.TryGetValue(_)))
         </td>
         <td>
             @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |

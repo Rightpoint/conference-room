@@ -10,7 +10,7 @@
                 $("#@Html.IdForModel()__")
                     .select2({
                         data: data
-                    }).val("@Model.FirstOrDefault()").trigger('change');
+                    }).val("@((Model ?? new string[0]).FirstOrDefault())").trigger('change');
             }
         });
     });

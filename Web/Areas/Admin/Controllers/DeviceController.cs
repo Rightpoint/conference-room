@@ -37,7 +37,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
             ViewBag.Buildings = buildings;
             var floors = _floorRepository.GetAllByOrganization(CurrentOrganization.Id).ToDictionary(_ => _.Id, _ => _.Name);
             ViewBag.Rooms = _roomMetadataRepository.GetRoomInfosForOrganization(CurrentOrganization.Id)
-                .ToDictionary(_ => _.RoomAddress, _ => string.Format("{0} - {1} - {2}", buildings.TryGetValue(_.BuildingId), floors.TryGetValue(_.FloorId), _.RoomAddress));
+                .ToDictionary(_ => _.Id, _ => string.Format("{0} - {1} - {2}", buildings.TryGetValue(_.BuildingId), floors.TryGetValue(_.FloorId), _.RoomAddress));
             return View(_deviceRepository.GetForOrganization(CurrentOrganization.Id));
         }
 
@@ -49,8 +49,8 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
         [HttpPost]
         public ActionResult Create(DeviceEntity model)
         {
-            var building = _buildingRepository.Get(model.BuildingId);
             var room = _roomMetadataRepository.GetRoomInfo(model.ControlledRoomIds.FirstOrDefault());
+            var building = _buildingRepository.Get(model.BuildingId ?? room.BuildingId);
             if (building.OrganizationId != CurrentOrganization.Id || (model.ControlledRoomIds.Any() && (null == room || room.OrganizationId != CurrentOrganization.Id)))
             {
                 return HttpNotFound();

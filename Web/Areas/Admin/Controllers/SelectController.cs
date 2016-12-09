@@ -47,7 +47,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
             var buildings = _buildingRepository.GetAll(CurrentOrganization.Id).ToDictionary(_ => _.Id, _ => _.Name);
             var floors = _floorRepository.GetAllByOrganization(CurrentOrganization.Id).ToDictionary(_ => _.Id, _ => _.Name);
             var rooms = _roomRepository.GetRoomInfosForOrganization(CurrentOrganization.Id);
-            return Json(rooms.Select(_ => new { id = _.RoomAddress, text = string.Format("{0} - {1} - {2}", buildings.TryGetValue(_.BuildingId), floors.TryGetValue(_.FloorId), _.RoomAddress) }).OrderBy(_ => _.text), JsonRequestBehavior.AllowGet);
+            return Json(rooms.Select(_ => new { id = _.Id, text = string.Format("{0} - {1} - {2}", buildings.TryGetValue(_.BuildingId), floors.TryGetValue(_.FloorId), _.RoomAddress) }).OrderBy(_ => _.text), JsonRequestBehavior.AllowGet);
         }
     }
 }
