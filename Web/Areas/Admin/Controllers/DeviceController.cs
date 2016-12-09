@@ -108,6 +108,12 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
         public ActionResult Details(string id)
         {
             return Edit(id);
-        } 
+        }
+
+        public ActionResult Refresh(string id = null)
+        {
+            _broadcastService.BroadcastRefresh(CurrentOrganization, null == id ? null : _deviceRepository.Get(id));
+            return RedirectToAction("Index");
+        }
     }
 }

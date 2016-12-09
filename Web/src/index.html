@@ -34,6 +34,19 @@
         authToken = null; // it's a URL, not a token
       }
       if (authToken) {
+          if (window.sessionStorage) {
+              window.sessionStorage.setItem('authToken', authToken);
+          }
+      }
+
+      // OPTION 1a - sessionStorage (so we can survive a refresh on a device)
+      if (!authToken) {
+          if (window.sessionStorage) {
+              authToken = window.sessionStorage.getItem('authToken');
+          }
+      }
+
+      if (authToken) {
           angular.element(document.body).addClass('is-device');
       }
 

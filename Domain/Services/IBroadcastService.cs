@@ -7,5 +7,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Services
     {
         void BroadcastUpdate(OrganizationEntity org, IRoom room);
         void BroadcastDeviceChange(OrganizationEntity org, DeviceEntity device);
+        void BroadcastRefresh(OrganizationEntity org, DeviceEntity device = null);
     }
 }
