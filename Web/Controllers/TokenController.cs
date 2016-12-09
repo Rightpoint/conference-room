@@ -41,7 +41,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
 
             var domain = username.Split('@').Last();
             var org = _organizationRepository.GetByUserDomain(domain);
-            if (null == cp)
+            if (null == org)
             {
                 return new HttpResponseMessage(HttpStatusCode.Forbidden) { Content = new StringContent("Domain not part of any organization")};
             }
