@@ -55,7 +55,8 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
                 var orgs = _organizationRepository.GetByAdministrator(username).ToList();
                 if (!orgs.Any())
                 {
-                    filterContext.Result = new HttpStatusCodeResult(HttpStatusCode.Forbidden, "Not an admin");
+                    _globalAdministratorRepository.EnsureRecordExists(); // make sure there's a record there for the user to find (also makes sure our DB is set up)
+                    filterContext.Result = new HttpStatusCodeResult(HttpStatusCode.Forbidden, $"Not an admin ({username})");
                     return;
                 }
 

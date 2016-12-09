@@ -7,5 +7,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Repositories
     public interface IGlobalAdministratorRepository
     {
         bool IsGlobalAdmin(string username);
+        void EnsureRecordExists();
     }
 }
