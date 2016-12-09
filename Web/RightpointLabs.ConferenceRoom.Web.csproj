@@ -229,7 +229,6 @@
     <Content Include="bower.json" />
     <Content Include="package.json" />
     <None Include="Properties\PublishProfiles\local directory.pubxml" />
-    <Content Include="README.md" />
     <None Include="Scripts\jquery-3.1.0.intellisense.js" />
     <Content Include="gulpfile.js" />
     <Content Include="Scripts\jquery-3.1.0.js" />
