@@ -62,6 +62,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             IConferenceRoomDiscoveryService exchangeConferenceRoomDiscoveryService,
             ExchangeConferenceRoomServiceConfiguration config)
         {
+            if (config == null) throw new ArgumentNullException(nameof(config));
             _meetingRepository = meetingRepository;
             _broadcastService = broadcastService;
             _dateTimeService = dateTimeService;

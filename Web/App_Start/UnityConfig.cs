@@ -95,6 +95,7 @@ namespace RightpointLabs.ConferenceRoom.Web
             container.RegisterType<IOrganizationServiceConfigurationRepository, OrganizationServiceConfigurationRepository>(new HierarchicalLifetimeManager());
             container.RegisterType<IGlobalAdministratorRepository, GlobalAdministratorRepository>(new HierarchicalLifetimeManager());
             container.RegisterType<IContextService, ContextService>(new HierarchicalLifetimeManager());
+            container.RegisterType<IConferenceRoomDiscoveryService, ExchangeConferenceRoomDiscoveryService>(new HierarchicalLifetimeManager());
             container.RegisterType<ITokenService, TokenService>(new HierarchicalLifetimeManager(), new InjectionFactory(c => 
                 new TokenService(
                     ConfigurationManager.AppSettings["TokenIssuer"],

@@ -15,6 +15,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         public ExchangeServiceManager(Func<ExchangeService> connectionBuilder)
         {
+            if (connectionBuilder == null) throw new ArgumentNullException(nameof(connectionBuilder));
             _connectionBuilder = connectionBuilder;
         }
 
