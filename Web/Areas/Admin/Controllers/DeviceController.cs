@@ -3,6 +3,7 @@ using System.Web.Mvc;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
+using RightpointLabs.ConferenceRoom.Domain.Services;
 
 namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
 {
@@ -12,13 +13,15 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
         private readonly IRoomMetadataRepository _roomMetadataRepository;
         private readonly IFloorRepository _floorRepository;
         private readonly IBuildingRepository _buildingRepository;
+        private readonly IBroadcastService _broadcastService;
 
-        public DeviceController(IDeviceRepository deviceRepository, IRoomMetadataRepository roomMetadataRepository, IFloorRepository floorRepository, IBuildingRepository buildingRepository, IOrganizationRepository organizationRepository, IGlobalAdministratorRepository globalAdministratorRepository) : base(organizationRepository, globalAdministratorRepository)
+        public DeviceController(IDeviceRepository deviceRepository, IRoomMetadataRepository roomMetadataRepository, IFloorRepository floorRepository, IBuildingRepository buildingRepository, IBroadcastService broadcastService, IOrganizationRepository organizationRepository, IGlobalAdministratorRepository globalAdministratorRepository) : base(organizationRepository, globalAdministratorRepository)
         {
             _deviceRepository = deviceRepository;
             _roomMetadataRepository = roomMetadataRepository;
             _floorRepository = floorRepository;
             _buildingRepository = buildingRepository;
+            _broadcastService = broadcastService;
         }
 
         protected override void OnAuthorization(AuthorizationContext filterContext)
@@ -70,7 +73,8 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
                 return HttpNotFound();
             }
 
-            var room = _roomMetadataRepository.GetRoomInfo(model.ControlledRoomIds.FirstOrDefault());
+            var roomId = (model.ControlledRoomIds ?? new string[0]).FirstOrDefault();
+            var room = null == roomId ? null : _roomMetadataRepository.GetRoomInfo(roomId);
             ViewBag.Building = _buildingRepository.Get(model.BuildingId)?.Name;
             ViewBag.Floor = _floorRepository.Get(room?.FloorId)?.Name;
             ViewBag.Room = room?.RoomAddress;
@@ -86,8 +90,9 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
                 return HttpNotFound();
             }
 
-            var room = _roomMetadataRepository.GetRoomInfo(model.ControlledRoomIds.FirstOrDefault());
-            if (model.ControlledRoomIds.Any() && (null == room || room.OrganizationId != CurrentOrganization.Id))
+            var roomId = (model.ControlledRoomIds ?? new string[0]).FirstOrDefault();
+            var room = roomId == null ? null : _roomMetadataRepository.GetRoomInfo(roomId);
+            if ((model.ControlledRoomIds ?? new string[0]).Any() && (null == room || room.OrganizationId != CurrentOrganization.Id))
             {
                 return HttpNotFound();
             }
@@ -96,6 +101,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
             model.BuildingId = room?.BuildingId;
 
             _deviceRepository.Update(model);
+            _broadcastService.BroadcastDeviceChange(CurrentOrganization, model);
             return RedirectToAction("Index");
         }
 

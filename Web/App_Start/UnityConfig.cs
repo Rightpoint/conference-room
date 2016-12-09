@@ -204,6 +204,15 @@ namespace RightpointLabs.ConferenceRoom.Web
 
                 context.Clients.Group(groupName).Update(room.Id);
             }
+
+            public void BroadcastDeviceChange(OrganizationEntity org, DeviceEntity device)
+            {
+                var context = _connectionManager.GetHubContext<UpdateHub>();
+                var groupName = UpdateHub.GetGroupName(org, device);
+                log.DebugFormat("Broadcasting update to {0} for {1}", groupName, device.Id);
+
+                context.Clients.Group(groupName).DeviceChanged(device.Id);
+            }
         }
     }
 }

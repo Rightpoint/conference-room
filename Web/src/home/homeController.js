@@ -1,7 +1,8 @@
 (function() {
     'use strict;'
 
-    angular.module('app').controller('HomeController', ['tokenService', '$state', '$scope', function(tokenService, $state, $scope) {
+    angular.module('app').controller('HomeController', ['tokenService', '$state', '$scope', 'UpdateHub', function (tokenService, $state, $scope, UpdateHub) {
+        // just asking for UpdateHub so we have the signalR pipeline set up
         var self = this;
         self.isLoading = true;
         self.device = null;

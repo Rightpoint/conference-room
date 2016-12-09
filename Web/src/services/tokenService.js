@@ -14,7 +14,7 @@
         }
         updateTokenInfo();
 
-        $rootScope.$on('deviceChanged', function(device) {
+        $rootScope.$on('deviceChanged', function(evt, device) {
             obj.tokenInfo.then(function(ti) {
                 if(ti.device == device) {
                     updateTokenInfo();

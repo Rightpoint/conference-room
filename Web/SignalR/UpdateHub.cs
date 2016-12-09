@@ -33,7 +33,7 @@ namespace RightpointLabs.ConferenceRoom.Web.SignalR
                 var org = svc.CurrentOrganization;
                 var room = (svc.CurrentDevice?.ControlledRoomIds ?? new string[0]).Select(roomRepo.GetRoomInfo).FirstOrDefault();
 
-                var groups = new[] {GetGroupName(org), GetGroupName(org, room)}.Where(_ => _ != null).ToArray();
+                var groups = new[] {GetGroupName(org), GetGroupName(org, room), GetGroupName(org, svc.CurrentDevice)}.Where(_ => _ != null).ToArray();
 
                 foreach (var group in groups)
                 {

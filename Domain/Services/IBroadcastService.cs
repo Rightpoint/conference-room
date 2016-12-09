@@ -6,5 +6,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Services
     public interface IBroadcastService
     {
         void BroadcastUpdate(OrganizationEntity org, IRoom room);
+        void BroadcastDeviceChange(OrganizationEntity org, DeviceEntity device);
     }
 }
