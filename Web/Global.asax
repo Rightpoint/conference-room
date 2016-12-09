@@ -1,1 +1,1 @@
-﻿<%@ Application Codebehind="Global.asax.cs" Inherits="RightpointLabs.ConferenceRoom.Services.WebApiApplication" Language="C#" %>
+﻿<%@ Application Codebehind="Global.asax.cs" Inherits="RightpointLabs.ConferenceRoom.Web.WebApiApplication" Language="C#" %>
