@@ -51,9 +51,16 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         public Task<string> GetRoomName(string roomAddress)
         {
-            return _simpleTimedCache.GetCachedValue("RoomInfo_" + roomAddress,
-                TimeSpan.FromHours(24),
-                () => Task.FromResult(_exchangeServiceManager.Execute(roomAddress, svc => svc.ResolveName(roomAddress).SingleOrDefault()?.Mailbox?.Name)));
+            try
+            {
+                return _simpleTimedCache.GetCachedValue("RoomInfo_" + roomAddress,
+                    TimeSpan.FromHours(24),
+                    () => Task.FromResult(_exchangeServiceManager.Execute(roomAddress, svc => svc.ResolveName(roomAddress).SingleOrDefault()?.Mailbox?.Name)));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Cannot get name of {roomAddress}", ex);
+            }
         }
     }
 }
