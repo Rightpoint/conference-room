@@ -6,6 +6,7 @@ using System.ServiceModel.Channels;
 using System.Web;
 using System.Web.Http.Filters;
 using log4net;
+using Microsoft.ApplicationInsights;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Web.Controllers;
 
@@ -31,6 +32,18 @@ namespace RightpointLabs.ConferenceRoom.Web.Attributes
 
             try
             {
+                if (actionExecutedContext.Exception != null)
+                {
+                    try
+                    {
+                        new TelemetryClient().TrackException(actionExecutedContext.Exception);
+                    }
+                    catch
+                    {
+                        // ignore errors reporting errors
+                    }
+                }
+
                 var baseController = actionExecutedContext.ActionContext.ControllerContext.Controller as BaseController;
 
                 if (baseController != null)
