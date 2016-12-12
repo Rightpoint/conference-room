@@ -54,8 +54,8 @@
         overflow-x: scroll;
         overflow-y: hidden;
 
-        /** hide scrolbar **/
-        &::-webkit-scrollbar {
+        /** hide scrolbar on a device **/
+        body.is-device &::-webkit-scrollbar {
             display: none;
         }
 
