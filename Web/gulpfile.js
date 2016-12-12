@@ -323,3 +323,6 @@ gulp.task('default', function(callback) {
 gulp.task('release', function(callback) {
     return runSequence('clean', 'open-release', callback);
 });
+gulp.task('release-only', function (callback) {
+    return runSequence('clean', 'index-release', callback);
+});

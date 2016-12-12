@@ -203,3 +203,4 @@ FakesAssemblies/
 /Web/App_Data/*.xml
 /StatusMonitor/.idea
 /Web/custom-icons.css
+/Web/Web.Release.config
