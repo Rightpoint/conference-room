@@ -100,7 +100,9 @@ namespace RightpointLabs.ConferenceRoom.Web
                 new TokenService(
                     ConfigurationManager.AppSettings["TokenIssuer"],
                     ConfigurationManager.AppSettings["TokenAudience"],
-                    ConfigurationManager.AppSettings["TokenKey"])));
+                    ConfigurationManager.AppSettings["TokenKey"],
+                    c.Resolve<OpenIdConnectConfigurationService>())));
+            container.RegisterType<OpenIdConnectConfigurationService>(new ContainerControlledLifetimeManager());
 
             container.RegisterType<IIOCContainer, UnityIOCContainer>(new TransientLifetimeManager(), new InjectionFactory(c => new UnityIOCContainer(c, false)));
             container.RegisterType<ITokenProvider, HttpTokenProvider>(new HierarchicalLifetimeManager());

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IdentityModel.Tokens;
+using System.Linq;
 using System.Web;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
@@ -63,6 +64,16 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             if (string.IsNullOrEmpty(id))
             {
                 id = CurrentDevice?.OrganizationId;
+            }
+            if (string.IsNullOrEmpty(id))
+            {
+                var username = this.UserId;
+                if (!string.IsNullOrEmpty(username))
+                {
+                    var domain = username.Split('@').Last();
+                    var org = _organizationRepository.GetByUserDomain(domain);
+                    id = org?.Id;
+                }
             }
             if (string.IsNullOrEmpty(id))
             {
