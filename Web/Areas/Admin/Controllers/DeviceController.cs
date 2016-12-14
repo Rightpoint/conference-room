@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Web.Mvc;
 using RightpointLabs.ConferenceRoom.Domain;
+using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
@@ -14,14 +16,16 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
         private readonly IFloorRepository _floorRepository;
         private readonly IBuildingRepository _buildingRepository;
         private readonly IBroadcastService _broadcastService;
+        private readonly IDeviceStatusRepository _deviceStatusRepository;
 
-        public DeviceController(IDeviceRepository deviceRepository, IRoomMetadataRepository roomMetadataRepository, IFloorRepository floorRepository, IBuildingRepository buildingRepository, IBroadcastService broadcastService, IOrganizationRepository organizationRepository, IGlobalAdministratorRepository globalAdministratorRepository) : base(organizationRepository, globalAdministratorRepository)
+        public DeviceController(IDeviceRepository deviceRepository, IRoomMetadataRepository roomMetadataRepository, IFloorRepository floorRepository, IBuildingRepository buildingRepository, IBroadcastService broadcastService, IDeviceStatusRepository deviceStatusRepository, IOrganizationRepository organizationRepository, IGlobalAdministratorRepository globalAdministratorRepository) : base(organizationRepository, globalAdministratorRepository)
         {
             _deviceRepository = deviceRepository;
             _roomMetadataRepository = roomMetadataRepository;
             _floorRepository = floorRepository;
             _buildingRepository = buildingRepository;
             _broadcastService = broadcastService;
+            _deviceStatusRepository = deviceStatusRepository;
         }
 
         protected override void OnAuthorization(AuthorizationContext filterContext)
@@ -114,6 +118,18 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
         {
             _broadcastService.BroadcastRefresh(CurrentOrganization, null == id ? null : _deviceRepository.Get(id));
             return RedirectToAction("Index");
+        }
+
+        public ActionResult Status(string id)
+        {
+            var device = _deviceRepository.Get(id);
+            if (null == device || device.OrganizationId != CurrentOrganization.Id)
+            {
+                return HttpNotFound();
+            }
+
+            var data = _deviceStatusRepository.GetRange(device.OrganizationId, device.Id, DateTime.UtcNow.AddHours(-4), DateTime.UtcNow);
+            return View(new Tuple<DeviceEntity, DeviceStatus[]>(device, data.ToArray()));
         }
     }
 }

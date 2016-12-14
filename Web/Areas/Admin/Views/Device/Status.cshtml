@@ -1,0 +1,35 @@
+﻿@model Tuple<RightpointLabs.ConferenceRoom.Domain.Models.Entities.DeviceEntity, RightpointLabs.ConferenceRoom.Domain.Models.DeviceStatus[]>
+
+<h4>@Model.Item1.Id</h4>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>StatusTimestamp</th>
+        <th>Temperature1</th>
+        <th>Temperature2</th>
+        <th>Temperature3</th>
+        <th>Voltage1</th>
+        <th>Voltage2</th>
+        <th>Voltage3</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var row in Model.Item2)
+    {
+        <tr>
+            <td>@row.StatusTimestamp</td>
+            <td>@row.Temperature1</td>
+            <td>@row.Temperature2</td>
+            <td>@row.Temperature3</td>
+            <td>@row.Voltage1</td>
+            <td>@row.Voltage2</td>
+            <td>@row.Voltage3</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>

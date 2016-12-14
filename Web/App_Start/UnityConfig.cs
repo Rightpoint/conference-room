@@ -103,6 +103,10 @@ namespace RightpointLabs.ConferenceRoom.Web
                     ConfigurationManager.AppSettings["TokenKey"],
                     c.Resolve<OpenIdConnectConfigurationService>())));
             container.RegisterType<OpenIdConnectConfigurationService>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IDeviceStatusRepository, DeviceStatusRepository>(new HierarchicalLifetimeManager(), new InjectionFactory(c => 
+                new DeviceStatusRepository(
+                    ConfigurationManager.ConnectionStrings["AzureStorage"]?.ConnectionString,
+                    ConfigurationManager.AppSettings["DeviceStatusTableName"])));
 
             container.RegisterType<IIOCContainer, UnityIOCContainer>(new TransientLifetimeManager(), new InjectionFactory(c => new UnityIOCContainer(c, false)));
             container.RegisterType<ITokenProvider, HttpTokenProvider>(new HierarchicalLifetimeManager());
