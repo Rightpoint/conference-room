@@ -11,5 +11,15 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
         public string OrganizationId { get; set; }
         public string BuildingId { get; set; }
         public string[] ControlledRoomIds { get; set; }
+        public DeviceState ReportedState { get; set; }
+
+        public class DeviceState
+        {
+            public string Hostname { get; set; }
+            public string[] Addresses { get; set; }
+            public DateTime ReportedLocalTime { get; set; }
+            public DateTime ReportedUtcTime { get; set; }
+            public DateTime ServerUtcTime { get; set; }
+        }
     }
 }

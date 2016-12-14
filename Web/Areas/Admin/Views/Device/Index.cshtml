@@ -19,6 +19,10 @@
         <th>
             @Html.DisplayNameFor(model => model.ControlledRoomIds)
         </th>
+        <th>Hostname</th>
+        <th>Addresses</th>
+        <th>Skew</th>
+        <th>TZ</th>
         <th></th>
     </tr>
 
@@ -33,6 +37,21 @@
         <td>
             @string.Join(", ", (item.ControlledRoomIds ?? new string[0]).Select(_ => rooms.TryGetValue(_)))
         </td>
+        @if (item.ReportedState == null)
+        {
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        }
+        else
+        {
+            <td>@item.ReportedState.Hostname</td>
+            <td>@string.Join(", ", item.ReportedState.Addresses))</td>
+            <td>@item.ReportedState.ServerUtcTime.Subtract(item.ReportedState.ReportedUtcTime)</td>
+            <td>@item.ReportedState.ServerUtcTime.Subtract(item.ReportedState.ReportedLocalTime)</td>
+        }
         <td>
             @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
             @Html.ActionLink("Details", "Details", new { id=item.Id }) |
