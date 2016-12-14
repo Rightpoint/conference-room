@@ -72,7 +72,7 @@ module.exports = function execute(config, led) {
         console.log('controlling room', room);
 
         sendStatus();
-        setTimeout(sendStatus, 60000);
+        setInterval(sendStatus, 60000);
 
         if(config.bluetooth) {
             var beacon = require('eddystone-beacon');
