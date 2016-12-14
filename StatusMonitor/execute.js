@@ -8,10 +8,51 @@ var jwt_decode = require('jwt-decode');
 var Backlight = require('./backlight');
 var execSync = require('child_process').execSync;
 var querystring = require('querystring');
+var os = require('os');
 
 module.exports = function execute(config, led) {
     var backlight = new Backlight(config.backlight);
     var deviceToken = jwt_decode(config.deviceKey);
+
+    function sendState() {
+        var d = new Date();
+        var obj = { 
+            addresses: [], 
+            hostname: os.hostname(),
+            reportedTimezoneOffset: d.getTimezoneOffset(),
+            reportedUtcTime: d.toJSON()
+        };
+        var iff = os.networkInterfaces();
+        for(var i in iff) {
+            for(var x in iff[i]) {
+                var f = iff[i][x];
+                if(f.internal)
+                    continue;
+                if(f.address)
+                    obj.addresses.push(f.address);
+                if(f.mac)
+                    obj.addresses.push(f.mac);
+            }
+        }
+        console.log(obj);
+        return new Promise(function(resolve, reject) {
+            var options = url.parse(config.apiServer + "/devices/state");
+            options.method = "POST";
+            var pData = JSON.stringify(obj);
+            options.headers = { 
+                Authorization: "Bearer " + config.deviceKey,
+                'Content-Type': 'application/json',
+                'Content-length': Buffer.byteLength(pData)
+            };
+            var req = http.request(options, function(e) {
+                data = "";
+                e.on('data', function(c) { data += String(c); });
+                e.on('end', function() { resolve(data); });
+            });
+            req.write(pData);
+            req.end();
+        }).then(function(data) { if(data) { console.log(data); } });
+    }
 
     function sendStatus() {
         if(!config.status) {
@@ -45,7 +86,7 @@ module.exports = function execute(config, led) {
             });
             req.write(pData);
             req.end();
-        });
+        }).then(function(data) { if(data) { console.log(data); } });
     }
 
     function getTokenInfo() {
@@ -58,7 +99,7 @@ module.exports = function execute(config, led) {
                 e.on('data', function(c) { data += String(c); });
                 e.on('end', function() { resolve(JSON.parse(data)); });
             }).end();
-        })
+        });
     }
 
     getTokenInfo().then(function(tokenInfo) {
@@ -71,6 +112,7 @@ module.exports = function execute(config, led) {
         var room = tokenInfo.controlledRooms[0];
         console.log('controlling room', room);
 
+        sendState();
         sendStatus();
         setInterval(sendStatus, 60000);
 
