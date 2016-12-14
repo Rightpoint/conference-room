@@ -7,12 +7,16 @@ module.exports = function Backlight(config) {
     }
     function on() {
         var value = isPeak() ? config.on : config.onOffPeak || config.on;
-        fs.writeFileSync(config.controlFile, value, "utf8");
+        try {
+            fs.writeFileSync(config.controlFile, value, "utf8");
+        } catch (e) {}
     }
     function off() {
         var value = isPeak() ? config.off : config.offOffPeak || config.off;
 
-        fs.writeFileSync(config.controlFile, value, "utf8");
+        try {
+            fs.writeFileSync(config.controlFile, value, "utf8");
+        } catch (e) {}
     }
 
     function poll() {

@@ -1,5 +1,5 @@
 var fs = require('fs');
-var http = require('http');
+var http = require('https');
 var url = require('url');
 var Promise = require('promise');
 var signalR = require('signalr-client');
