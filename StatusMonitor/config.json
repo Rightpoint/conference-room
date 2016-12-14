@@ -23,5 +23,9 @@
         "offOffPeak": "30",
         "peakStart": 7,
         "peakEnd": 18
+    },
+    "status": {
+        "temperature1": "echo \"scale=3; $(cat /sys/class/thermal/thermal_zone0/temp)/1000\" | bc",
+        "temperature2": "/opt/vc/bin/vcgencmd measure_temp | sed s/[^0-9.]*//g"
     }
 }
