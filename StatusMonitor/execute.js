@@ -6,10 +6,47 @@ var signalR = require('signalr-client');
 var path = require('path');
 var jwt_decode = require('jwt-decode');
 var Backlight = require('./backlight');
+var execSync = require('child_process').execSync;
+var querystring = require('querystring');
 
 module.exports = function execute(config, led) {
     var backlight = new Backlight(config.backlight);
     var deviceToken = jwt_decode(config.deviceKey);
+
+    function sendStatus() {
+        if(!config.status) {
+            return;
+        }
+        var obj = {};
+        var keys = ['temperature1', 'temperature2', 'temperature3', 'voltage1', 'voltage2', 'voltage3'];
+        for(var i in keys) {
+            if(config.status[keys[i]]) {
+                try {
+                    obj[keys[i]] = execSync(config.status[keys[i]]).toString().replace('\n', '');
+
+                } catch(e) {
+                    console.error("Unable to run", keys[i], e);
+                }
+            }
+        }
+        return new Promise(function(resolve, reject) {
+            var options = url.parse(config.apiServer + "/devices/status");
+            options.method = "POST";
+            var pData = JSON.stringify(obj);
+            options.headers = { 
+                Authorization: "Bearer " + config.deviceKey,
+                'Content-Type': 'application/json',
+                'Content-length': Buffer.byteLength(pData)
+            };
+            var req = http.request(options, function(e) {
+                data = "";
+                e.on('data', function(c) { data += String(c); });
+                e.on('end', function() { resolve(data); });
+            });
+            req.write(pData);
+            req.end();
+        });
+    }
 
     function getTokenInfo() {
         return new Promise(function(resolve, reject) {
@@ -33,6 +70,9 @@ module.exports = function execute(config, led) {
 
         var room = tokenInfo.controlledRooms[0];
         console.log('controlling room', room);
+
+        sendStatus();
+        setTimeout(sendStatus, 60000);
 
         if(config.bluetooth) {
             var beacon = require('eddystone-beacon');
