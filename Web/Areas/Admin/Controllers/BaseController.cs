@@ -62,6 +62,10 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
 
                 IsGlobalAdmin = false;
                 CurrentOrganization = orgs.SingleOrDefault(i => i.Id == Session[SelectedOrganizationIdKey] as string);
+                if (null == CurrentOrganization && orgs.Count == 1)
+                {
+                    CurrentOrganization = orgs.Single();
+                }
                 MyOrganizations = new Lazy<List<OrganizationEntity>>(() => orgs);
             }
 
