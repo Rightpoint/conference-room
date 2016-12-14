@@ -66,7 +66,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             }
 
             device.ReportedState = state;
-            device.ReportedState.ReportedUtcTime = DateTime.UtcNow;
+            device.ReportedState.ServerUtcTime = DateTime.UtcNow;
             _deviceRepository.Update(device);
 
             return new HttpResponseMessage(HttpStatusCode.OK);

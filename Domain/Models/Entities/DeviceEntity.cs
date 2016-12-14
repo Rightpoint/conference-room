@@ -17,7 +17,7 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
         {
             public string Hostname { get; set; }
             public string[] Addresses { get; set; }
-            public DateTime ReportedLocalTime { get; set; }
+            public int ReportedTimezoneOffset { get; set; }
             public DateTime ReportedUtcTime { get; set; }
             public DateTime ServerUtcTime { get; set; }
         }

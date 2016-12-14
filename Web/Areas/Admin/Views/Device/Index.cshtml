@@ -48,9 +48,9 @@
         else
         {
             <td>@item.ReportedState.Hostname</td>
-            <td>@string.Join(", ", item.ReportedState.Addresses))</td>
+            <td>@string.Join(", ", item.ReportedState.Addresses)</td>
             <td>@item.ReportedState.ServerUtcTime.Subtract(item.ReportedState.ReportedUtcTime)</td>
-            <td>@item.ReportedState.ServerUtcTime.Subtract(item.ReportedState.ReportedLocalTime)</td>
+            <td>@item.ReportedState.ReportedTimezoneOffset</td>
         }
         <td>
             @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
