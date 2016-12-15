@@ -17,5 +17,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
         {
             return GetById(organizationId, serviceName);
         }
+
+        protected override string GetRowKey(OrganizationServiceConfigurationEntity entity)
+        {
+            return entity.ServiceName;
+        }
     }
 }

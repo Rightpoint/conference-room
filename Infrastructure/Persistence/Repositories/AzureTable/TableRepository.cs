@@ -27,17 +27,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
 
         public void Insert(T item)
         {
-            if (string.IsNullOrEmpty(item.Id))
-                item.Id = Guid.NewGuid().ToString();
-            item.LastModified = DateTime.UtcNow;
-
-            _table.Execute(TableOperation.Insert(ToTableEntity(item)));
+            Upsert(item);
         }
 
         public void Update(T item)
         {
-            item.LastModified = DateTime.UtcNow;
-            _table.Execute(TableOperation.Replace(ToTableEntity(item)));
+            Upsert(item);
         }
 
         public void Upsert(T item)
@@ -79,7 +74,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
             if (null == entity)
                 return null;
 
-            var tableEntity = new DynamicTableEntity(GetPartitionKey(entity), GetRowKey(entity));
+            var tableEntity = new DynamicTableEntity(GetPartitionKey(entity), GetRowKey(entity)) { ETag = "*" };
             tableEntity.Properties.Add("Data", new EntityProperty(BuildJObject(entity).ToString(Formatting.None)));
             return tableEntity;
         }

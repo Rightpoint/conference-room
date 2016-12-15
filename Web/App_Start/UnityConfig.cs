@@ -13,6 +13,7 @@ using Microsoft.Exchange.WebServices.Data;
 using Microsoft.Practices.Unity;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
+using Newtonsoft.Json.Linq;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
@@ -48,35 +49,35 @@ namespace RightpointLabs.ConferenceRoom.Web
                     c =>
                         CreateOrganizationalService(c, "Exchange",
                             _ => new ExchangeConferenceRoomServiceConfiguration() {
-                                IgnoreFree = _.IgnoreFree,
-                                ImpersonateForAllCalls = _.ImpersonateForAllCalls,
-                                UseChangeNotification = _.UseChangeNotification,
-                                EmailDomains = ((IEnumerable)_.EmailDomains).Cast<string>().ToArray(),
+                                IgnoreFree = (bool)_.IgnoreFree.Value,
+                                ImpersonateForAllCalls = (bool)_.ImpersonateForAllCalls.Value,
+                                UseChangeNotification = (bool)_.UseChangeNotification.Value,
+                                EmailDomains = ((JArray)_.EmailDomains).Select(i => i.Value<string>()).ToArray(),
                             })));
 
             container.RegisterType<Func<ExchangeService>>(new HierarchicalLifetimeManager(),
                 new InjectionFactory(
                     c =>
                         CreateOrganizationalService(c, "Exchange",
-                            _ => ExchangeConferenceRoomService.GetExchangeServiceBuilder(_.Username, _.Password, _.ServiceUrl))));
+                            _ => ExchangeConferenceRoomService.GetExchangeServiceBuilder((string)_.Username.Value, (string)_.Password.Value, (string)_.ServiceUrl.Value))));
 
             container.RegisterType<IInstantMessagingService>(new HierarchicalLifetimeManager(),
                 new InjectionFactory(
                     c =>
                         CreateOrganizationalService(c, "Exchange",
-                            _ => new InstantMessagingService(_.Username, _.Password))));
+                            _ => new InstantMessagingService((string)_.Username.Value, (string)_.Password.Value))));
 
             container.RegisterType<ISmsMessagingService>(new HierarchicalLifetimeManager(),
                 new InjectionFactory(
                     c =>
                         CreateOrganizationalService(c, "Plivo",
-                            _ => new SmsMessagingService(_.AuthId, _.AuthToken, _.From))));
+                            _ => new SmsMessagingService((string)_.AuthId.Value, (string)_.AuthToken.Value, (string)_.From.Value))));
 
             container.RegisterType<IGdoService>(new ContainerControlledLifetimeManager(),
                 new InjectionFactory(
                     c =>
                         CreateOrganizationalService(c, "GDO",
-                            _ => new GdoService(new Uri(_.BaseUrl), _.ApiKey, _.Username, _.Password))));
+                            _ => new GdoService(new Uri((string)_.BaseUrl.Value), (string)_.ApiKey.Value, (string)_.Username.Value, (string)_.Password.Value))));
 
             container.RegisterType<IBroadcastService, SignalrBroadcastService>(new HierarchicalLifetimeManager());
             container.RegisterType<IConnectionManager>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => GlobalHost.ConnectionManager));
