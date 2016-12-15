@@ -14,7 +14,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
 
         public DeviceStatusRepository(CloudTableClient client)
         {
-            _table = client.GetTableReference("DeviceStatus");
+            _table = client.GetTableReference("DeviceStatusEntity");
             _table.CreateIfNotExists();
         }
         

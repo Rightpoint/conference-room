@@ -27,7 +27,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
 
         public IEnumerable<DeviceEntity> GetForOrganization(string organizationId)
         {
-            return this.GetForOrganization(organizationId);
+            return GetAll(organizationId);
         }
     }
 }
