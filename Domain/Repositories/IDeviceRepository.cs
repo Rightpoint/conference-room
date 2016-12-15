@@ -4,7 +4,7 @@ using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
 namespace RightpointLabs.ConferenceRoom.Domain.Repositories
 {
-    public interface IDeviceRepository
+    public interface IDeviceRepository : IRepository
     {
         DeviceEntity Create(DeviceEntity entity);
 

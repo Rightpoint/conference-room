@@ -4,7 +4,7 @@ using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
 namespace RightpointLabs.ConferenceRoom.Domain.Repositories
 {
-    public interface IRoomMetadataRepository
+    public interface IRoomMetadataRepository : IRepository
     {
         RoomMetadataEntity GetRoomInfo(string roomId);
         IEnumerable<RoomMetadataEntity> GetRoomInfosForBuilding(string buildingId);

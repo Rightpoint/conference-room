@@ -4,7 +4,7 @@ using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
 namespace RightpointLabs.ConferenceRoom.Domain.Repositories
 {
-    public interface IOrganizationRepository
+    public interface IOrganizationRepository : IRepository
     {
         OrganizationEntity Get(string organizationId);
 

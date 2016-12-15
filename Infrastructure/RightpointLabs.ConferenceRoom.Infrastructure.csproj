@@ -54,20 +54,20 @@
       <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Azure.KeyVault.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Azure.KeyVault.Core.1.0.0\lib\net40\Microsoft.Azure.KeyVault.Core.dll</HintPath>
+    <Reference Include="Microsoft.Azure.KeyVault.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Azure.KeyVault.Core.2.0.4\lib\net45\Microsoft.Azure.KeyVault.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Data.Edm, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Data.Edm.5.6.4\lib\net40\Microsoft.Data.Edm.dll</HintPath>
+    <Reference Include="Microsoft.Data.Edm, Version=5.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.Edm.5.8.1\lib\net40\Microsoft.Data.Edm.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Data.OData, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Data.OData.5.6.4\lib\net40\Microsoft.Data.OData.dll</HintPath>
+    <Reference Include="Microsoft.Data.OData, Version=5.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.OData.5.8.1\lib\net40\Microsoft.Data.OData.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Data.Services.Client, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Data.Services.Client.5.6.4\lib\net40\Microsoft.Data.Services.Client.dll</HintPath>
+    <Reference Include="Microsoft.Data.Services.Client, Version=5.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.Services.Client.5.8.1\lib\net40\Microsoft.Data.Services.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Exchange.WebServices, Version=15.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -94,22 +94,6 @@
       <HintPath>..\packages\WindowsAzure.Storage.7.2.1\lib\net40\Microsoft.WindowsAzure.Storage.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MongoDB.Bson, Version=2.3.0.157, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MongoDB.Bson.2.3.0\lib\net45\MongoDB.Bson.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MongoDB.Driver, Version=2.3.0.157, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MongoDB.Driver.2.3.0\lib\net45\MongoDB.Driver.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MongoDB.Driver.Core, Version=2.3.0.157, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MongoDB.Driver.Core.2.3.0\lib\net45\MongoDB.Driver.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MongoDB.Driver.Legacy, Version=2.3.0.157, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\mongocsharpdriver.2.3.0\lib\net45\MongoDB.Driver.Legacy.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -131,8 +115,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Spatial, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Spatial.5.6.4\lib\net40\System.Spatial.dll</HintPath>
+    <Reference Include="System.Spatial, Version=5.8.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Spatial.5.8.1\lib\net40\System.Spatial.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Web" />
@@ -144,30 +128,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\ExchangeConferenceRoomServiceConfiguration.cs" />
-    <Compile Include="Persistence\Collections\FloorEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\GlobalAdministratorEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\OrganizationServiceConfigurationEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\OrganizationEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\DeviceEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\BuildingEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\RoomMetadataEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\SecurityRequestCollectionDefinition.cs" />
-    <Compile Include="Persistence\Models\SecurityRequest.cs" />
-    <Compile Include="Persistence\Repositories\DeviceStatusRepository.cs" />
-    <Compile Include="Persistence\Repositories\FloorRepository.cs" />
-    <Compile Include="Persistence\Repositories\GlobalAdministratorRepository.cs" />
-    <Compile Include="Persistence\Repositories\OrganizationRepository.cs" />
-    <Compile Include="Persistence\Repositories\OrganizationServiceConfigurationRepository.cs" />
-    <Compile Include="Persistence\Repositories\DeviceRepository.cs" />
-    <Compile Include="Persistence\Repositories\BuildingRepository.cs" />
-    <Compile Include="Persistence\Repositories\RoomMetadataRepository.cs" />
-    <Compile Include="Persistence\Repositories\MeetingRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\BuildingRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\DeviceRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\FloorRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\GlobalAdministratorRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\MeetingRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\OrganizationRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\OrganizationServiceConfigurationRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\RoomMetadataRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\TableByOrganizationRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\TableRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\DeviceStatusRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Persistence\Collections\MeetingEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\EntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Repositories\EntityRepository.cs" />
-    <Compile Include="Persistence\IMongoConnectionHandler.cs" />
-    <Compile Include="Persistence\MongoConnectionHandler.cs" />
     <Compile Include="Services\ContextService.cs" />
     <Compile Include="Services\ChangeNotificationService.cs" />
     <Compile Include="Services\ConnectionManager.cs" />
@@ -198,6 +170,7 @@
       <Name>RightpointLabs.ConferenceRoom.Domain</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -4,7 +4,7 @@ using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
 namespace RightpointLabs.ConferenceRoom.Domain.Repositories
 {
-    public interface IFloorRepository
+    public interface IFloorRepository : IRepository
     {
         FloorEntity Get(string floorId);
         IEnumerable<FloorEntity> GetAllByOrganization(string organizationId);

@@ -3,13 +3,13 @@ using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
 namespace RightpointLabs.ConferenceRoom.Domain.Repositories
 {
-    public interface IMeetingRepository
+    public interface IMeetingRepository : IRepository
     {
-        MeetingEntity GetMeetingInfo(string uniqueId);
-        MeetingEntity[] GetMeetingInfo(string[] uniqueIds);
-        void StartMeeting(string uniqueId);
-        void CancelMeeting(string uniqueId);
-        void EndMeeting(string uniqueId);
+        MeetingEntity GetMeetingInfo(string organizationId, string uniqueId);
+        MeetingEntity[] GetMeetingInfo(string organizationId, string[] uniqueIds);
+        void StartMeeting(string organizationId, string uniqueId);
+        void CancelMeeting(string organizationId, string uniqueId);
+        void EndMeeting(string organizationId, string uniqueId);
     }
 
 }

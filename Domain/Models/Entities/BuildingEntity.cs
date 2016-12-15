@@ -2,7 +2,7 @@
 
 namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
 {
-    public class BuildingEntity : Entity
+    public class BuildingEntity : Entity, IByOrganizationId
     {
         public string OrganizationId { get; set; }
         public string Name { get; set; }

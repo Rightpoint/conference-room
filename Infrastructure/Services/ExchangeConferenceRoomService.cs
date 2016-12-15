@@ -173,8 +173,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                                 AppointmentSchema.RequiredAttendees, 
                                 AppointmentSchema.OptionalAttendees));
 
-                            var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.UniqueId);
-                            return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingEntity() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
+                            var meetings = _meetingRepository.GetMeetingInfo(room.OrganizationId, apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.UniqueId);
+                            return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingEntity() { Id = i.Id.UniqueId, OrganizationId = room.OrganizationId})).ToArray().AsEnumerable();
                         });
                     }
                     catch (ServiceResponseException ex)
@@ -220,7 +220,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                             return new Meeting[] { };
                         }
                         
-                        var meetings = _meetingRepository.GetMeetingInfo(apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
+                        var meetings = _meetingRepository.GetMeetingInfo(room.OrganizationId, apt.Select(i => i.Id.UniqueId).ToArray()).ToDictionary(i => i.Id);
                         return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id.UniqueId) ?? new MeetingEntity() { Id = i.Id.UniqueId })).ToArray().AsEnumerable();
                     });
                 }
@@ -304,7 +304,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         {
             SecurityCheck(room, uniqueId);
             __log.DebugFormat("Starting {0} for {1}", uniqueId, room.Id);
-            _meetingRepository.StartMeeting(uniqueId);
+            _meetingRepository.StartMeeting(room.OrganizationId, uniqueId);
             BroadcastUpdate(room);
         }
 
@@ -316,7 +316,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 return false;
             }
             __log.DebugFormat("Starting {0} for {1}", uniqueId, room.Id);
-            _meetingRepository.StartMeeting(uniqueId);
+            _meetingRepository.StartMeeting(room.OrganizationId, uniqueId);
             BroadcastUpdate(room);
             return true;
         }
@@ -355,7 +355,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 throw new Exception("Cannot manage this meeting");
             }
-            _meetingRepository.CancelMeeting(uniqueId);
+            _meetingRepository.CancelMeeting(room.OrganizationId, uniqueId);
 
             var item = ExchangeServiceExecuteWithImpersonationCheck(room.RoomAddress, svc =>
             {
@@ -388,7 +388,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 throw new Exception("Cannot manage this meeting");
             }
-            _meetingRepository.EndMeeting(uniqueId);
+            _meetingRepository.EndMeeting(room.OrganizationId, uniqueId);
 
             var now = _dateTimeService.Now.TruncateToTheMinute();
 
@@ -478,7 +478,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 return appt;
             });
 
-            _meetingRepository.StartMeeting(item.Id.UniqueId);
+            _meetingRepository.StartMeeting(room.OrganizationId, item.Id.UniqueId);
             BroadcastUpdate(room);
         }
 

@@ -1,6 +1,6 @@
 ﻿namespace RightpointLabs.ConferenceRoom.Domain.Models
 {
-    public interface IRoom
+    public interface IRoom : IByOrganizationId
     {
         string Id { get; }
         string RoomAddress { get; }

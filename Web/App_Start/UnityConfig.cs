@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
@@ -11,17 +10,20 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.Exchange.WebServices.Data;
 using Microsoft.Practices.Unity;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
+using Newtonsoft.Json.Linq;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 using RightpointLabs.ConferenceRoom.Infrastructure.Models;
-using RightpointLabs.ConferenceRoom.Infrastructure.Persistence;
-using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories;
 using RightpointLabs.ConferenceRoom.Infrastructure.Services;
 using RightpointLabs.ConferenceRoom.Web.SignalR;
 using Unity.WebApi;
+
+using AzureTable = RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.AzureTable;
 
 namespace RightpointLabs.ConferenceRoom.Web
 {
@@ -33,46 +35,40 @@ namespace RightpointLabs.ConferenceRoom.Web
         {
             var container = new UnityContainer();
 
-            var connectionString = System.Web.Configuration.WebConfigurationManager.ConnectionStrings["Mongo"].ConnectionString;
-            var databaseName = ConfigurationManager.AppSettings["MongoDatabaseName"];
-            container.RegisterType<IMongoConnectionHandler, MongoConnectionHandler>(
-                new ContainerControlledLifetimeManager(),
-                string.IsNullOrEmpty(databaseName) ? new InjectionConstructor(connectionString) : new InjectionConstructor(connectionString, databaseName));
-
             container.RegisterType<ExchangeConferenceRoomServiceConfiguration>(new HierarchicalLifetimeManager(),
                 new InjectionFactory(
                     c =>
                         CreateOrganizationalService(c, "Exchange",
                             _ => new ExchangeConferenceRoomServiceConfiguration() {
-                                IgnoreFree = _.IgnoreFree,
-                                ImpersonateForAllCalls = _.ImpersonateForAllCalls,
-                                UseChangeNotification = _.UseChangeNotification,
-                                EmailDomains = ((IEnumerable)_.EmailDomains).Cast<string>().ToArray(),
+                                IgnoreFree = (bool)_.IgnoreFree.Value,
+                                ImpersonateForAllCalls = (bool)_.ImpersonateForAllCalls.Value,
+                                UseChangeNotification = (bool)_.UseChangeNotification.Value,
+                                EmailDomains = ((JArray)_.EmailDomains).Select(i => i.Value<string>()).ToArray(),
                             })));
 
             container.RegisterType<Func<ExchangeService>>(new HierarchicalLifetimeManager(),
                 new InjectionFactory(
                     c =>
                         CreateOrganizationalService(c, "Exchange",
-                            _ => ExchangeConferenceRoomService.GetExchangeServiceBuilder(_.Username, _.Password, _.ServiceUrl))));
+                            _ => ExchangeConferenceRoomService.GetExchangeServiceBuilder((string)_.Username.Value, (string)_.Password.Value, (string)_.ServiceUrl.Value))));
 
             container.RegisterType<IInstantMessagingService>(new HierarchicalLifetimeManager(),
                 new InjectionFactory(
                     c =>
                         CreateOrganizationalService(c, "Exchange",
-                            _ => new InstantMessagingService(_.Username, _.Password))));
+                            _ => new InstantMessagingService((string)_.Username.Value, (string)_.Password.Value))));
 
             container.RegisterType<ISmsMessagingService>(new HierarchicalLifetimeManager(),
                 new InjectionFactory(
                     c =>
                         CreateOrganizationalService(c, "Plivo",
-                            _ => new SmsMessagingService(_.AuthId, _.AuthToken, _.From))));
+                            _ => new SmsMessagingService((string)_.AuthId.Value, (string)_.AuthToken.Value, (string)_.From.Value))));
 
             container.RegisterType<IGdoService>(new ContainerControlledLifetimeManager(),
                 new InjectionFactory(
                     c =>
                         CreateOrganizationalService(c, "GDO",
-                            _ => new GdoService(new Uri(_.BaseUrl), _.ApiKey, _.Username, _.Password))));
+                            _ => new GdoService(new Uri((string)_.BaseUrl.Value), (string)_.ApiKey.Value, (string)_.Username.Value, (string)_.Password.Value))));
 
             container.RegisterType<IBroadcastService, SignalrBroadcastService>(new HierarchicalLifetimeManager());
             container.RegisterType<IConnectionManager>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => GlobalHost.ConnectionManager));
@@ -83,17 +79,9 @@ namespace RightpointLabs.ConferenceRoom.Web
             container.RegisterType<ISmsAddressLookupService, SmsAddressLookupService>(new HierarchicalLifetimeManager());
             container.RegisterType<ISignatureService, SignatureService>(new ContainerControlledLifetimeManager());
             container.RegisterType<IConferenceRoomService, ExchangeConferenceRoomService>(new HierarchicalLifetimeManager());
-            container.RegisterType<IMeetingRepository, MeetingRepository>(new HierarchicalLifetimeManager());
             container.RegisterType<IExchangeServiceManager, ExchangeServiceManager>(new ContainerControlledLifetimeManager());
             container.RegisterType<IMeetingCacheService, MeetingCacheService>(new ContainerControlledLifetimeManager()); // singleton cache
             container.RegisterType<ISimpleTimedCache, SimpleTimedCache>(new ContainerControlledLifetimeManager()); // singleton cache
-            container.RegisterType<IRoomMetadataRepository, RoomMetadataRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IFloorRepository, FloorRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IBuildingRepository, BuildingRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IDeviceRepository, DeviceRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IOrganizationRepository, OrganizationRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IOrganizationServiceConfigurationRepository, OrganizationServiceConfigurationRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IGlobalAdministratorRepository, GlobalAdministratorRepository>(new HierarchicalLifetimeManager());
             container.RegisterType<IContextService, ContextService>(new HierarchicalLifetimeManager());
             container.RegisterType<IConferenceRoomDiscoveryService, ExchangeConferenceRoomDiscoveryService>(new HierarchicalLifetimeManager());
             container.RegisterType<ITokenService, TokenService>(new HierarchicalLifetimeManager(), new InjectionFactory(c => 
@@ -103,10 +91,21 @@ namespace RightpointLabs.ConferenceRoom.Web
                     ConfigurationManager.AppSettings["TokenKey"],
                     c.Resolve<OpenIdConnectConfigurationService>())));
             container.RegisterType<OpenIdConnectConfigurationService>(new ContainerControlledLifetimeManager());
-            container.RegisterType<IDeviceStatusRepository, DeviceStatusRepository>(new HierarchicalLifetimeManager(), new InjectionFactory(c => 
-                new DeviceStatusRepository(
-                    ConfigurationManager.ConnectionStrings["AzureStorage"]?.ConnectionString,
-                    ConfigurationManager.AppSettings["DeviceStatusTableName"])));
+
+            container.RegisterType<CloudTableClient>(new ContainerControlledLifetimeManager(), new InjectionFactory(c =>
+                CloudStorageAccount.Parse(ConfigurationManager.ConnectionStrings["AzureStorage"]?.ConnectionString).CreateCloudTableClient()
+            ));
+
+            container.RegisterType<IDeviceStatusRepository, AzureTable.DeviceStatusRepository>(new HierarchicalLifetimeManager());
+
+            container.RegisterType<IMeetingRepository, AzureTable.MeetingRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IRoomMetadataRepository, AzureTable.RoomMetadataRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IFloorRepository, AzureTable.FloorRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IBuildingRepository, AzureTable.BuildingRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IDeviceRepository, AzureTable.DeviceRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IOrganizationRepository, AzureTable.OrganizationRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IOrganizationServiceConfigurationRepository, AzureTable.OrganizationServiceConfigurationRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IGlobalAdministratorRepository, AzureTable.GlobalAdministratorRepository>(new HierarchicalLifetimeManager());
 
             container.RegisterType<IIOCContainer, UnityIOCContainer>(new TransientLifetimeManager(), new InjectionFactory(c => new UnityIOCContainer(c, false)));
             container.RegisterType<ITokenProvider, HttpTokenProvider>(new HierarchicalLifetimeManager());
@@ -116,6 +115,22 @@ namespace RightpointLabs.ConferenceRoom.Web
             var changeNotificationService = child.Resolve<ChangeNotificationService>();
             container.RegisterInstance(typeof(IChangeNotificationService), changeNotificationService, new ContainerControlledLifetimeManager());
 
+            // initialize all repositories in a child container (ie. create tables/etc.)
+            {
+                using (var c = container.CreateChildContainer())
+                {
+                    foreach (var r in new IRepository[]
+                    {
+                        c.Resolve<IMeetingRepository>(), c.Resolve<IRoomMetadataRepository>(),
+                        c.Resolve<IFloorRepository>(), c.Resolve<IBuildingRepository>(), c.Resolve<IDeviceRepository>(),
+                        c.Resolve<IOrganizationRepository>(), c.Resolve<IOrganizationServiceConfigurationRepository>(),
+                        c.Resolve<IGlobalAdministratorRepository>(),
+                    })
+                    {
+                        r.Init();
+                    }
+                }
+            }
             
             // register all your components with the container here
             // it is NOT necessary to register your controllers

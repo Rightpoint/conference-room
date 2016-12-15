@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Web.Mvc;
+using Microsoft.ApplicationInsights;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using AuthorizationContext = System.Web.Mvc.AuthorizationContext;
@@ -62,6 +63,10 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
 
                 IsGlobalAdmin = false;
                 CurrentOrganization = orgs.SingleOrDefault(i => i.Id == Session[SelectedOrganizationIdKey] as string);
+                if (null == CurrentOrganization && orgs.Count == 1)
+                {
+                    CurrentOrganization = orgs.Single();
+                }
                 MyOrganizations = new Lazy<List<OrganizationEntity>>(() => orgs);
             }
 
@@ -71,6 +76,23 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
         protected void SetCurrentOrganization(string id)
         {
             Session[SelectedOrganizationIdKey] = id;
+        }
+
+        protected override void OnException(ExceptionContext filterContext)
+        {
+            if (filterContext.Exception != null)
+            {
+                try
+                {
+                    new TelemetryClient().TrackException(filterContext.Exception);
+                }
+                catch
+                {
+                    // ignore errors reporting errors
+                }
+            }
+
+            base.OnException(filterContext);
         }
     }
 }

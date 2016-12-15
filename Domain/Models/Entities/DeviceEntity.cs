@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
 {
-    public class DeviceEntity : Entity
+    public class DeviceEntity : Entity, IByOrganizationId
     {
         public string OrganizationId { get; set; }
         public string BuildingId { get; set; }
