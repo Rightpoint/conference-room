@@ -10,7 +10,7 @@ using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Models;
 
-namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
+namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.Mongo
 {
     public abstract class EntityRepository<T> where T : Entity
     {

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
-namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
+namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.Mongo
 {
     public class RoomMetadataRepository : EntityRepository<RoomMetadataEntity>, IRoomMetadataRepository
     {

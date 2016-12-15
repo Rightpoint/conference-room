@@ -11,6 +11,8 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
 using Microsoft.Exchange.WebServices.Data;
 using Microsoft.Practices.Unity;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Table;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
@@ -18,10 +20,12 @@ using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 using RightpointLabs.ConferenceRoom.Infrastructure.Models;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence;
-using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories;
 using RightpointLabs.ConferenceRoom.Infrastructure.Services;
 using RightpointLabs.ConferenceRoom.Web.SignalR;
 using Unity.WebApi;
+
+using Mongo = RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.Mongo;
+using AzureTable = RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.AzureTable;
 
 namespace RightpointLabs.ConferenceRoom.Web
 {
@@ -83,17 +87,9 @@ namespace RightpointLabs.ConferenceRoom.Web
             container.RegisterType<ISmsAddressLookupService, SmsAddressLookupService>(new HierarchicalLifetimeManager());
             container.RegisterType<ISignatureService, SignatureService>(new ContainerControlledLifetimeManager());
             container.RegisterType<IConferenceRoomService, ExchangeConferenceRoomService>(new HierarchicalLifetimeManager());
-            container.RegisterType<IMeetingRepository, MeetingRepository>(new HierarchicalLifetimeManager());
             container.RegisterType<IExchangeServiceManager, ExchangeServiceManager>(new ContainerControlledLifetimeManager());
             container.RegisterType<IMeetingCacheService, MeetingCacheService>(new ContainerControlledLifetimeManager()); // singleton cache
             container.RegisterType<ISimpleTimedCache, SimpleTimedCache>(new ContainerControlledLifetimeManager()); // singleton cache
-            container.RegisterType<IRoomMetadataRepository, RoomMetadataRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IFloorRepository, FloorRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IBuildingRepository, BuildingRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IDeviceRepository, DeviceRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IOrganizationRepository, OrganizationRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IOrganizationServiceConfigurationRepository, OrganizationServiceConfigurationRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IGlobalAdministratorRepository, GlobalAdministratorRepository>(new HierarchicalLifetimeManager());
             container.RegisterType<IContextService, ContextService>(new HierarchicalLifetimeManager());
             container.RegisterType<IConferenceRoomDiscoveryService, ExchangeConferenceRoomDiscoveryService>(new HierarchicalLifetimeManager());
             container.RegisterType<ITokenService, TokenService>(new HierarchicalLifetimeManager(), new InjectionFactory(c => 
@@ -103,10 +99,36 @@ namespace RightpointLabs.ConferenceRoom.Web
                     ConfigurationManager.AppSettings["TokenKey"],
                     c.Resolve<OpenIdConnectConfigurationService>())));
             container.RegisterType<OpenIdConnectConfigurationService>(new ContainerControlledLifetimeManager());
-            container.RegisterType<IDeviceStatusRepository, DeviceStatusRepository>(new HierarchicalLifetimeManager(), new InjectionFactory(c => 
-                new DeviceStatusRepository(
-                    ConfigurationManager.ConnectionStrings["AzureStorage"]?.ConnectionString,
-                    ConfigurationManager.AppSettings["DeviceStatusTableName"])));
+
+            container.RegisterType<CloudTableClient>(new ContainerControlledLifetimeManager(), new InjectionFactory(c =>
+                CloudStorageAccount.Parse(ConfigurationManager.ConnectionStrings["AzureStorage"]?.ConnectionString).CreateCloudTableClient()
+            ));
+
+            container.RegisterType<IDeviceStatusRepository, AzureTable.DeviceStatusRepository>(new HierarchicalLifetimeManager());
+
+            if (false)
+            {
+                container.RegisterType<IMeetingRepository, Mongo.MeetingRepository>(new HierarchicalLifetimeManager());
+                container.RegisterType<IRoomMetadataRepository, Mongo.RoomMetadataRepository>(new HierarchicalLifetimeManager());
+                container.RegisterType<IFloorRepository, Mongo.FloorRepository>(new HierarchicalLifetimeManager());
+                container.RegisterType<IBuildingRepository, Mongo.BuildingRepository>(new HierarchicalLifetimeManager());
+                container.RegisterType<IDeviceRepository, Mongo.DeviceRepository>(new HierarchicalLifetimeManager());
+                container.RegisterType<IOrganizationRepository, Mongo.OrganizationRepository>(new HierarchicalLifetimeManager());
+                container.RegisterType<IOrganizationServiceConfigurationRepository, Mongo.OrganizationServiceConfigurationRepository>(new HierarchicalLifetimeManager());
+                container.RegisterType<IGlobalAdministratorRepository, Mongo.GlobalAdministratorRepository>(new HierarchicalLifetimeManager());
+            }
+            else
+            {
+                container.RegisterType<IMeetingRepository, AzureTable.MeetingRepository>(new HierarchicalLifetimeManager());
+                container.RegisterType<IRoomMetadataRepository, AzureTable.RoomMetadataRepository>(new HierarchicalLifetimeManager());
+                container.RegisterType<IFloorRepository, AzureTable.FloorRepository>(new HierarchicalLifetimeManager());
+                container.RegisterType<IBuildingRepository, AzureTable.BuildingRepository>(new HierarchicalLifetimeManager());
+                container.RegisterType<IDeviceRepository, AzureTable.DeviceRepository>(new HierarchicalLifetimeManager());
+                container.RegisterType<IOrganizationRepository, AzureTable.OrganizationRepository>(new HierarchicalLifetimeManager());
+                container.RegisterType<IOrganizationServiceConfigurationRepository, AzureTable.OrganizationServiceConfigurationRepository>(new HierarchicalLifetimeManager());
+                container.RegisterType<IGlobalAdministratorRepository, AzureTable.GlobalAdministratorRepository>(new HierarchicalLifetimeManager());
+            }
+
 
             container.RegisterType<IIOCContainer, UnityIOCContainer>(new TransientLifetimeManager(), new InjectionFactory(c => new UnityIOCContainer(c, false)));
             container.RegisterType<ITokenProvider, HttpTokenProvider>(new HierarchicalLifetimeManager());

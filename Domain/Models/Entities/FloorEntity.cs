@@ -2,7 +2,7 @@
 
 namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
 {
-    public class FloorEntity : Entity, ICloneable
+    public class FloorEntity : Entity, IByOrganizationId
     {
         public string OrganizationId { get; set; }
         public string BuildingId { get; set; }
@@ -10,21 +10,5 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
         public string Name { get; set; }
         public string Image { get; set; }
         public Rectangle CoordinatesInImage { get; set; }
-
-        object ICloneable.Clone()
-        {
-            return this.Clone();
-        }
-
-        public FloorEntity Clone()
-        {
-            return new FloorEntity()
-            {
-                Id = this.Id,
-                Name = this.Name,
-                Image = this.Image,
-                CoordinatesInImage = (this.CoordinatesInImage ?? new Rectangle()).Clone(),
-            };
-        }
     }
 }

@@ -9,7 +9,7 @@ using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Models;
 
-namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
+namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.Mongo
 {
     public class MeetingRepository : EntityRepository<MeetingEntity>, IMeetingRepository
     {
@@ -18,17 +18,17 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
         {
         }
 
-        public MeetingEntity GetMeetingInfo(string uniqueId)
+        public MeetingEntity GetMeetingInfo(string organizationId, string uniqueId)
         {
             return Collection.FindOne(Query<MeetingEntity>.Where(i => i.UniqueId == uniqueId));
         }
 
-        public MeetingEntity[] GetMeetingInfo(string[] uniqueIds)
+        public MeetingEntity[] GetMeetingInfo(string organizationId, string[] uniqueIds)
         {
             return Collection.Find(Query<MeetingEntity>.In(i => i.UniqueId, uniqueIds)).Cast<MeetingEntity>().ToArray();
         }
 
-        public void StartMeeting(string uniqueId)
+        public void StartMeeting(string organizationId, string uniqueId)
         {
             var update = Update<MeetingEntity>
                 .Set(i => i.IsStarted, true)
@@ -41,7 +41,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
             }
         }
 
-        public void CancelMeeting(string uniqueId)
+        public void CancelMeeting(string organizationId, string uniqueId)
         {
             var update = Update<MeetingEntity>
                 .Set(i => i.IsCancelled, true)
@@ -54,7 +54,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
             }
         }
 
-        public void EndMeeting(string uniqueId)
+        public void EndMeeting(string organizationId, string uniqueId)
         {
             var update = Update<MeetingEntity>
                 .Set(i => i.IsEndedEarly, true)

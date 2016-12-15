@@ -6,7 +6,7 @@ using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
-namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
+namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.Mongo
 {
     public class GlobalAdministratorRepository : EntityRepository<GlobalAdministratorEntity>, IGlobalAdministratorRepository
     {

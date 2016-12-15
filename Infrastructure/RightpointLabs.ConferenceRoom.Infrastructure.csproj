@@ -153,19 +153,29 @@
     <Compile Include="Persistence\Collections\RoomMetadataEntityCollectionDefinition.cs" />
     <Compile Include="Persistence\Collections\SecurityRequestCollectionDefinition.cs" />
     <Compile Include="Persistence\Models\SecurityRequest.cs" />
-    <Compile Include="Persistence\Repositories\DeviceStatusRepository.cs" />
-    <Compile Include="Persistence\Repositories\FloorRepository.cs" />
-    <Compile Include="Persistence\Repositories\GlobalAdministratorRepository.cs" />
-    <Compile Include="Persistence\Repositories\OrganizationRepository.cs" />
-    <Compile Include="Persistence\Repositories\OrganizationServiceConfigurationRepository.cs" />
-    <Compile Include="Persistence\Repositories\DeviceRepository.cs" />
-    <Compile Include="Persistence\Repositories\BuildingRepository.cs" />
-    <Compile Include="Persistence\Repositories\RoomMetadataRepository.cs" />
-    <Compile Include="Persistence\Repositories\MeetingRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\BuildingRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\DeviceRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\FloorRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\GlobalAdministratorRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\MeetingRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\OrganizationRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\OrganizationServiceConfigurationRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\RoomMetadataRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\TableByOrganizationRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\TableRepository.cs" />
+    <Compile Include="Persistence\Repositories\AzureTable\DeviceStatusRepository.cs" />
+    <Compile Include="Persistence\Repositories\Mongo\FloorRepository.cs" />
+    <Compile Include="Persistence\Repositories\Mongo\GlobalAdministratorRepository.cs" />
+    <Compile Include="Persistence\Repositories\Mongo\OrganizationRepository.cs" />
+    <Compile Include="Persistence\Repositories\Mongo\OrganizationServiceConfigurationRepository.cs" />
+    <Compile Include="Persistence\Repositories\Mongo\DeviceRepository.cs" />
+    <Compile Include="Persistence\Repositories\Mongo\BuildingRepository.cs" />
+    <Compile Include="Persistence\Repositories\Mongo\RoomMetadataRepository.cs" />
+    <Compile Include="Persistence\Repositories\Mongo\MeetingRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Persistence\Collections\MeetingEntityCollectionDefinition.cs" />
     <Compile Include="Persistence\Collections\EntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Repositories\EntityRepository.cs" />
+    <Compile Include="Persistence\Repositories\Mongo\EntityRepository.cs" />
     <Compile Include="Persistence\IMongoConnectionHandler.cs" />
     <Compile Include="Persistence\MongoConnectionHandler.cs" />
     <Compile Include="Services\ContextService.cs" />
@@ -198,6 +208,7 @@
       <Name>RightpointLabs.ConferenceRoom.Domain</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

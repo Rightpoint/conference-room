@@ -6,36 +6,28 @@ using Microsoft.WindowsAzure.Storage.Table;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 
-namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
+namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.AzureTable
 {
     public class DeviceStatusRepository : IDeviceStatusRepository
     {
-        private readonly Lazy<CloudTable> _table;
+        private readonly CloudTable _table;
 
-        public DeviceStatusRepository(string connectionString, string tableName)
+        public DeviceStatusRepository(CloudTableClient client)
         {
-            _table = new Lazy<CloudTable>(() => Init(connectionString, tableName));
+            _table = client.GetTableReference("DeviceStatus");
+            _table.CreateIfNotExists();
         }
-
-        private CloudTable Init(string connectionString, string tableName)
-        {
-            var account = CloudStorageAccount.Parse(connectionString);
-            var client = account.CreateCloudTableClient();
-            var table = client.GetTableReference(tableName);
-            table.CreateIfNotExists();
-            return table;
-        }
-
+        
         public void Insert(DeviceStatus status)
         {
-            _table.Value.Execute(TableOperation.Insert(new DeviceStatusEntity(status)));
+            _table.Execute(TableOperation.Insert(new DeviceStatusEntity(status)));
         }
 
         public IEnumerable<DeviceStatus> GetRange(string organizationId, DateTime start, DateTime end)
         {
             var q = new TableQuery<DeviceStatusEntity>().Where(BuildPartitionRowFilter(organizationId, start, end));
             return 
-                _table.Value.ExecuteQuery(q)
+                _table.ExecuteQuery(q)
                     .Select(i => i.ToModel());
         }
 
@@ -46,7 +38,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories
             var deviceIdFilter = TableQuery.GenerateFilterCondition("DeviceId", QueryComparisons.Equal, deviceId);
             var q = new TableQuery<DeviceStatusEntity>().Where(TableQuery.CombineFilters(prFilter, TableOperators.And, deviceIdFilter));
             return
-                _table.Value.ExecuteQuery(q)
+                _table.ExecuteQuery(q)
                     .Select(i => i.ToModel());
         }
 
