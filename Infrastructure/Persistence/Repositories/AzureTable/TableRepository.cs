@@ -14,7 +14,7 @@ using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.AzureTable
 {
-    public class TableRepository<T> where T : Entity
+    public class TableRepository<T>: IRepository where T : Entity
     {
         protected readonly CloudTable _table;
 
@@ -23,7 +23,6 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
         public TableRepository(CloudTableClient client)
         {
             _table = client.GetTableReference(TableName);
-            _table.CreateIfNotExists();
         }
 
         public void Insert(T item)
@@ -96,6 +95,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
                 return null;
 
             return JObject.Parse(tableEntity.Properties["Data"].StringValue).ToObject<T>();
+        }
+
+        public void Init()
+        {
+            _table.CreateIfNotExists();
         }
     }
 }

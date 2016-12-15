@@ -7,13 +7,15 @@ using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using MongoDB.Driver.Linq;
 using RightpointLabs.ConferenceRoom.Domain.Models;
+using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections;
 using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Models;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.Mongo
 {
-    public abstract class EntityRepository<T> where T : Entity
+    public abstract class EntityRepository<T> : IRepository where T : Entity
     {
+        private readonly EntityCollectionDefinition<T> _collectionDefinition;
         protected readonly MongoCollection<T> Collection;
 
         protected IQueryable<T> Queryable
@@ -27,6 +29,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
 
         protected EntityRepository(EntityCollectionDefinition<T> collectionDefinition)
         {
+            _collectionDefinition = collectionDefinition;
             Collection = collectionDefinition.Collection;
         } 
 
@@ -93,6 +96,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
             {
                 throw new Exception($"Expected to affect {expectedAffected} documents, but affected {result.DocumentsAffected}");
             }
+        }
+
+        public void Init()
+        {
+            _collectionDefinition.Init();
         }
     }
 }

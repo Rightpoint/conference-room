@@ -21,12 +21,6 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections
             // setup serialization
             if (!BsonClassMap.IsClassMapRegistered(typeof(Entity)))
             {
-                if (!Collection.Exists())
-                {
-                    // ReSharper disable once VirtualMemberCallInConstructor
-                    Collection.Database.CreateCollection(CollectionName);
-                }
-
                 try
                 {
                     BsonClassMap.RegisterClassMap<Entity>(
@@ -47,5 +41,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections
         public readonly MongoCollection<T> Collection;
 
         protected virtual string CollectionName => typeof(T).Name.Replace("Entity", "").ToLower() + "s";
+
+        public void Init()
+        {
+            if (!Collection.Exists())
+            {
+                // ReSharper disable once VirtualMemberCallInConstructor
+                Collection.Database.CreateCollection(CollectionName);
+            }
+        }
     }
 }

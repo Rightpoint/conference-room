@@ -3,7 +3,7 @@ using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
 namespace RightpointLabs.ConferenceRoom.Domain.Repositories
 {
-    public interface IMeetingRepository
+    public interface IMeetingRepository : IRepository
     {
         MeetingEntity GetMeetingInfo(string organizationId, string uniqueId);
         MeetingEntity[] GetMeetingInfo(string organizationId, string[] uniqueIds);

@@ -138,6 +138,22 @@ namespace RightpointLabs.ConferenceRoom.Web
             var changeNotificationService = child.Resolve<ChangeNotificationService>();
             container.RegisterInstance(typeof(IChangeNotificationService), changeNotificationService, new ContainerControlledLifetimeManager());
 
+            // initialize all repositories in a child container (ie. create tables/etc.)
+            {
+                using (var c = container.CreateChildContainer())
+                {
+                    foreach (var r in new IRepository[]
+                    {
+                        c.Resolve<IMeetingRepository>(), c.Resolve<IRoomMetadataRepository>(),
+                        c.Resolve<IFloorRepository>(), c.Resolve<IBuildingRepository>(), c.Resolve<IDeviceRepository>(),
+                        c.Resolve<IOrganizationRepository>(), c.Resolve<IOrganizationServiceConfigurationRepository>(),
+                        c.Resolve<IGlobalAdministratorRepository>(),
+                    })
+                    {
+                        r.Init();
+                    }
+                }
+            }
             
             // register all your components with the container here
             // it is NOT necessary to register your controllers

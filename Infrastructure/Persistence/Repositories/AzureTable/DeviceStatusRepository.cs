@@ -15,7 +15,6 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
         public DeviceStatusRepository(CloudTableClient client)
         {
             _table = client.GetTableReference("DeviceStatusEntity");
-            _table.CreateIfNotExists();
         }
         
         public void Insert(DeviceStatus status)
@@ -125,6 +124,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
             return string.Format(
                 "{0:D19}",
                 DateTime.MaxValue.Ticks - time.Ticks);
+        }
+
+        public void Init()
+        {
+            _table.CreateIfNotExists();
         }
     }
 }

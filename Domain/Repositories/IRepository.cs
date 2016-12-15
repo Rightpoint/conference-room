@@ -4,9 +4,8 @@ using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
 namespace RightpointLabs.ConferenceRoom.Domain.Repositories
 {
-    public interface IGlobalAdministratorRepository : IRepository
+    public interface IRepository
     {
-        bool IsGlobalAdmin(string username);
-        void EnsureRecordExists();
+        void Init();
     }
 }
