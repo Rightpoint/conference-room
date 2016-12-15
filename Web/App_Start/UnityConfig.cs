@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
@@ -20,12 +19,10 @@ using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 using RightpointLabs.ConferenceRoom.Infrastructure.Models;
-using RightpointLabs.ConferenceRoom.Infrastructure.Persistence;
 using RightpointLabs.ConferenceRoom.Infrastructure.Services;
 using RightpointLabs.ConferenceRoom.Web.SignalR;
 using Unity.WebApi;
 
-using Mongo = RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.Mongo;
 using AzureTable = RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.AzureTable;
 
 namespace RightpointLabs.ConferenceRoom.Web
@@ -37,12 +34,6 @@ namespace RightpointLabs.ConferenceRoom.Web
         public static void RegisterComponents()
         {
             var container = new UnityContainer();
-
-            var connectionString = System.Web.Configuration.WebConfigurationManager.ConnectionStrings["Mongo"].ConnectionString;
-            var databaseName = ConfigurationManager.AppSettings["MongoDatabaseName"];
-            container.RegisterType<IMongoConnectionHandler, MongoConnectionHandler>(
-                new ContainerControlledLifetimeManager(),
-                string.IsNullOrEmpty(databaseName) ? new InjectionConstructor(connectionString) : new InjectionConstructor(connectionString, databaseName));
 
             container.RegisterType<ExchangeConferenceRoomServiceConfiguration>(new HierarchicalLifetimeManager(),
                 new InjectionFactory(
@@ -107,29 +98,14 @@ namespace RightpointLabs.ConferenceRoom.Web
 
             container.RegisterType<IDeviceStatusRepository, AzureTable.DeviceStatusRepository>(new HierarchicalLifetimeManager());
 
-            if (false)
-            {
-                container.RegisterType<IMeetingRepository, Mongo.MeetingRepository>(new HierarchicalLifetimeManager());
-                container.RegisterType<IRoomMetadataRepository, Mongo.RoomMetadataRepository>(new HierarchicalLifetimeManager());
-                container.RegisterType<IFloorRepository, Mongo.FloorRepository>(new HierarchicalLifetimeManager());
-                container.RegisterType<IBuildingRepository, Mongo.BuildingRepository>(new HierarchicalLifetimeManager());
-                container.RegisterType<IDeviceRepository, Mongo.DeviceRepository>(new HierarchicalLifetimeManager());
-                container.RegisterType<IOrganizationRepository, Mongo.OrganizationRepository>(new HierarchicalLifetimeManager());
-                container.RegisterType<IOrganizationServiceConfigurationRepository, Mongo.OrganizationServiceConfigurationRepository>(new HierarchicalLifetimeManager());
-                container.RegisterType<IGlobalAdministratorRepository, Mongo.GlobalAdministratorRepository>(new HierarchicalLifetimeManager());
-            }
-            else
-            {
-                container.RegisterType<IMeetingRepository, AzureTable.MeetingRepository>(new HierarchicalLifetimeManager());
-                container.RegisterType<IRoomMetadataRepository, AzureTable.RoomMetadataRepository>(new HierarchicalLifetimeManager());
-                container.RegisterType<IFloorRepository, AzureTable.FloorRepository>(new HierarchicalLifetimeManager());
-                container.RegisterType<IBuildingRepository, AzureTable.BuildingRepository>(new HierarchicalLifetimeManager());
-                container.RegisterType<IDeviceRepository, AzureTable.DeviceRepository>(new HierarchicalLifetimeManager());
-                container.RegisterType<IOrganizationRepository, AzureTable.OrganizationRepository>(new HierarchicalLifetimeManager());
-                container.RegisterType<IOrganizationServiceConfigurationRepository, AzureTable.OrganizationServiceConfigurationRepository>(new HierarchicalLifetimeManager());
-                container.RegisterType<IGlobalAdministratorRepository, AzureTable.GlobalAdministratorRepository>(new HierarchicalLifetimeManager());
-            }
-
+            container.RegisterType<IMeetingRepository, AzureTable.MeetingRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IRoomMetadataRepository, AzureTable.RoomMetadataRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IFloorRepository, AzureTable.FloorRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IBuildingRepository, AzureTable.BuildingRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IDeviceRepository, AzureTable.DeviceRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IOrganizationRepository, AzureTable.OrganizationRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IOrganizationServiceConfigurationRepository, AzureTable.OrganizationServiceConfigurationRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IGlobalAdministratorRepository, AzureTable.GlobalAdministratorRepository>(new HierarchicalLifetimeManager());
 
             container.RegisterType<IIOCContainer, UnityIOCContainer>(new TransientLifetimeManager(), new InjectionFactory(c => new UnityIOCContainer(c, false)));
             container.RegisterType<ITokenProvider, HttpTokenProvider>(new HierarchicalLifetimeManager());

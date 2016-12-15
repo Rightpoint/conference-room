@@ -94,22 +94,6 @@
       <HintPath>..\packages\WindowsAzure.Storage.7.2.1\lib\net40\Microsoft.WindowsAzure.Storage.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MongoDB.Bson, Version=2.3.0.157, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MongoDB.Bson.2.3.0\lib\net45\MongoDB.Bson.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MongoDB.Driver, Version=2.3.0.157, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MongoDB.Driver.2.3.0\lib\net45\MongoDB.Driver.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MongoDB.Driver.Core, Version=2.3.0.157, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MongoDB.Driver.Core.2.3.0\lib\net45\MongoDB.Driver.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MongoDB.Driver.Legacy, Version=2.3.0.157, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\mongocsharpdriver.2.3.0\lib\net45\MongoDB.Driver.Legacy.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -144,15 +128,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\ExchangeConferenceRoomServiceConfiguration.cs" />
-    <Compile Include="Persistence\Collections\FloorEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\GlobalAdministratorEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\OrganizationServiceConfigurationEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\OrganizationEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\DeviceEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\BuildingEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\RoomMetadataEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\SecurityRequestCollectionDefinition.cs" />
-    <Compile Include="Persistence\Models\SecurityRequest.cs" />
     <Compile Include="Persistence\Repositories\AzureTable\BuildingRepository.cs" />
     <Compile Include="Persistence\Repositories\AzureTable\DeviceRepository.cs" />
     <Compile Include="Persistence\Repositories\AzureTable\FloorRepository.cs" />
@@ -164,20 +139,7 @@
     <Compile Include="Persistence\Repositories\AzureTable\TableByOrganizationRepository.cs" />
     <Compile Include="Persistence\Repositories\AzureTable\TableRepository.cs" />
     <Compile Include="Persistence\Repositories\AzureTable\DeviceStatusRepository.cs" />
-    <Compile Include="Persistence\Repositories\Mongo\FloorRepository.cs" />
-    <Compile Include="Persistence\Repositories\Mongo\GlobalAdministratorRepository.cs" />
-    <Compile Include="Persistence\Repositories\Mongo\OrganizationRepository.cs" />
-    <Compile Include="Persistence\Repositories\Mongo\OrganizationServiceConfigurationRepository.cs" />
-    <Compile Include="Persistence\Repositories\Mongo\DeviceRepository.cs" />
-    <Compile Include="Persistence\Repositories\Mongo\BuildingRepository.cs" />
-    <Compile Include="Persistence\Repositories\Mongo\RoomMetadataRepository.cs" />
-    <Compile Include="Persistence\Repositories\Mongo\MeetingRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Persistence\Collections\MeetingEntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Collections\EntityCollectionDefinition.cs" />
-    <Compile Include="Persistence\Repositories\Mongo\EntityRepository.cs" />
-    <Compile Include="Persistence\IMongoConnectionHandler.cs" />
-    <Compile Include="Persistence\MongoConnectionHandler.cs" />
     <Compile Include="Services\ContextService.cs" />
     <Compile Include="Services\ChangeNotificationService.cs" />
     <Compile Include="Services\ConnectionManager.cs" />

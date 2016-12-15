@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.WindowsAzure.Storage.Table;
-using MongoDB.Driver;
-using MongoDB.Driver.Builders;
-using MongoDB.Driver.Wrappers;
-using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
-using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Collections;
-using RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Models;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.AzureTable
 {
