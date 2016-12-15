@@ -359,7 +359,6 @@
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\BaseController.cs" />
     <Compile Include="Areas\Admin\Controllers\DeviceController.cs" />
-    <Compile Include="Areas\Admin\Controllers\CopyController.cs" />
     <Compile Include="Areas\Admin\Controllers\RoomController.cs" />
     <Compile Include="Areas\Admin\Controllers\SelectController.cs" />
     <Compile Include="Areas\Admin\Controllers\FloorController.cs" />
