@@ -4,6 +4,7 @@ var url = require('url');
 var Promise = require('promise');
 var path = require('path');
 var jwt_decode = require('jwt-decode');
+var execSync = require('child_process').execSync;
 
 var configFile = path.join(__dirname, 'config.json');
 console.log('Loading configuration from ' + configFile);
@@ -50,7 +51,14 @@ function start() {
                 console.log('unable to decode device key from server');
                 process.exit(-1);
             }
+            var ro = config.readonlyFilesystem;
+            if(ro) {
+                execSync("mount -o remount,rw " + ro);
+            }
             fs.writeFileSync(deviceKeyFile, data, "utf8");
+            if(ro) {
+                execSync("mount -o remount,ro " + ro);
+            }
             execute();
         }, function() {
             console.log('error creating device', arguments);

@@ -1,4 +1,5 @@
 {
+    "readonlyFilesystem": "/",
     "apiServer": "http://localhost:63915/api",
     "signalRServer": "http://localhost:63915/signalR",
     "organizationId": "",

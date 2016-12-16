@@ -17,4 +17,4 @@ done
 
 APP=http://rooms.labs.rightpoint.com/#`~pi/statusMonitor/deviceKey`
 
-chromium-browser --user-data-dir=~pi/.config --app=$APP --no-sandbox --disable-pinch --touch-events --kiosk
+chromium-browser --user-data-dir=/tmp/.config --app=$APP --no-sandbox --disable-pinch --touch-events --kiosk
