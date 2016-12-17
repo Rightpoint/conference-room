@@ -9,12 +9,12 @@ openbox --config-file ~pi/statusMonitor/scripts/openbox.xml &
 # hide mouse cursor when idle
 unclutter -idle 1 &
 
-while -t ~pi/statusMonitor/deviceKey
+while [ ! -f ~pi/statusMonitor/devicekey ]
 do
     echo "waiting for device key"
     sleep 3
 done
 
-APP=http://rooms.labs.rightpoint.com/#`~pi/statusMonitor/deviceKey`
+APP=https://rprooms.azurewebsites.net/#`cat ~pi/statusMonitor/devicekey`
 
 chromium-browser --user-data-dir=/tmp/.config --app=$APP --no-sandbox --disable-pinch --touch-events --kiosk

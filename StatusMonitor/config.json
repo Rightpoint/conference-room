@@ -17,7 +17,7 @@
 	    "brightness": 1
     },
     "backlight": {
-        "controlFile": "C:\\projects\\Github\\conference-room\\RightpointLabs.ConferenceRoom.StatusMonitor\\control.txt",
+        "controlFile": "/sys/class/backlight/rpi_backlight/brightness",
         "on": "200",
         "off": "50",
         "onOffPeak": "150",
@@ -27,6 +27,7 @@
     },
     "status": {
         "temperature1": "echo \"scale=3; $(cat /sys/class/thermal/thermal_zone0/temp)/1000\" | bc",
-        "temperature2": "/opt/vc/bin/vcgencmd measure_temp | sed s/[^0-9.]*//g"
+        "temperature2": "/opt/vc/bin/vcgencmd measure_temp | sed s/[^0-9.]*//g",
+	"voltage1": "cat /sys/class/backlight/rpi_backlight/brightness"
     }
 }
