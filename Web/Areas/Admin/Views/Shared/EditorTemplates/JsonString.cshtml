@@ -1,0 +1,5 @@
+﻿@using Newtonsoft.Json
+@using Newtonsoft.Json.Linq
+@model dynamic
+
+@Html.TextArea(Html.NameFor(_ => _).ToString(), JObject.FromObject((object)Model).ToString(Formatting.Indented), new { rows=20, style= "width: 100%;" })

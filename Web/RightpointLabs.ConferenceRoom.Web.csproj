@@ -284,6 +284,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Areas\Admin\Views\Device\Status.cshtml" />
+    <Content Include="Areas\Admin\Views\Service\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\Service\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\Service\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Shared\EditorTemplates\JsonString.cshtml" />
     <None Include="Properties\PublishProfiles\local directory.pubxml" />
     <None Include="Properties\PublishProfiles\rprooms - Web Deploy.pubxml" />
     <Content Include="gulpfile.js" />
@@ -358,6 +362,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\BaseController.cs" />
+    <Compile Include="Areas\Admin\Controllers\ServiceController.cs" />
     <Compile Include="Areas\Admin\Controllers\DeviceController.cs" />
     <Compile Include="Areas\Admin\Controllers\RoomController.cs" />
     <Compile Include="Areas\Admin\Controllers\SelectController.cs" />

@@ -1,0 +1,21 @@
+﻿@model IEnumerable<RightpointLabs.ConferenceRoom.Domain.Models.Entities.OrganizationServiceConfigurationEntity>
+@{ ViewBag.Title = "Services"; }
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var org in Model)
+    {
+        <tr>
+            <td>@Html.ActionLink(org.ServiceName, "Details", new { id = org.ServiceName })</td>
+            <td>@Html.ActionLink("Edit", "Edit", new { id = org.ServiceName })</td>
+        </tr>
+    }
+    </tbody>
+</table>
+<p>@Html.ActionLink("Create", "Create")</p>
