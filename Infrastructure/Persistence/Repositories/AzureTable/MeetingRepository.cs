@@ -15,22 +15,23 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
 
         public MeetingEntity GetMeetingInfo(string organizationId, string uniqueId)
         {
-            return this.GetById(organizationId, uniqueId);
+            return this.GetById(organizationId, UniqueIdToRowKey(uniqueId));
         }
 
         public MeetingEntity[] GetMeetingInfo(string organizationId, string[] uniqueIds)
         {
-            return this.GetById(organizationId, uniqueIds).ToArray();
+            return this.GetById(organizationId, uniqueIds.Select(UniqueIdToRowKey).ToArray()).ToArray();
         }
 
         protected override string GetRowKey(MeetingEntity entity)
         {
-            return entity.UniqueId;
+            return UniqueIdToRowKey(entity.UniqueId);
         }
 
         private MeetingEntity GetOrCreate(string organizationId, string uniqueId)
         {
-            return this.GetById(organizationId, uniqueId) ?? new MeetingEntity() {  OrganizationId = organizationId, UniqueId = uniqueId };
+            return this.GetById(organizationId, UniqueIdToRowKey(uniqueId)) ??
+                   new MeetingEntity() {OrganizationId = organizationId, UniqueId = uniqueId};
         }
 
         public void StartMeeting(string organizationId, string uniqueId)
@@ -55,6 +56,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
             meeting.IsEndedEarly = true;
             meeting.LastModified = DateTime.UtcNow;
             Upsert(meeting);
+        }
+
+        private string UniqueIdToRowKey(string uniqueId)
+        {
+            return uniqueId.Replace("/", "_").Replace("=", "-");
         }
     }
 }
