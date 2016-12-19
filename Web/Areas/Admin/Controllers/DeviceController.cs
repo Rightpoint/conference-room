@@ -122,14 +122,22 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
 
         public ActionResult Status(string id)
         {
-            var device = _deviceRepository.Get(id);
-            if (null == device || device.OrganizationId != CurrentOrganization.Id)
+            if (string.IsNullOrEmpty(id))
             {
-                return HttpNotFound();
+                var data = _deviceStatusRepository.GetRange(CurrentOrganization.Id, DateTime.UtcNow.AddHours(-4), DateTime.UtcNow);
+                return View(new Tuple<DeviceEntity, DeviceStatus[]>(null, data.ToArray()));
             }
+            else
+            {
+                var device = _deviceRepository.Get(id);
+                if (null == device || device.OrganizationId != CurrentOrganization.Id)
+                {
+                    return HttpNotFound();
+                }
 
-            var data = _deviceStatusRepository.GetRange(device.OrganizationId, device.Id, DateTime.UtcNow.AddHours(-4), DateTime.UtcNow);
-            return View(new Tuple<DeviceEntity, DeviceStatus[]>(device, data.ToArray()));
+                var data = _deviceStatusRepository.GetRange(device.OrganizationId, device.Id, DateTime.UtcNow.AddHours(-4), DateTime.UtcNow);
+                return View(new Tuple<DeviceEntity, DeviceStatus[]>(device, data.ToArray()));
+            }
         }
     }
 }
