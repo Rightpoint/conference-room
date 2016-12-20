@@ -101,11 +101,11 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
                 return HttpNotFound();
             }
 
-            model.OrganizationId = CurrentOrganization.Id;
-            model.BuildingId = room?.BuildingId;
+            device.ControlledRoomIds = model.ControlledRoomIds;
+            device.BuildingId = room?.BuildingId;
 
-            _deviceRepository.Update(model);
-            _broadcastService.BroadcastDeviceChange(CurrentOrganization, model);
+            _deviceRepository.Update(device);
+            _broadcastService.BroadcastDeviceChange(CurrentOrganization, device);
             return RedirectToAction("Index");
         }
 
@@ -122,9 +122,10 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
 
         public ActionResult Status(string id)
         {
+            ViewBag.Organization = CurrentOrganization;
             if (string.IsNullOrEmpty(id))
             {
-                var data = _deviceStatusRepository.GetRange(CurrentOrganization.Id, DateTime.UtcNow.AddHours(-4), DateTime.UtcNow);
+                var data = _deviceStatusRepository.GetRange(CurrentOrganization.Id, DateTime.UtcNow.AddHours(-24), DateTime.UtcNow);
                 return View(new Tuple<DeviceEntity, DeviceStatus[]>(null, data.ToArray()));
             }
             else
@@ -135,7 +136,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
                     return HttpNotFound();
                 }
 
-                var data = _deviceStatusRepository.GetRange(device.OrganizationId, device.Id, DateTime.UtcNow.AddHours(-4), DateTime.UtcNow);
+                var data = _deviceStatusRepository.GetRange(device.OrganizationId, device.Id, DateTime.UtcNow.AddHours(-24), DateTime.UtcNow);
                 return View(new Tuple<DeviceEntity, DeviceStatus[]>(device, data.ToArray()));
             }
         }

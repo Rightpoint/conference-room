@@ -4,6 +4,9 @@
 {
     <h4>@Model.Item1.Id</h4>
 }
+@{
+    var tz = (TimeZoneInfo)TimeZoneInfo.FindSystemTimeZoneById(ViewBag.Organization.TimeZoneId);
+}
 
 <table class="table">
     <thead>
@@ -29,7 +32,7 @@
             {
                 <td>@row.DeviceId</td>
             }
-            <td>@row.StatusTimestamp.ToLocalTime()</td>
+            <td>@TimeZoneInfo.ConvertTime(row.StatusTimestamp, tz)</td>
             <td>@row.Temperature1</td>
             <td>@row.Temperature2</td>
             <td>@row.Temperature3</td>

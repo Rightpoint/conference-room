@@ -11,5 +11,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
         public string JoinKey { get; set; }
         public string[] UserDomains { get; set; }
         public string[] Administrators { get; set; }
+        public string TimeZoneId { get; set; }
     }
 }
