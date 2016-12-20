@@ -123,6 +123,11 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
         public ActionResult Status(string id)
         {
             ViewBag.Organization = CurrentOrganization;
+            ViewBag.Devices = (from d in _deviceRepository.GetForOrganization(CurrentOrganization.Id)
+                               from rid in d.ControlledRoomIds
+                               join r in _roomMetadataRepository.GetRoomInfosForOrganization(CurrentOrganization.Id) on rid equals r.Id
+                               group r.RoomAddress by d.Id into g
+                               select new { g.Key, Value = g.First() }).ToDictionary(i => i.Key, i => i.Value);
             if (string.IsNullOrEmpty(id))
             {
                 var data = _deviceStatusRepository.GetRange(CurrentOrganization.Id, DateTime.UtcNow.AddHours(-24), DateTime.UtcNow);

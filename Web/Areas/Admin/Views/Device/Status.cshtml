@@ -30,7 +30,16 @@
         <tr>
             @if (Model.Item1 == null)
             {
-                <td>@row.DeviceId</td>
+                <td>
+                    @if (ViewBag.Devices.ContainsKey(row.DeviceId))
+                    {
+                        @ViewBag.Devices[row.DeviceId]
+                    }
+                    else
+                    {
+                        @row.DeviceId
+                    }
+                </td>
             }
             <td>@TimeZoneInfo.ConvertTime(row.StatusTimestamp, tz)</td>
             <td>@row.Temperature1</td>
