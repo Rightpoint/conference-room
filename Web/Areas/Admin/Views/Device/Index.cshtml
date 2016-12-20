@@ -22,6 +22,7 @@
         <th>Hostname</th>
         <th>Addresses</th>
         <th>Skew</th>
+        <th>Last Seen</th>
         <th>TZ</th>
         <th></th>
     </tr>
@@ -44,12 +45,14 @@
             <td></td>
             <td></td>
             <td></td>
+            <td></td>
         }
         else
         {
             <td>@item.ReportedState.Hostname</td>
             <td>@string.Join(", ", item.ReportedState.Addresses)</td>
             <td>@item.ReportedState.ServerUtcTime.Subtract(item.ReportedState.ReportedUtcTime)</td>
+            <td>@DateTime.UtcNow.Subtract(item.ReportedState.ServerUtcTime)</td>
             <td>@item.ReportedState.ReportedTimezoneOffset</td>
         }
         <td>
