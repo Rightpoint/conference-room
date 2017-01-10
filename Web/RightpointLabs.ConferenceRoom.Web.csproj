@@ -376,6 +376,7 @@
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\ClientLogController.cs" />
     <Compile Include="Controllers\BuildingController.cs" />
+    <Compile Include="Controllers\ClientRoomController.cs" />
     <Compile Include="Controllers\TokenController.cs" />
     <Compile Include="Controllers\DeviceController.cs" />
     <Compile Include="Controllers\SettingsController.cs" />

@@ -329,7 +329,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
                 return false;
             }
             __log.DebugFormat("Abandoning {0} for {1}/{2}", uniqueId, room.RoomAddress, room.Id);
-            CancelMeeting(room, uniqueId);
+            _CancelMeeting(room, uniqueId);
             return true;
         }
 
@@ -355,6 +355,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             {
                 throw new Exception("Cannot manage this meeting");
             }
+            _CancelMeeting(room, uniqueId);
+        }
+
+        public void _CancelMeeting(IRoom room, string uniqueId)
+        {
             _meetingRepository.CancelMeeting(room.OrganizationId, uniqueId);
 
             var item = ExchangeServiceExecuteWithImpersonationCheck(room.RoomAddress, svc =>

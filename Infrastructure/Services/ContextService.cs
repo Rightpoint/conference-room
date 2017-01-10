@@ -99,7 +99,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         protected string TokenDeviceId => _tokenService.GetDeviceId(_token.Value);
 
-        protected string TokenOrganizationId => _tokenService.GetOrganizationId(_token.Value);
+        protected virtual string TokenOrganizationId => _tokenService.GetOrganizationId(_token.Value);
 
         public string UserId => _tokenService.GetUserId(_token.Value);
 

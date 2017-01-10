@@ -90,26 +90,6 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         }
 
         /// <summary>
-        /// Marks a meeting as started
-        /// </summary>
-        /// <param name="roomId">The address of the room</param>
-        /// <param name="signature">The signature of the uniqueId - indicating it's allowed to do this</param>
-        /// <param name="uniqueId">The unique ID of the meeting</param>
-        [Route("{roomId}/meeting/startFromClient", Name = "StartFromClient")]
-        public string GetStartMeeting(string roomId, string uniqueId, string signature)
-        {
-            var room = _roomRepository.GetRoomInfo(roomId);
-            if (_conferenceRoomService.StartMeetingFromClient(room, uniqueId, signature))
-            {
-                return "Meeting started";
-            }
-            else
-            {
-                return "Invalid link - please use the device on the outside of the room";
-            }
-        }
-
-        /// <summary>
         /// Warn attendees this meeting will be marked as abandoned (not started in time) very soon.
         /// A client *must* call this.  If we lost connectivity to a client at a room, we'd rather let meetings continue normally than start cancelling them with no way for people to stop it.
         /// </summary>
@@ -139,26 +119,6 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             var room = _roomRepository.GetRoomInfo(roomId);
             AssertRoomIsFromOrg(room);
             _conferenceRoomService.CancelMeeting(room, uniqueId);
-        }
-
-        /// <summary>
-        /// Marks a meeting as cancelled
-        /// </summary>
-        /// <param name="roomId">The address of the room</param>
-        /// <param name="signature">The signature of the uniqueId - indicating it's allowed to do this</param>
-        /// <param name="uniqueId">The unique ID of the meeting</param>
-        [Route("{roomId}/meeting/abandonFromClient", Name = "CancelFromClient")]
-        public string GetCancelMeeting(string roomId, string uniqueId, string signature)
-        {
-            var room = _roomRepository.GetRoomInfo(roomId);
-            if (_conferenceRoomService.CancelMeetingFromClient(room, uniqueId, signature))
-            {
-                return "Meeting abandoned";
-            }
-            else
-            {
-                return "Invalid link - please use the device on the outside of the room";
-            }
         }
 
         /// <summary>
