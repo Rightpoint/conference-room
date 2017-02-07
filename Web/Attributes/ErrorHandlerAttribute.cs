@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -55,7 +56,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Attributes
                     IsAccessDeniedException(actionExecutedContext.Exception))
                 {
                     actionExecutedContext.Response = actionExecutedContext.Request
-                        .CreateResponse(HttpStatusCode.OK, new { error = "Access Denied", });
+                        .CreateResponse(HttpStatusCode.Unauthorized, new { error = "Access Denied", });
                 }
             }
             catch (Exception ex)
@@ -66,13 +67,13 @@ namespace RightpointLabs.ConferenceRoom.Web.Attributes
         }
 
         /// <summary>
-        /// Is the exception an <see cref="AccessDeniedException"/> or does it contain an <see cref="AccessDeniedException"/>?
+        /// Is the exception an <see cref="AccessDeniedException"/>/<see cref="SecurityTokenValidationException"/> or does it contain one?
         /// </summary>
         /// <param name="ex"></param>
         /// <returns></returns>
         private bool IsAccessDeniedException(Exception ex)
         {
-            if (ex is AccessDeniedException)
+            if (ex is AccessDeniedException || ex is SecurityTokenValidationException)
             {
                 return true;
             }
