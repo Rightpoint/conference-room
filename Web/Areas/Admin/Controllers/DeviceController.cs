@@ -102,6 +102,8 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
             }
 
             device.ControlledRoomIds = model.ControlledRoomIds;
+            device.WarnNonStartedMeetingDelay = model.WarnNonStartedMeetingDelay;
+            device.AutoCancelNonStartedMeetingDelay = model.AutoCancelNonStartedMeetingDelay;
             device.BuildingId = room?.BuildingId;
 
             _deviceRepository.Update(device);

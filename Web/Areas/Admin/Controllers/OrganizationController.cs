@@ -74,6 +74,8 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
             org.Administrators = model.Administrators;
             org.UserDomains = model.UserDomains;
             org.TimeZoneId = model.TimeZoneId;
+            org.WarnNonStartedMeetingDelay = model.WarnNonStartedMeetingDelay;
+            org.AutoCancelNonStartedMeetingDelay = model.AutoCancelNonStartedMeetingDelay;
             _organizationRepository.Save(org);
             return RedirectToAction("Index");
         }

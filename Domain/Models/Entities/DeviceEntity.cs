@@ -12,6 +12,8 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models.Entities
         public string BuildingId { get; set; }
         public string[] ControlledRoomIds { get; set; }
         public DeviceState ReportedState { get; set; }
+        public int? WarnNonStartedMeetingDelay { get; set; }
+        public int? AutoCancelNonStartedMeetingDelay { get; set; }
 
         public class DeviceState
         {
