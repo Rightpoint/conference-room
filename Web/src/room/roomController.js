@@ -164,11 +164,13 @@
 
             var now = self.currentTime();
             var warnTime = warnings[current.UniqueId];
+            console.log('checking for warn/cancel', warnTime, self.warnDelay, self.cancelDelay);
             if(!warnTime && self.warnDelay && self.warnDelay > 0) {
                 // we haven't warned yet - figure out when we should
                 warnTime = moment(current.Start).add(self.warnDelay, 'second');
                 if(!warnTime.isAfter(now)) {
                     // whoops, we should have done that already.... let's do it now.
+                    console.log('warning...');
                     room.one('meeting').post('warnAbandon', {}, { uniqueId: current.UniqueId }).then(function () {
                         // ok, we've told people, just remember what time it is so we give them a minute to start the meeting
                         warnings[current.UniqueId] = self.currentTime();
@@ -183,9 +185,12 @@
                     });
                 } else {
                     // ok, not time to warn yet - re-run once it's time
+                    console.log('waiting to warn...');
                     cancelTimeout = $timeout(scheduleCancel, warnTime.diff(now, 'millisecond', true) + 1000);
                 }
                 return;
+            } else {
+                console.log('Warn is disabled or has already happened');
             }
 
             // ok, we've warned (if that's enabled).  Have they had x seconds to get back to us yet?
@@ -193,6 +198,7 @@
                 var canCancelAt = warnTime.clone().add(self.cancelDelay, 'second');
                 if (!canCancelAt.isAfter(now)) {
                     // they've taken too long - cancel it now
+                    console.log('cancelling...');
                     room.one('meeting').post('abandon', {}, { uniqueId: current.UniqueId }).then(function () {
                         // ok, meeting is cancelled.  Just refresh
                         cancels[current.UniqueId] = self.currentTime();
@@ -204,8 +210,11 @@
                     });
                 } else {
                     // we need to give them some more time
+                    console.log('waiting to cancel...');
                     cancelTimeout = $timeout(scheduleCancel, canCancelAt.diff(now, 'millisecond', true) + 1000);
                 }
+            } else {
+                console.log('Cancel is disabled');
             }
         }
 
