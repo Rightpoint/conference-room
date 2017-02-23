@@ -348,6 +348,20 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             SendEmail(room, item, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", item.Subject, item.Location), "<p>Please start your meeting by using the RoomNinja on the wall outside the room or simply <a href='" + startUrl + "'>click here to START the meeting</a>.</p><p><a href='" + cancelUrl + "'>Click here to RELEASE the room</a> if you no longer need it so that others can use it.</p>");
         }
 
+        public void AbandonMeeting(IRoom room, string uniqueId)
+        {
+            var meeting = SecurityCheck(room, uniqueId);
+            if (meeting.IsNotManaged)
+            {
+                throw new Exception("Cannot manage this meeting");
+            }
+            if (meeting.IsStarted)
+            {
+                throw new Exception("Cannot abandon a meeting that has started");
+            }
+            _CancelMeeting(room, uniqueId);
+        }
+
         public void CancelMeeting(IRoom room, string uniqueId)
         {
             var meeting = SecurityCheck(room, uniqueId);

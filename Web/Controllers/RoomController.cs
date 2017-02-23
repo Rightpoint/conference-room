@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Web.Http;
 using log4net;
+using Newtonsoft.Json.Linq;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
@@ -60,7 +61,14 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             var room = _roomRepository.GetRoomInfo(roomId);
             AssertRoomIsFromOrg(room);
             var data = _conferenceRoomService.GetStatus(room);
-            return data;
+
+            var retVal = JObject.FromObject(data);
+            var warnDelay = _contextService.CurrentDevice?.WarnNonStartedMeetingDelay ?? _contextService.CurrentOrganization?.WarnNonStartedMeetingDelay ?? 5 * 60;
+            var cancelDelay = _contextService.CurrentDevice?.AutoCancelNonStartedMeetingDelay ?? _contextService.CurrentOrganization?.AutoCancelNonStartedMeetingDelay ?? 7 * 60;
+            retVal["warnDelay"] = warnDelay;
+            retVal["cancelDelay"] = cancelDelay;
+
+            return retVal;
         }
 
         private void AssertRoomIsFromOrg(RoomMetadataEntity room)
@@ -107,18 +115,30 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         }
 
         /// <summary>
+        /// Marks a meeting as cancelled (user took action).
+        /// </summary>
+        /// <param name="roomId">The address of the room</param>
+        /// <param name="uniqueId">The unique ID of the meeting</param>
+        [Route("{roomId}/meeting/cancel")]
+        public void PostCancelMeeting(string roomId, string uniqueId)
+        {
+            var room = _roomRepository.GetRoomInfo(roomId);
+            AssertRoomIsFromOrg(room);
+            _conferenceRoomService.CancelMeeting(room, uniqueId);
+        }
+
+        /// <summary>
         /// Marks a meeting as abandoned (not started in time).
         /// A client *must* call this.  If we lost connectivity to a client at a room, we'd rather let meetings continue normally than start cancelling them with no way for people to stop it.
         /// </summary>
         /// <param name="roomId">The address of the room</param>
-        /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
         [Route("{roomId}/meeting/abandon")]
         public void PostAbandonMeeting(string roomId, string uniqueId)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
             AssertRoomIsFromOrg(room);
-            _conferenceRoomService.CancelMeeting(room, uniqueId);
+            _conferenceRoomService.AbandonMeeting(room, uniqueId);
         }
 
         /// <summary>

@@ -14,6 +14,7 @@ namespace RightpointLabs.ConferenceRoom.Domain.Services
         void StartMeeting(IRoom room, string uniqueId);
         bool StartMeetingFromClient(IRoom room, string uniqueId, string signature);
         void WarnMeeting(IRoom room, string uniqueId, Func<string, string> buildStartUrl, Func<string, string> buildCancelUrl);
+        void AbandonMeeting(IRoom room, string uniqueId);
         void CancelMeeting(IRoom room, string uniqueId);
         void EndMeeting(IRoom room, string uniqueId);
         void StartNewMeeting(IRoom room, string title, DateTime endTime);
