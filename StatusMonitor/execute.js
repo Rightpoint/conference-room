@@ -116,7 +116,7 @@ module.exports = function execute(config, led) {
         sendStatus();
         setInterval(sendStatus, 60000);
 
-        if(config.bluetooth) {
+        if(config.bluetooth && tokenInfo.beaconNamespace, tokenInfo.beaconUid) {
             var beacon = require('eddystone-beacon');
             var btOptions = {
                 name: 'Beacon',
@@ -125,7 +125,7 @@ module.exports = function execute(config, led) {
                 tlmPeriod: 10
             };
             console.log('Starting bluetooth advertisement');
-            beacon.advertiseUid(config.bluetooth.namespace, deviceToken.deviceid, btOptions);
+            beacon.advertiseUid(tokenInfo.beaconNamespace, tokenInfo.beaconUid, btOptions);
         }
 
         function getStatus() {

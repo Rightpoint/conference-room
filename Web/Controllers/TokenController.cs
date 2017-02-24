@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Web.Http;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
@@ -70,7 +71,16 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
                 building = device?.BuildingId,
                 controlledRooms = device?.ControlledRoomIds,
                 user = userId,
+                beaconNamespace = BuildId(org?.Id, 10),
+                beaconUid = BuildId(device?.Id, 6),
             };
+        }
+
+        private string BuildId(string deviceId, int length)
+        {
+            return string.IsNullOrEmpty(deviceId) 
+                ? null 
+                : string.Join("", SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(deviceId)).Take(length).Select(i => $"{i:x2}"));
         }
     }
 }
