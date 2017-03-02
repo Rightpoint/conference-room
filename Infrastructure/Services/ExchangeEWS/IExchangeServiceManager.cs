@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Exchange.WebServices.Data;
 
-namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
+namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeEWS
 {
     public interface IExchangeServiceManager
     {

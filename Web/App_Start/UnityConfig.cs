@@ -20,6 +20,7 @@ using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 using RightpointLabs.ConferenceRoom.Infrastructure.Models;
 using RightpointLabs.ConferenceRoom.Infrastructure.Services;
+using RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeEWS;
 using RightpointLabs.ConferenceRoom.Web.SignalR;
 using Unity.WebApi;
 

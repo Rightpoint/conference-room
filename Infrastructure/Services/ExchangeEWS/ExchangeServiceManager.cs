@@ -4,7 +4,7 @@ using System.Reflection;
 using log4net;
 using Microsoft.Exchange.WebServices.Data;
 
-namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
+namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeEWS
 {
     public class ExchangeServiceManager : IExchangeServiceManager
     {

@@ -9,6 +9,7 @@ using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Services;
+using RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeEWS;
 using Task = System.Threading.Tasks.Task;
 using Timer = System.Timers.Timer;
 

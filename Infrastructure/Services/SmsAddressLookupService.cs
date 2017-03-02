@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using log4net;
 using Microsoft.Exchange.WebServices.Data;
 using RightpointLabs.ConferenceRoom.Domain;
+using RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeEWS;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 {

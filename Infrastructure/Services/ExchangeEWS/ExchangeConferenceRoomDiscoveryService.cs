@@ -4,12 +4,11 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using log4net;
-using Microsoft.Exchange.WebServices.Data;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 using Task = System.Threading.Tasks.Task;
 
-namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
+namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeEWS
 {
     public class ExchangeConferenceRoomDiscoveryService : IConferenceRoomDiscoveryService
     {

@@ -142,12 +142,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\ContextService.cs" />
     <Compile Include="Services\ChangeNotificationService.cs" />
-    <Compile Include="Services\ConnectionManager.cs" />
-    <Compile Include="Services\ExchangeConferenceRoomDiscoveryService.cs" />
-    <Compile Include="Services\ExchangeConferenceRoomService.cs" />
+    <Compile Include="Services\ExchangeEWS\ExchangeServiceManager.cs" />
+    <Compile Include="Services\ExchangeEWS\ExchangeConferenceRoomDiscoveryService.cs" />
+    <Compile Include="Services\ExchangeEWS\ExchangeConferenceRoomService.cs" />
     <Compile Include="Services\HttpTokenProvider.cs" />
     <Compile Include="Services\IChangeNotificationService.cs" />
-    <Compile Include="Services\IExchangeServiceManager.cs" />
+    <Compile Include="Services\ExchangeEWS\IExchangeServiceManager.cs" />
     <Compile Include="Services\GdoService.cs" />
     <Compile Include="Services\ITokenProvider.cs" />
     <Compile Include="Services\ITokenService.cs" />
@@ -170,7 +170,9 @@
       <Name>RightpointLabs.ConferenceRoom.Domain</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Services\ExchangeRest\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,15 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
-using System.Net;
-using System.Net.Mail;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using log4net;
 using Microsoft.Exchange.WebServices.Data;
-using Microsoft.Rtc.Collaboration;
 using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
@@ -18,7 +12,7 @@ using RightpointLabs.ConferenceRoom.Domain.Services;
 using RightpointLabs.ConferenceRoom.Infrastructure.Models;
 using Task = System.Threading.Tasks.Task;
 
-namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
+namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeEWS
 {
     public class ExchangeConferenceRoomService : IConferenceRoomService
     {
