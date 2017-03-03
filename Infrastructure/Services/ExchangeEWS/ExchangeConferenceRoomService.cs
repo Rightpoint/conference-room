@@ -14,7 +14,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeEWS
 {
-    public class ExchangeConferenceRoomService : IConferenceRoomService
+    public class ExchangeConferenceRoomService : ISyncConferenceRoomService
     {
         private static readonly ILog __log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private readonly IMeetingRepository _meetingRepository;

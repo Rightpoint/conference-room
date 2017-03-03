@@ -122,6 +122,8 @@
     <Compile Include="Services\ISignatureService.cs" />
     <Compile Include="Services\ISimpleTimedCache.cs" />
     <Compile Include="Services\ISmsMessagingService.cs" />
+    <Compile Include="Services\SyncConferenceRoomServiceWrapper.cs" />
+    <Compile Include="Services\ISyncConferenceRoomService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

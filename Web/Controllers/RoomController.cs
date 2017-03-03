@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web.Http;
 using log4net;
 using Newtonsoft.Json.Linq;
@@ -36,17 +37,24 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             _buildingRepository = buildingRepository;
         }
 
+
+        [Route("all")]
+        public async Task<object> GetAll()
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Gets the info for a single room.
         /// </summary>
         /// <param name="roomId">The room address returned from <see cref="RoomListController.GetRooms"/></param>
         /// <returns></returns>
         [Route("{roomId}/info")]
-        public object GetInfo(string roomId)
+        public async Task<object> GetInfo(string roomId)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
-            AssertRoomIsFromOrg(room);
-            var data = _conferenceRoomService.GetStaticInfo(room);
+            await AssertRoomIsFromOrg(room);
+            var data = await _conferenceRoomService.GetStaticInfo(room);
             return data;
         }
 
@@ -56,11 +64,11 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <param name="roomId">The room address returned from <see cref="RoomListController.GetRooms"/></param>
         /// <returns></returns>
         [Route("{roomId}/status")]
-        public object GetStatus(string roomId)
+        public async Task<object> GetStatus(string roomId)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
-            AssertRoomIsFromOrg(room);
-            var data = _conferenceRoomService.GetStatus(room);
+            await AssertRoomIsFromOrg(room);
+            var data = await _conferenceRoomService.GetStatus(room);
 
             var retVal = JObject.FromObject(data);
             var warnDelay = _contextService.CurrentDevice?.WarnNonStartedMeetingDelay ?? _contextService.CurrentOrganization?.WarnNonStartedMeetingDelay ?? 5 * 60;
@@ -71,7 +79,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             return retVal;
         }
 
-        private void AssertRoomIsFromOrg(RoomMetadataEntity room)
+        private async Task AssertRoomIsFromOrg(RoomMetadataEntity room)
         {
             if (null == room)
             {
@@ -90,11 +98,11 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
         [Route("{roomId}/meeting/start")]
-        public void PostStartMeeting(string roomId, string uniqueId)
+        public async Task PostStartMeeting(string roomId, string uniqueId)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
-            AssertRoomIsFromOrg(room);
-            _conferenceRoomService.StartMeeting(room, uniqueId);
+            await AssertRoomIsFromOrg(room);
+            await _conferenceRoomService.StartMeeting(room, uniqueId);
         }
 
         /// <summary>
@@ -105,11 +113,11 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
         [Route("{roomId}/meeting/warnAbandon")]
-        public void PostWarnAbandonMeeting(string roomId, string uniqueId)
+        public async Task PostWarnAbandonMeeting(string roomId, string uniqueId)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
-            AssertRoomIsFromOrg(room);
-            _conferenceRoomService.WarnMeeting(room, uniqueId,
+            await AssertRoomIsFromOrg(room);
+            await _conferenceRoomService.WarnMeeting(room, uniqueId,
                 signature => new Uri(Request.RequestUri, Url.Route("StartFromClient", new { roomId, uniqueId, signature })).AbsoluteUri,
                 signature => new Uri(Request.RequestUri, Url.Route("CancelFromClient", new { roomId, uniqueId, signature })).AbsoluteUri);
         }
@@ -120,11 +128,11 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <param name="roomId">The address of the room</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
         [Route("{roomId}/meeting/cancel")]
-        public void PostCancelMeeting(string roomId, string uniqueId)
+        public async Task PostCancelMeeting(string roomId, string uniqueId)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
-            AssertRoomIsFromOrg(room);
-            _conferenceRoomService.CancelMeeting(room, uniqueId);
+            await AssertRoomIsFromOrg(room);
+            await _conferenceRoomService.CancelMeeting(room, uniqueId);
         }
 
         /// <summary>
@@ -134,11 +142,11 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <param name="roomId">The address of the room</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
         [Route("{roomId}/meeting/abandon")]
-        public void PostAbandonMeeting(string roomId, string uniqueId)
+        public async Task PostAbandonMeeting(string roomId, string uniqueId)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
-            AssertRoomIsFromOrg(room);
-            _conferenceRoomService.AbandonMeeting(room, uniqueId);
+            await AssertRoomIsFromOrg(room);
+            await _conferenceRoomService.AbandonMeeting(room, uniqueId);
         }
 
         /// <summary>
@@ -149,11 +157,11 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <param name="title">The title of the meeting</param>
         /// <param name="endTime">The time the meeting will end</param>
         [Route("{roomId}/meeting/startNew")]
-        public void PostStartNewMeeting(string roomId, string title, DateTime endTime)
+        public async Task PostStartNewMeeting(string roomId, string title, DateTime endTime)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
-            AssertRoomIsFromOrg(room);
-            _conferenceRoomService.StartNewMeeting(room, title, endTime);
+            await AssertRoomIsFromOrg(room);
+            await _conferenceRoomService.StartNewMeeting(room, title, endTime);
         }
 
         /// <summary>
@@ -164,23 +172,23 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
         [Route("{roomId}/meeting/end")]
-        public void PostEndMeeting(string roomId, string uniqueId)
+        public async Task PostEndMeeting(string roomId, string uniqueId)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
-            AssertRoomIsFromOrg(room);
-            _conferenceRoomService.EndMeeting(room, uniqueId);
+            await AssertRoomIsFromOrg(room);
+            await _conferenceRoomService.EndMeeting(room, uniqueId);
         }
 
         [Route("{roomId}/meeting/message")]
-        public void PostMessageMeeting(string roomId, string uniqueId)
+        public async Task PostMessageMeeting(string roomId, string uniqueId)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
-            AssertRoomIsFromOrg(room);
-            _conferenceRoomService.MessageMeeting(room, uniqueId);
+            await AssertRoomIsFromOrg(room);
+            await _conferenceRoomService.MessageMeeting(room, uniqueId);
         }
 
-        [Route("all/status/{buildingId}")]
-        public object GetAllStatus(string buildingId)
+        [Route("all/{buildingId}")]
+        public async Task<object> GetAll(string buildingId)
         {
             var building = _buildingRepository.Get(buildingId ?? _contextService.CurrentDevice?.BuildingId);
             if (null == building || building.OrganizationId != _contextService.CurrentOrganization?.Id)
@@ -188,7 +196,25 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
                 return NotFound();
             }
 
-            var roomInfos = _conferenceRoomService.GetInfoForRoomsInBuilding(buildingId);
+            var roomInfos = await _conferenceRoomService.GetInfoForRoomsInBuilding(buildingId);
+
+            // ok, we have the filtered rooms list, now we need to get the status and smash it together with the room data
+            return
+                roomInfos
+                    .Select(i => new { Address = i.Key, i.Value.Item2.Id, Info = i.Value.Item1 })
+                    .ToList();
+        }
+
+        [Route("all/status/{buildingId}")]
+        public async Task<object> GetAllStatus(string buildingId)
+        {
+            var building = _buildingRepository.Get(buildingId ?? _contextService.CurrentDevice?.BuildingId);
+            if (null == building || building.OrganizationId != _contextService.CurrentOrganization?.Id)
+            {
+                return NotFound();
+            }
+
+            var roomInfos = await _conferenceRoomService.GetInfoForRoomsInBuilding(buildingId);
             
             // ok, we have the filtered rooms list, now we need to get the status and smash it together with the room data
             return
@@ -199,7 +225,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
                         //__log.DebugFormat("Starting {0}", i.Address);
                         var status = _conferenceRoomService.GetStatus(i.Value.Item2, true);
                         //__log.DebugFormat("Got {0}", i.Address);
-                        return new {Address = i.Key, Info = i.Value.Item1, Status = status};
+                        return new {Address = i.Key, i.Value.Item2.Id, Info = i.Value.Item1, Status = status};
                     })
                     .ToList();
         }
@@ -210,11 +236,11 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <param name="roomId">The address of the room</param>
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         [Route("{roomId}/door/open")]
-        public async System.Threading.Tasks.Task PostOpenDoor(string roomId)
+        public async Task PostOpenDoor(string roomId)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
-            AssertRoomIsFromOrg(room);
-            _conferenceRoomService.SecurityCheck(room);
+            await AssertRoomIsFromOrg(room);
+            await _conferenceRoomService.SecurityCheck(room);
             if (string.IsNullOrEmpty(room.GdoDeviceId))
             {
                 throw new ArgumentException("No door to control");
@@ -228,11 +254,11 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <param name="roomId">The address of the room</param>
         /// <param name="securityKey">The client's security key (indicating it is allowed to do this)</param>
         [Route("{roomId}/door/close")]
-        public async System.Threading.Tasks.Task PostCloseDoor(string roomId)
+        public async Task PostCloseDoor(string roomId)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
-            AssertRoomIsFromOrg(room);
-            _conferenceRoomService.SecurityCheck(room);
+            await AssertRoomIsFromOrg(room);
+            await _conferenceRoomService.SecurityCheck(room);
             if (string.IsNullOrEmpty(room.GdoDeviceId))
             {
                 throw new ArgumentException("No door to control");

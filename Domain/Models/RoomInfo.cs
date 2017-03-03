@@ -21,5 +21,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models
         public List<RoomEquipment> Equipment { get; set; }
         public bool HasControllableDoor { get; set; }
         public string BeaconUid { get; set; }
+        public string Id { get; set; }
     }
 }

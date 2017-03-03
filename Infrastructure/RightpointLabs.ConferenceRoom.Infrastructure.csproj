@@ -77,6 +77,14 @@
     <Reference Include="Microsoft.Exchange.WebServices.Auth">
       <HintPath>..\packages\Microsoft.Exchange.WebServices.2.2\lib\40\Microsoft.Exchange.WebServices.Auth.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory, Version=3.13.8.999, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.3.13.8\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory.Platform, Version=3.13.8.999, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.3.13.8\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.IdentityModel.Logging, Version=1.0.0.127, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Logging.1.0.0\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
       <Private>True</Private>
@@ -145,6 +153,11 @@
     <Compile Include="Services\ExchangeEWS\ExchangeServiceManager.cs" />
     <Compile Include="Services\ExchangeEWS\ExchangeConferenceRoomDiscoveryService.cs" />
     <Compile Include="Services\ExchangeEWS\ExchangeConferenceRoomService.cs" />
+    <Compile Include="Services\ExchangeRest\GraphRestWrapper.cs" />
+    <Compile Include="Services\ExchangeRest\RestWrapperBase.cs" />
+    <Compile Include="Services\ExchangeRest\ExchangeRestWrapper.cs" />
+    <Compile Include="Services\ExchangeRest\ExchangeRestConferenceRoomService.cs" />
+    <Compile Include="Services\ExchangeRest\ExchangeRestWrapperFactory.cs" />
     <Compile Include="Services\HttpTokenProvider.cs" />
     <Compile Include="Services\IChangeNotificationService.cs" />
     <Compile Include="Services\ExchangeEWS\IExchangeServiceManager.cs" />
@@ -170,9 +183,7 @@
       <Name>RightpointLabs.ConferenceRoom.Domain</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Services\ExchangeRest\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web.Http;
 using log4net;
 using RightpointLabs.ConferenceRoom.Domain;
@@ -37,13 +38,13 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <param name="signature">The signature of the uniqueId - indicating it's allowed to do this</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
         [Route("{roomId}/meeting/startFromClient", Name = "StartFromClient")]
-        public string GetStartMeeting(string roomId, string uniqueId, string signature)
+        public async Task<string> GetStartMeeting(string roomId, string uniqueId, string signature)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
             using (var child = _container.CreateChildContainer())
             {
                 var conferenceRoomService = SetupChildContext(child, room.OrganizationId);
-                if (conferenceRoomService.StartMeetingFromClient(room, uniqueId, signature))
+                if (await conferenceRoomService.StartMeetingFromClient(room, uniqueId, signature))
                 {
                     return "Meeting started";
                 }
@@ -61,13 +62,13 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <param name="signature">The signature of the uniqueId - indicating it's allowed to do this</param>
         /// <param name="uniqueId">The unique ID of the meeting</param>
         [Route("{roomId}/meeting/abandonFromClient", Name = "CancelFromClient")]
-        public string GetCancelMeeting(string roomId, string uniqueId, string signature)
+        public async Task<string> GetCancelMeeting(string roomId, string uniqueId, string signature)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
             using (var child = _container.CreateChildContainer())
             {
                 var conferenceRoomService = SetupChildContext(child, room.OrganizationId);
-                if (conferenceRoomService.CancelMeetingFromClient(room, uniqueId, signature))
+                if (await conferenceRoomService.CancelMeetingFromClient(room, uniqueId, signature))
                 {
                     return "Meeting abandoned";
                 }

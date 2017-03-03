@@ -21,6 +21,7 @@ using RightpointLabs.ConferenceRoom.Domain.Services;
 using RightpointLabs.ConferenceRoom.Infrastructure.Models;
 using RightpointLabs.ConferenceRoom.Infrastructure.Services;
 using RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeEWS;
+using RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest;
 using RightpointLabs.ConferenceRoom.Web.SignalR;
 using Unity.WebApi;
 
@@ -79,7 +80,30 @@ namespace RightpointLabs.ConferenceRoom.Web
 
             container.RegisterType<ISmsAddressLookupService, SmsAddressLookupService>(new HierarchicalLifetimeManager());
             container.RegisterType<ISignatureService, SignatureService>(new ContainerControlledLifetimeManager());
-            container.RegisterType<IConferenceRoomService, ExchangeConferenceRoomService>(new HierarchicalLifetimeManager());
+
+            if (false)
+            {
+                container.RegisterType<ISyncConferenceRoomService, ExchangeConferenceRoomService>(new HierarchicalLifetimeManager());
+                container.RegisterType<IConferenceRoomService, SyncConferenceRoomServiceWrapper>(new HierarchicalLifetimeManager());
+            }
+            else
+            {
+                container.RegisterType<ExchangeRestWrapperFactory, ExchangeRestWrapperFactory>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => 
+                    new ExchangeRestWrapperFactory(ConfigurationManager.AppSettings["ExchangeApiClientId"], ConfigurationManager.AppSettings["ExchangeApiClientSecret"])));
+                container.RegisterType<IConferenceRoomService, ExchangeRestConferenceRoomService>(new HierarchicalLifetimeManager());
+
+                container.RegisterType<ExchangeRestWrapper>(new HierarchicalLifetimeManager(),
+                    new InjectionFactory(
+                        c =>
+                            CreateOrganizationalService(c, "Exchange",
+                                _ => System.Threading.Tasks.Task.Run(async () => await c.Resolve<ExchangeRestWrapperFactory>().CreateExchange(null, (string)_.Username.Value, (string)_.Password.Value)).Result)));
+                container.RegisterType<GraphRestWrapper>(new HierarchicalLifetimeManager(),
+                    new InjectionFactory(
+                        c =>
+                            CreateOrganizationalService(c, "Exchange",
+                                _ => System.Threading.Tasks.Task.Run(async () => await c.Resolve<ExchangeRestWrapperFactory>().CreateGraph(null, (string)_.Username.Value, (string)_.Password.Value)).Result)));
+            }
+
             container.RegisterType<IExchangeServiceManager, ExchangeServiceManager>(new ContainerControlledLifetimeManager());
             container.RegisterType<IMeetingCacheService, MeetingCacheService>(new ContainerControlledLifetimeManager()); // singleton cache
             container.RegisterType<ISimpleTimedCache, SimpleTimedCache>(new ContainerControlledLifetimeManager()); // singleton cache
