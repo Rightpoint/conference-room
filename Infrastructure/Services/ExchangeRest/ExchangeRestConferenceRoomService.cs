@@ -28,8 +28,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
         private readonly IMeetingRepository _meetingRepository;
         private readonly IBroadcastService _broadcastService;
         private readonly ISignatureService _signatureService;
+        private readonly ISmsAddressLookupService _smsAddressLookupService;
+        private readonly ISmsMessagingService _smsMessagingService;
+        private readonly IInstantMessagingService _instantMessagingService;
+        private readonly IRoomMetadataRepository _roomRepository;
 
-        public ExchangeRestConferenceRoomService(ExchangeRestWrapper exchange, GraphRestWrapper graph, IContextService contextService, IDateTimeService dateTimeService, IBuildingRepository buildingRepository, IFloorRepository floorRepository, IMeetingRepository meetingRepository, IBroadcastService broadcastService, ISignatureService signatureService)
+        public ExchangeRestConferenceRoomService(ExchangeRestWrapper exchange, GraphRestWrapper graph, IContextService contextService, IDateTimeService dateTimeService, IBuildingRepository buildingRepository, IFloorRepository floorRepository, IMeetingRepository meetingRepository, IBroadcastService broadcastService, ISignatureService signatureService, ISmsAddressLookupService smsAddressLookupService, ISmsMessagingService smsMessagingService, IInstantMessagingService instantMessagingService, IRoomMetadataRepository roomRepository)
         {
             _exchange = exchange;
             _graph = graph;
@@ -40,6 +44,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             _meetingRepository = meetingRepository;
             _broadcastService = broadcastService;
             _signatureService = signatureService;
+            _smsAddressLookupService = smsAddressLookupService;
+            _smsMessagingService = smsMessagingService;
+            _instantMessagingService = instantMessagingService;
+            _roomRepository = roomRepository;
         }
 
         public async Task<RoomInfo> GetStaticInfo(IRoom room)
@@ -85,7 +93,6 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             };
         }
 
-
         private async Task<IEnumerable<Meeting>> GetUpcomingAppointmentsForRoom(IRoom room)
         {
             var apt = (await _exchange.GetCalendarEvents(room.RoomAddress, _dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2)))?.Value ?? new ExchangeRestWrapper.CalendarEntry[0];
@@ -94,14 +101,35 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 apt = apt.Where(i => i.ShowAs != ExchangeRestWrapper.ShowAs.Free).ToArray();
             }
 
+            return await BuildMeetings(room, apt);
+        }
+
+        private async Task<Tuple<Meeting, ExchangeRestWrapper.CalendarEntry>> GetAppointmentForRoom(IRoom room, string uniqueId)
+        {
+            var apt = (await _exchange.GetCalendarEvent(room.RoomAddress, uniqueId))?.Value;
+            if (null == apt)
+            {
+                return null;
+            }
+
+            return new Tuple<Meeting, ExchangeRestWrapper.CalendarEntry>((await BuildMeetings(room, new [] { apt })).Single(), apt);
+        }
+
+        private async Task<Meeting[]> BuildMeetings(IRoom room, ExchangeRestWrapper.CalendarEntry[] apt)
+        {
             // short-circuit if we don't have any meetings
             if (!apt.Any())
             {
-                return new Meeting[] { };
+                return new Meeting[] {};
             }
 
             var meetings = _meetingRepository.GetMeetingInfo(room.OrganizationId, apt.Select(i => i.Id).ToArray()).ToDictionary(i => i.UniqueId);
-            return apt.Select(i => BuildMeeting(i, meetings.TryGetValue(i.Id) ?? new MeetingEntity() { Id = i.Id, OrganizationId = room.OrganizationId })).ToArray().AsEnumerable();
+            return
+                apt.Select(
+                        i =>
+                            BuildMeeting(i,
+                                meetings.TryGetValue(i.Id) ?? new MeetingEntity() {Id = i.Id, OrganizationId = room.OrganizationId}))
+                    .ToArray();
         }
 
         private Task<IEnumerable<Meeting>> GetSimpleUpcomingAppointmentsForRoom(IRoom room)
@@ -196,10 +224,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             return info;
         }
 
-        private async Task<Meeting> SecurityCheck(IRoom room, string uniqueId)
+        private async Task<Tuple<Meeting, ExchangeRestWrapper.CalendarEntry>> SecurityCheck(IRoom room, string uniqueId)
         {
             await SecurityCheck(room);
-            var meeting =(await GetUpcomingAppointmentsForRoom(room)).FirstOrDefault(i => i.UniqueId == uniqueId);
+            var meeting = await GetAppointmentForRoom(room, uniqueId);
             if (null == meeting)
             {
                 __log.InfoFormat("Unable to find meeting {0}", uniqueId);
@@ -242,11 +270,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
         public async Task CancelMeeting(IRoom room, string uniqueId)
         {
             var meeting = await SecurityCheck(room, uniqueId);
-            if (meeting.IsNotManaged)
+            if (meeting.Item1.IsNotManaged)
             {
                 throw new Exception("Cannot manage this meeting");
             }
-            await _CancelMeeting(room, meeting);
+            await _CancelMeeting(room, meeting.Item2);
         }
 
         public async Task<bool> CancelMeetingFromClient(IRoom room, string uniqueId, string signature)
@@ -256,17 +284,17 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 __log.ErrorFormat("Invalid signature: {0} for {1}", signature, uniqueId);
                 return false;
             }
-            var meeting = (await GetUpcomingAppointmentsForRoom(room)).FirstOrDefault(i => i.UniqueId == uniqueId);
+            var meeting = await GetAppointmentForRoom(room, uniqueId);
             __log.DebugFormat("Abandoning {0} for {1}/{2}", uniqueId, room.RoomAddress, room.Id);
-            await _CancelMeeting(room, meeting);
+            await _CancelMeeting(room, meeting.Item2);
             return true;
         }
 
-        private async Task _CancelMeeting(IRoom room, Meeting meeting)
+        private async Task _CancelMeeting(IRoom room, ExchangeRestWrapper.CalendarEntry meeting)
         {
-            _meetingRepository.CancelMeeting(room.OrganizationId, meeting.UniqueId);
+            _meetingRepository.CancelMeeting(room.OrganizationId, meeting.Id);
 
-            await _exchange.Truncate(meeting.UniqueId);
+            await _exchange.Truncate(room.RoomAddress, meeting, _dateTimeService.Now.TruncateToTheMinute());
 
             await SendEmail(room, meeting,
                 string.Format("Your meeting '{0}' in {1} has been cancelled.", meeting.Subject, room.RoomAddress),
@@ -276,60 +304,168 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
         }
 
 
-        private async Task SendEmail(IRoom room, Meeting meeting, string subject, string body)
+        private async Task SendEmail(IRoom room, ExchangeRestWrapper.CalendarEntry meeting, string subject, string body)
         {
-            throw new NotImplementedException();
-            //var msg = new EmailMessage(svc);
-            //msg.From = new EmailAddress(room.RoomAddress);
-            //msg.ReplyTo.Add("noreply@" + room.RoomAddress.Split('@').Last());
-            //msg.Subject = subject;
-            //msg.Body = body;
-            //msg.Body.BodyType = BodyType.HTML;
-            //__log.DebugFormat("Address: {0}, MailboxType: {1}", item.Organizer.Address, item.Organizer.MailboxType);
-            //if (item.Organizer.MailboxType == MailboxType.Mailbox)
-            //{
-            //    msg.ToRecipients.Add(item.Organizer);
-            //}
-            //foreach (var x in item.RequiredAttendees.Concat(item.OptionalAttendees))
-            //{
-            //    __log.DebugFormat("Address: {0}, MailboxType: {1}, RoutingType: {2}", x.Address, x.MailboxType, x.RoutingType);
-            //    if (x.RoutingType == "SMTP" && IsExternalAttendee(x) == false)
-            //    {
-            //        __log.DebugFormat("Also sending to {0} @ {1}", x.Name, x.Address);
-            //        msg.CcRecipients.Add(x.Name, x.Address);
-            //    }
-            //}
-            //msg.Send();
+            var msg  = new ExchangeRestWrapper.Message()
+            {
+                From = new ExchangeRestWrapper.Recipient() { EmailAddress = new ExchangeRestWrapper.EmailAddress() { Address = room.RoomAddress } },
+                ReplyTo = new []
+                {
+                    new ExchangeRestWrapper.Recipient() { EmailAddress = new ExchangeRestWrapper.EmailAddress() { Address = "noreply@" + room.RoomAddress.Split('@').Last() } },
+                },
+                Subject = subject,
+                Body = new ExchangeRestWrapper.BodyContent()
+                {
+                    ContentType = "HTML",
+                    Content = body,
+                },
+                ToRecipients = new ExchangeRestWrapper.Recipient[0],
+            };
+
+            msg.ToRecipients =
+                new [] {  meeting.Organizer }.Concat(meeting.Attendees)
+                .Where(i => !IsExternalAttendee(i))
+                .Select(i => i?.EmailAddress)
+                .Where(i => !string.IsNullOrEmpty(i?.Address))
+                .Select(i => new ExchangeRestWrapper.Recipient { EmailAddress = i } )
+                .ToArray();
+
+            await _exchange.SendMessage(msg);
         }
 
-        public Task WarnMeeting(IRoom room, string uniqueId, Func<string, string> buildStartUrl, Func<string, string> buildCancelUrl)
+        public async Task WarnMeeting(IRoom room, string uniqueId, Func<string, string> buildStartUrl, Func<string, string> buildCancelUrl)
         {
-            throw new NotImplementedException();
+            var meeting = await SecurityCheck(room, uniqueId);
+            if (meeting.Item1.IsNotManaged)
+            {
+                throw new Exception("Cannot manage this meeting");
+            }
+
+            __log.DebugFormat("Warning {0} for {1}/{2}, which should start at {3}", uniqueId, room.RoomAddress, room.Id, meeting.Item2.Start);
+            var startUrl = buildStartUrl(_signatureService.GetSignature(room, uniqueId));
+            var cancelUrl = buildCancelUrl(_signatureService.GetSignature(room, uniqueId));
+            await SendEmail(room, meeting.Item2, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", meeting.Item2.Subject, meeting.Item2.Location), "<p>Please start your meeting by using the RoomNinja on the wall outside the room or simply <a href='" + startUrl + "'>click here to START the meeting</a>.</p><p><a href='" + cancelUrl + "'>Click here to RELEASE the room</a> if you no longer need it so that others can use it.</p>");
         }
 
-        public Task AbandonMeeting(IRoom room, string uniqueId)
+        public async Task AbandonMeeting(IRoom room, string uniqueId)
         {
-            throw new NotImplementedException();
+            var meeting = await SecurityCheck(room, uniqueId);
+            if (meeting.Item1.IsNotManaged)
+            {
+                throw new Exception("Cannot manage this meeting");
+            }
+            if (meeting.Item1.IsStarted)
+            {
+                throw new Exception("Cannot abandon a meeting that has started");
+            }
+            await _CancelMeeting(room, meeting.Item2);
         }
 
-        public Task EndMeeting(IRoom room, string uniqueId)
+        public async Task EndMeeting(IRoom room, string uniqueId)
         {
-            throw new NotImplementedException();
+            var meeting = await SecurityCheck(room, uniqueId);
+            if (meeting.Item1.IsNotManaged)
+            {
+                throw new Exception("Cannot manage this meeting");
+            }
+            _meetingRepository.EndMeeting(room.OrganizationId, uniqueId);
+
+            var now = _dateTimeService.Now.TruncateToTheMinute();
+            await _exchange.Truncate(room.RoomAddress, meeting.Item2, now);
+
+            await BroadcastUpdate(room);
         }
 
-        public Task StartNewMeeting(IRoom room, string title, DateTime endTime)
+        public async Task StartNewMeeting(IRoom room, string title, DateTime endTime)
         {
-            throw new NotImplementedException();
+            await SecurityCheck(room);
+            var status = await GetStatus(room);
+            if (status.Status != RoomStatus.Free)
+            {
+                throw new Exception("Room is not free");
+            }
+
+
+            var now = _dateTimeService.Now.TruncateToTheMinute();
+            if (status.NextMeeting != null)
+            {
+                if (endTime > status.NextMeeting.Start)
+                {
+                    endTime = status.NextMeeting.Start;
+                }
+            }
+            if (endTime.Subtract(now).TotalHours > 2)
+            {
+                throw new ApplicationException("Cannot create a meeting for more than 2 hours");
+            }
+
+            var item = await _exchange.CreateEvent(room.RoomAddress, new ExchangeRestWrapper.CalendarEntry
+            {
+                Start = new ExchangeRestWrapper.DateTimeReference() { DateTime = now.ToUniversalTime().ToString("o") },
+                End = new ExchangeRestWrapper.DateTimeReference() { DateTime = endTime.ToUniversalTime().ToString("o") },
+                Subject = title,
+                Body = new ExchangeRestWrapper.BodyContent() {  Content = "Scheduled via conference room management system", ContentType = "Text" },
+            });
+
+            _meetingRepository.StartMeeting(room.OrganizationId, item.Id);
+            await BroadcastUpdate(room);
         }
 
-        public Task MessageMeeting(IRoom room, string uniqueId)
+        public async Task MessageMeeting(IRoom room, string uniqueId)
         {
-            throw new NotImplementedException();
+            var meeting = await SecurityCheck(room, uniqueId);
+            if (meeting.Item1.IsNotManaged)
+            {
+                throw new Exception("Cannot manage this meeting");
+            }
+
+            var addresses = meeting.Item2.Attendees.Concat(new[] { meeting.Item2.Organizer })
+                .Where(i => IsExternalAttendee(i) == false)
+                .Select(i => i?.EmailAddress?.Address)
+                .Where(i => !string.IsNullOrEmpty(i))
+                .ToArray();
+
+            var smsAddresses = _smsAddressLookupService.LookupAddresses(addresses);
+
+            if (smsAddresses.Any())
+            {
+                _smsMessagingService.Send(smsAddresses, string.Format("Your meeting in {0} is over - please finish up ASAP - others are waiting outside.", meeting.Item2.Location));
+            }
+            if (addresses.Any())
+            {
+                _instantMessagingService.SendMessage(addresses, string.Format("Meeting in {0} is over", meeting.Item2.Location), string.Format("Your meeting in {0} is over - people for the next meeting are patiently waiting at the door. Please wrap up ASAP.", meeting.Item2.Location), InstantMessagePriority.Urgent);
+            }
         }
 
-        public Task<Dictionary<string, Tuple<RoomInfo, IRoom>>> GetInfoForRoomsInBuilding(string buildingId)
+        public async Task<Dictionary<string, Tuple<RoomInfo, IRoom>>> GetInfoForRoomsInBuilding(string buildingId)
         {
-            throw new NotImplementedException();
+            // repo data
+            var building = _buildingRepository.Get(buildingId);
+            var floors = _floorRepository.GetAllByBuilding(buildingId).ToDictionary(_ => _.Id);
+            var roomMetadatas = _roomRepository.GetRoomInfosForBuilding(buildingId).ToDictionary(_ => _.RoomAddress);
+
+            // get these started in parallel while we load data from the repositories
+            var roomTasks = roomMetadatas.ToDictionary(i => i.Key, i => _graph.GetUserDisplayName(i.Key)).ToList();
+
+            // put it all together
+            var results = new Dictionary<string, Tuple<RoomInfo, IRoom>>();
+            foreach (var kvp in roomTasks)
+            {
+                var roomAddress = kvp.Key;
+                var room = await kvp.Value;
+                if (null == room)
+                {
+                    continue;
+                }
+
+                var roomMetadata = roomMetadatas.TryGetValue(roomAddress) ?? new RoomMetadataEntity();
+                var canControl = CanControl(roomMetadata);
+                var floor = floors.TryGetValue(roomMetadata.FloorId) ?? new FloorEntity();
+
+                results.Add(roomAddress, new Tuple<RoomInfo, IRoom>(BuildRoomInfo(room, canControl, roomMetadata, building, floor), roomMetadata));
+            }
+
+            return results;
         }
 
         private async Task BroadcastUpdate(IRoom room)

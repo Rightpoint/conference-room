@@ -41,5 +41,41 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
         {
             return (await GetRaw<JToken>(url)).ToObject<T>();
         }
+
+        protected async Task Post(string url, HttpContent content)
+        {
+            using (var r = await _client.PostAsync(new Uri(BaseUri, url).AbsoluteUri, content))
+            {
+                r.EnsureSuccessStatusCode();
+            }
+        }
+        protected async Task<T> Post<T>(string url, HttpContent content)
+        {
+            using (var r = await _client.PostAsync(new Uri(BaseUri, url).AbsoluteUri, content))
+            {
+                r.EnsureSuccessStatusCode();
+                using (var s = await r.Content.ReadAsStreamAsync())
+                {
+                    using (var tr = new StreamReader(s))
+                    {
+                        using (var jr = new JsonTextReader(tr))
+                        {
+                            return JToken.Load(jr).ToObject<T>();
+                        }
+                    }
+                }
+            }
+        }
+
+        protected async Task Patch(string url, HttpContent content)
+        {
+            using (var r = await _client.SendAsync(new HttpRequestMessage(HttpMethod.Post, new Uri(BaseUri, url).AbsoluteUri)
+            {
+                Content = content
+            }))
+            {
+                r.EnsureSuccessStatusCode();
+            }
+        }
     }
 }
