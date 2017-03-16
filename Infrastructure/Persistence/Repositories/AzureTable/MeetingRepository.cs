@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
@@ -18,9 +19,19 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
             return this.GetById(organizationId, UniqueIdToRowKey(uniqueId));
         }
 
+        public Task<MeetingEntity> GetMeetingInfoAsync(string organizationId, string uniqueId)
+        {
+            return this.GetByIdAsync(organizationId, UniqueIdToRowKey(uniqueId));
+        }
+
         public MeetingEntity[] GetMeetingInfo(string organizationId, string[] uniqueIds)
         {
             return this.GetById(organizationId, uniqueIds.Select(UniqueIdToRowKey).ToArray()).ToArray();
+        }
+
+        public async Task<MeetingEntity[]> GetMeetingInfoAsync(string organizationId, string[] uniqueIds)
+        {
+            return (await this.GetByIdAsync(organizationId, uniqueIds.Select(UniqueIdToRowKey).ToArray())).ToArray();
         }
 
         protected override string GetRowKey(MeetingEntity entity)

@@ -215,19 +215,27 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             }
 
             var roomInfos = await _conferenceRoomService.GetInfoForRoomsInBuilding(buildingId);
-            
+            __log.DebugFormat("Got room info");
+
             // ok, we have the filtered rooms list, now we need to get the status and smash it together with the room data
-            return
-                roomInfos.AsParallel()
-                    .WithDegreeOfParallelism(256)
-                    .Select(i =>
+            var statuses = 
+                roomInfos.Select(i =>
                     {
-                        //__log.DebugFormat("Starting {0}", i.Address);
                         var status = _conferenceRoomService.GetStatus(i.Value.Item2, true);
-                        //__log.DebugFormat("Got {0}", i.Address);
                         return new {Address = i.Key, i.Value.Item2.Id, Info = i.Value.Item1, Status = status};
                     })
                     .ToList();
+            try
+            {
+                await Task.WhenAll(statuses.Select(i => i.Status));
+            }
+            catch
+            {
+                // don't care about the errors/cancellations - we just want the tasks to complete
+            }
+
+            var data = statuses.Where(i => !i.Status.IsFaulted && !i.Status.IsCanceled && i.Status.IsCompleted).Select(i => new {i.Address, i.Id, i.Info, Status = i.Status.Result}).ToList();
+            return data;
         }
 
         /// <summary>

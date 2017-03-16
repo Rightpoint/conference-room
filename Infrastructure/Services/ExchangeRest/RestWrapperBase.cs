@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Policy;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -76,6 +77,42 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             {
                 r.EnsureSuccessStatusCode();
             }
+        }
+
+
+        protected async Task PostStreamResponse(string url, HttpContent content, Action<JObject> callback, CancellationToken cancellationToken)
+        {
+            using (var r = await _client.PostAsync(new Uri(BaseUri, url).AbsoluteUri, content, cancellationToken))
+            {
+                r.EnsureSuccessStatusCode();
+                using (var s = await r.Content.ReadAsStreamAsync())
+                {
+                    using (var tr = new StreamReader(s))
+                    {
+                        using (var jr = new JsonTextReader(tr))
+                        {
+                            await Task.Run(() =>
+                            {
+                                while (jr.TokenType != JsonToken.StartArray)
+                                {
+                                    jr.Read();
+                                }
+                                jr.Read();
+                                while (jr.TokenType != JsonToken.EndArray)
+                                {
+                                    callback(JObject.Load(jr));
+                                }
+                            });
+
+                        }
+                    }
+                }
+            }
+        }
+
+        public class Response<T>
+        {
+            public T Value { get; set; }
         }
     }
 }

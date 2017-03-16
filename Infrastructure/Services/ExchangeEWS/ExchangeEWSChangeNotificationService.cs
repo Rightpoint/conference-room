@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Reflection;
 using System.Timers;
 using log4net;
@@ -9,20 +8,19 @@ using RightpointLabs.ConferenceRoom.Domain;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Services;
-using RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeEWS;
 using Task = System.Threading.Tasks.Task;
 using Timer = System.Timers.Timer;
 
-namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
+namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeEWS
 {
-    public class ChangeNotificationService : IChangeNotificationService
+    public class ExchangeEWSChangeNotificationService : IChangeNotificationService
     {
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private readonly IBroadcastService _broadcastService;
         private readonly IMeetingCacheService _meetingCacheService;
 
-        public ChangeNotificationService(IBroadcastService broadcastService, IMeetingCacheService meetingCacheService)
+        public ExchangeEWSChangeNotificationService(IBroadcastService broadcastService, IMeetingCacheService meetingCacheService)
         {
             _broadcastService = broadcastService;
             _meetingCacheService = meetingCacheService;

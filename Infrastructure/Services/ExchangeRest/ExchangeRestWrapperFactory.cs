@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json.Linq;
@@ -42,6 +38,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
         private async Task<string> GetAccessTokenFor(OrganizationEntity org, string username, string password, string resource)
         {
+            // todo: support token lifetime, refresh tokens, etc.
             var vals = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("grant_type", "password"),
@@ -59,8 +56,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 var hrm = await hc.PostAsync(Authority, content).ConfigureAwait(false);
                 hrm.EnsureSuccessStatusCode();
                 var response = JObject.Parse(await hrm.Content.ReadAsStringAsync()).ToObject<LoginResponse>();
+                var at = response.access_token;
 
-                return response.access_token;
+                return at;
             }
         }
 

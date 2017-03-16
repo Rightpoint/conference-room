@@ -9,6 +9,7 @@ using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using RightpointLabs.ConferenceRoom.Domain.Services;
+using RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest.Models;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 {
@@ -95,27 +96,27 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
         private async Task<IEnumerable<Meeting>> GetUpcomingAppointmentsForRoom(IRoom room)
         {
-            var apt = (await _exchange.GetCalendarEvents(room.RoomAddress, _dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2)))?.Value ?? new ExchangeRestWrapper.CalendarEntry[0];
+            var apt = (await _graph.GetCalendarEvents(room.RoomAddress, _dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2)))?.Value ?? new CalendarEntry[0];
             if (_ignoreFree)
             {
-                apt = apt.Where(i => i.ShowAs != ExchangeRestWrapper.ShowAs.Free).ToArray();
+                apt = apt.Where(i => i.ShowAs != ShowAs.Free).ToArray();
             }
 
             return await BuildMeetings(room, apt);
         }
 
-        private async Task<Tuple<Meeting, ExchangeRestWrapper.CalendarEntry>> GetAppointmentForRoom(IRoom room, string uniqueId)
+        private async Task<Tuple<Meeting, CalendarEntry>> GetAppointmentForRoom(IRoom room, string uniqueId)
         {
-            var apt = (await _exchange.GetCalendarEvent(room.RoomAddress, uniqueId))?.Value;
+            var apt = (await _graph.GetCalendarEvent(room.RoomAddress, uniqueId))?.Value;
             if (null == apt)
             {
                 return null;
             }
 
-            return new Tuple<Meeting, ExchangeRestWrapper.CalendarEntry>((await BuildMeetings(room, new [] { apt })).Single(), apt);
+            return new Tuple<Meeting, CalendarEntry>((await BuildMeetings(room, new [] { apt })).Single(), apt);
         }
 
-        private async Task<Meeting[]> BuildMeetings(IRoom room, ExchangeRestWrapper.CalendarEntry[] apt)
+        private async Task<Meeting[]> BuildMeetings(IRoom room, CalendarEntry[] apt)
         {
             // short-circuit if we don't have any meetings
             if (!apt.Any())
@@ -123,7 +124,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 return new Meeting[] {};
             }
 
-            var meetings = _meetingRepository.GetMeetingInfo(room.OrganizationId, apt.Select(i => i.Id).ToArray()).ToDictionary(i => i.UniqueId);
+            var meetings = (await _meetingRepository.GetMeetingInfoAsync(room.OrganizationId, apt.Select(i => i.Id).ToArray())).ToDictionary(i => i.UniqueId);
             return
                 apt.Select(
                         i =>
@@ -138,12 +139,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             return GetUpcomingAppointmentsForRoom(room);
         }
 
-        private Meeting BuildMeeting(ExchangeRestWrapper.CalendarEntry i, MeetingEntity meetingInfo)
+        private Meeting BuildMeeting(CalendarEntry i, MeetingEntity meetingInfo)
         {
             return new Meeting()
             {
                 UniqueId = i.Id,
-                Subject = i.Sensitivity != ExchangeRestWrapper.Sensitivity.Normal ? i.Sensitivity.ToString() :
+                Subject = i.Sensitivity != Sensitivity.Normal ? i.Sensitivity.ToString() :
                     i.Subject != null && i.Subject.Trim() == i.Organizer?.EmailAddress?.Name.Trim() ? null : i.Subject,
                 Start = i.Start.ToOffset().DateTime,
                 End = i.End.ToOffset().DateTime,
@@ -158,7 +159,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             };
         }
 
-        private bool IsExternalAttendee(ExchangeRestWrapper.Attendee attendee)
+        private bool IsExternalAttendee(Attendee attendee)
         {
             var address = attendee.EmailAddress?.Address?.ToLowerInvariant();
             return string.IsNullOrEmpty(address) || !_emailDomains.Any(emailDomain => address.EndsWith(emailDomain));
@@ -224,7 +225,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             return info;
         }
 
-        private async Task<Tuple<Meeting, ExchangeRestWrapper.CalendarEntry>> SecurityCheck(IRoom room, string uniqueId)
+        private async Task<Tuple<Meeting, CalendarEntry>> SecurityCheck(IRoom room, string uniqueId)
         {
             await SecurityCheck(room);
             var meeting = await GetAppointmentForRoom(room, uniqueId);
@@ -290,7 +291,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             return true;
         }
 
-        private async Task _CancelMeeting(IRoom room, ExchangeRestWrapper.CalendarEntry meeting)
+        private async Task _CancelMeeting(IRoom room, CalendarEntry meeting)
         {
             _meetingRepository.CancelMeeting(room.OrganizationId, meeting.Id);
 
@@ -304,22 +305,22 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
         }
 
 
-        private async Task SendEmail(IRoom room, ExchangeRestWrapper.CalendarEntry meeting, string subject, string body)
+        private async Task SendEmail(IRoom room, CalendarEntry meeting, string subject, string body)
         {
-            var msg  = new ExchangeRestWrapper.Message()
+            var msg  = new Message()
             {
-                From = new ExchangeRestWrapper.Recipient() { EmailAddress = new ExchangeRestWrapper.EmailAddress() { Address = room.RoomAddress } },
+                From = new Recipient() { EmailAddress = new EmailAddress() { Address = room.RoomAddress } },
                 ReplyTo = new []
                 {
-                    new ExchangeRestWrapper.Recipient() { EmailAddress = new ExchangeRestWrapper.EmailAddress() { Address = "noreply@" + room.RoomAddress.Split('@').Last() } },
+                    new Recipient() { EmailAddress = new EmailAddress() { Address = "noreply@" + room.RoomAddress.Split('@').Last() } },
                 },
                 Subject = subject,
-                Body = new ExchangeRestWrapper.BodyContent()
+                Body = new BodyContent()
                 {
                     ContentType = "HTML",
                     Content = body,
                 },
-                ToRecipients = new ExchangeRestWrapper.Recipient[0],
+                ToRecipients = new Recipient[0],
             };
 
             msg.ToRecipients =
@@ -327,7 +328,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 .Where(i => !IsExternalAttendee(i))
                 .Select(i => i?.EmailAddress)
                 .Where(i => !string.IsNullOrEmpty(i?.Address))
-                .Select(i => new ExchangeRestWrapper.Recipient { EmailAddress = i } )
+                .Select(i => new Recipient { EmailAddress = i } )
                 .ToArray();
 
             await _exchange.SendMessage(msg);
@@ -344,7 +345,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             __log.DebugFormat("Warning {0} for {1}/{2}, which should start at {3}", uniqueId, room.RoomAddress, room.Id, meeting.Item2.Start);
             var startUrl = buildStartUrl(_signatureService.GetSignature(room, uniqueId));
             var cancelUrl = buildCancelUrl(_signatureService.GetSignature(room, uniqueId));
-            await SendEmail(room, meeting.Item2, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", meeting.Item2.Subject, meeting.Item2.Location), "<p>Please start your meeting by using the RoomNinja on the wall outside the room or simply <a href='" + startUrl + "'>click here to START the meeting</a>.</p><p><a href='" + cancelUrl + "'>Click here to RELEASE the room</a> if you no longer need it so that others can use it.</p>");
+            await SendEmail(room, meeting.Item2, string.Format("WARNING: your meeting '{0}' in {1} is about to be cancelled.", meeting.Item2.Subject, meeting.Item2.Location?.DisplayName), "<p>Please start your meeting by using the RoomNinja on the wall outside the room or simply <a href='" + startUrl + "'>click here to START the meeting</a>.</p><p><a href='" + cancelUrl + "'>Click here to RELEASE the room</a> if you no longer need it so that others can use it.</p>");
         }
 
         public async Task AbandonMeeting(IRoom room, string uniqueId)
@@ -399,12 +400,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 throw new ApplicationException("Cannot create a meeting for more than 2 hours");
             }
 
-            var item = await _exchange.CreateEvent(room.RoomAddress, new ExchangeRestWrapper.CalendarEntry
+            var item = await _exchange.CreateEvent(room.RoomAddress, new CalendarEntry
             {
-                Start = new ExchangeRestWrapper.DateTimeReference() { DateTime = now.ToUniversalTime().ToString("o") },
-                End = new ExchangeRestWrapper.DateTimeReference() { DateTime = endTime.ToUniversalTime().ToString("o") },
+                Start = new DateTimeReference() { DateTime = now.ToUniversalTime().ToString("o") },
+                End = new DateTimeReference() { DateTime = endTime.ToUniversalTime().ToString("o") },
                 Subject = title,
-                Body = new ExchangeRestWrapper.BodyContent() {  Content = "Scheduled via conference room management system", ContentType = "Text" },
+                Body = new BodyContent() {  Content = "Scheduled via conference room management system", ContentType = "Text" },
             });
 
             _meetingRepository.StartMeeting(room.OrganizationId, item.Id);
@@ -429,11 +430,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
             if (smsAddresses.Any())
             {
-                _smsMessagingService.Send(smsAddresses, string.Format("Your meeting in {0} is over - please finish up ASAP - others are waiting outside.", meeting.Item2.Location));
+                _smsMessagingService.Send(smsAddresses, string.Format("Your meeting in {0} is over - please finish up ASAP - others are waiting outside.", meeting.Item2.Location?.DisplayName));
             }
             if (addresses.Any())
             {
-                _instantMessagingService.SendMessage(addresses, string.Format("Meeting in {0} is over", meeting.Item2.Location), string.Format("Your meeting in {0} is over - people for the next meeting are patiently waiting at the door. Please wrap up ASAP.", meeting.Item2.Location), InstantMessagePriority.Urgent);
+                _instantMessagingService.SendMessage(addresses, string.Format("Meeting in {0} is over", meeting.Item2.Location?.DisplayName), string.Format("Your meeting in {0} is over - people for the next meeting are patiently waiting at the door. Please wrap up ASAP.", meeting.Item2.Location?.DisplayName), InstantMessagePriority.Urgent);
             }
         }
 
@@ -446,6 +447,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
             // get these started in parallel while we load data from the repositories
             var roomTasks = roomMetadatas.ToDictionary(i => i.Key, i => _graph.GetUserDisplayName(i.Key)).ToList();
+
+            __log.DebugFormat("Started room load calls");
 
             // put it all together
             var results = new Dictionary<string, Tuple<RoomInfo, IRoom>>();
@@ -464,6 +467,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
                 results.Add(roomAddress, new Tuple<RoomInfo, IRoom>(BuildRoomInfo(room, canControl, roomMetadata, building, floor), roomMetadata));
             }
+
+            __log.DebugFormat("Room info build complete");
 
             return results;
         }

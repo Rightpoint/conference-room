@@ -1,6 +1,7 @@
 ﻿using RightpointLabs.ConferenceRoom.Domain.Models;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.AzureTable
@@ -16,6 +17,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
             return _table.ExecuteQuery(new TableQuery<DynamicTableEntity>().Where(FilterConditionAll(organizationId))).Select(FromTableEntity);
         }
 
+        public async Task<IEnumerable<T>> GetAllAsync(string organizationId)
+        {
+            return (await _table.ExecuteQueryAsync(new TableQuery<DynamicTableEntity>().Where(FilterConditionAll(organizationId)))).Select(FromTableEntity);
+        }
+
         public string FilterConditionAll(string organizationId)
         {
             return
@@ -26,6 +32,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
         public T GetById(string organizationId, string id)
         {
             return _table.ExecuteQuery(new TableQuery<DynamicTableEntity>().Where(FilterConditionById(organizationId, id))).Select(FromTableEntity).SingleOrDefault();
+        }
+
+        public async Task<T> GetByIdAsync(string organizationId, string id)
+        {
+            return (await _table.ExecuteQueryAsync(new TableQuery<DynamicTableEntity>().Where(FilterConditionById(organizationId, id)))).Select(FromTableEntity).SingleOrDefault();
         }
 
         public string FilterConditionById(string organizationId, string id)
@@ -41,6 +52,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
         public IEnumerable<T> GetById(string organizationId, string[] id)
         {
             return _table.ExecuteQuery(new TableQuery<DynamicTableEntity>().Where(FilterConditionById(organizationId, id))).Select(FromTableEntity);
+        }
+
+
+        public async Task<IEnumerable<T>> GetByIdAsync(string organizationId, string[] id)
+        {
+            return (await _table.ExecuteQueryAsync(new TableQuery<DynamicTableEntity>().Where(FilterConditionById(organizationId, id)))).Select(FromTableEntity);
         }
 
         public string FilterConditionById(string organizationId, string[] id)
