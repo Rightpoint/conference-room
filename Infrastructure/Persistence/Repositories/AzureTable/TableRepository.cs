@@ -3,6 +3,7 @@ using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -44,9 +45,19 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
             return _table.ExecuteQuery(new TableQuery<DynamicTableEntity>().Where(FilterConditionById(id))).Select(FromTableEntity).SingleOrDefault();
         }
 
+        public async Task<T> GetByIdAsync(string id)
+        {
+            return (await _table.ExecuteQueryAsync(new TableQuery<DynamicTableEntity>().Where(FilterConditionById(id)))).Select(FromTableEntity).SingleOrDefault();
+        }
+
         public IEnumerable<T> GetAll()
         {
             return _table.ExecuteQuery(new TableQuery<DynamicTableEntity>()).Select(FromTableEntity);
+        }
+
+        public async Task<IEnumerable<T>> GetAllAsync()
+        {
+            return (await _table.ExecuteQueryAsync(new TableQuery<DynamicTableEntity>())).Select(FromTableEntity);
         }
 
         protected string FilterConditionById(string id)

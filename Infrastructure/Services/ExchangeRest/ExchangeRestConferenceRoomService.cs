@@ -62,8 +62,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             //    _changeNotificationService.TrackRoom(room, _exchangeServiceManager, _contextService.CurrentOrganization);
             //}
 
-            var building = _buildingRepository.Get(room.BuildingId) ?? new BuildingEntity();
-            var floor = _floorRepository.Get(room.FloorId) ?? new FloorEntity();
+            var building = (await _buildingRepository.GetAsync(room.BuildingId)) ?? new BuildingEntity();
+            var floor = (await _floorRepository.GetAsync(room.FloorId)) ?? new FloorEntity();
 
             return BuildRoomInfo(roomName, canControl, (RoomMetadataEntity)room, building, floor);
         }

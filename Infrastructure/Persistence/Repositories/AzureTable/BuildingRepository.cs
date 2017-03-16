@@ -1,4 +1,5 @@
-﻿using RightpointLabs.ConferenceRoom.Domain.Repositories;
+﻿using System.Threading.Tasks;
+using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using Microsoft.WindowsAzure.Storage.Table;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
@@ -14,6 +15,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
         public BuildingEntity Get(string buildingId)
         {
             return this.GetById(buildingId);
+        }
+
+        public Task<BuildingEntity> GetAsync(string buildingId)
+        {
+            return this.GetByIdAsync(buildingId);
         }
     }
 }

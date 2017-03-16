@@ -1,6 +1,7 @@
 ﻿using RightpointLabs.ConferenceRoom.Domain.Repositories;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage.Table;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
@@ -18,9 +19,19 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
             return this.GetById(floorId);
         }
 
+        public Task<FloorEntity> GetAsync(string floorId)
+        {
+            return this.GetByIdAsync(floorId);
+        }
+
         public IEnumerable<FloorEntity> GetAllByOrganization(string organizationId)
         {
             return base.GetAll(organizationId);
+        }
+
+        public Task<IEnumerable<FloorEntity>> GetAllByOrganizationAsync(string organizationId)
+        {
+            return base.GetAllAsync(organizationId);
         }
 
         public IEnumerable<FloorEntity> GetAllByBuilding(string buildingId)
