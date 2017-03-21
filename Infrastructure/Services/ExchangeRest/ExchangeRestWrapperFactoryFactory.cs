@@ -13,14 +13,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 {
     public class ExchangeRestWrapperFactoryFactory
     {
-        public ExchangeRestWrapperFactory GetFactory(OrganizationEntity org, string clientId, string clientSecret, string username, string password)
+        public ExchangeRestWrapperFactory GetFactory(OrganizationEntity org, string clientId, string clientSecret, string username, string password, string defaultUser)
         {
-            return new UserExchangeRestWrapperFactory(clientId, clientSecret, username, password);
+            return new UserExchangeRestWrapperFactory(clientId, clientSecret, username, password, defaultUser);
         }
 
-        public ExchangeRestWrapperFactory GetFactory(OrganizationEntity org, string tenantId, string clientId, string clientCertificate)
+        public ExchangeRestWrapperFactory GetFactory(OrganizationEntity org, string tenantId, string clientId, string clientCertificate, string defaultUser)
         {
-            return new AppOnlyExchangeRestWrapperFactory(tenantId, clientId, clientCertificate);
+            return new AppOnlyExchangeRestWrapperFactory(tenantId, clientId, clientCertificate, defaultUser);
         }
 
         public abstract class ExchangeRestWrapperFactory
@@ -29,6 +29,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             public static readonly string GraphResource = "https://graph.microsoft.com";
 
             protected abstract Task<string> GetAccessTokenFor(string resource);
+
+            protected string _defaultUser;
 
             protected virtual void Update(HttpClient client)
             {
@@ -46,7 +48,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 Update(client);
                 Update(longClient);
 
-                return new ExchangeRestWrapper(client, longClient);
+                return new ExchangeRestWrapper(client, longClient, _defaultUser);
             }
 
             public async Task<GraphRestWrapper> CreateGraph()
@@ -72,11 +74,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             private readonly string _clientCertificate;
             public static readonly string Authority = "https://login.windows.net/";
 
-            public AppOnlyExchangeRestWrapperFactory(string tenantId, string clientId, string clientCertificate)
+            public AppOnlyExchangeRestWrapperFactory(string tenantId, string clientId, string clientCertificate, string defaultUser)
             {
                 _tenantId = tenantId;
                 _clientId = clientId;
                 _clientCertificate = clientCertificate;
+                _defaultUser = defaultUser;
             }
 
             protected override void Update(HttpClient client)
@@ -105,12 +108,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             private readonly string _password;
             public static readonly string Authority = "https://login.windows.net/common/oauth2/token";
 
-            public UserExchangeRestWrapperFactory(string clientId, string clientSecret, string username, string password)
+            public UserExchangeRestWrapperFactory(string clientId, string clientSecret, string username, string password, string defaultUser)
             {
                 _clientId = clientId;
                 _clientSecret = clientSecret;
                 _username = username;
                 _password = password;
+                _defaultUser = defaultUser;
             }
 
             protected override async Task<string> GetAccessTokenFor(string resource)

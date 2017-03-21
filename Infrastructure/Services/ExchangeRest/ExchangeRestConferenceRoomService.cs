@@ -109,7 +109,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             {
                 return Task.Run(async () =>
                 {
-                    var apt = (await _graph.GetCalendarEvents(room.RoomAddress, _dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2)))?.Value ?? new CalendarEntry[0];
+                    var apt = (await _exchange.GetCalendarEvents(room.RoomAddress, _dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2)))?.Value ?? new CalendarEntry[0];
                     if (_ignoreFree)
                     {
                         apt = apt.Where(i => i.ShowAs != ShowAs.Free).ToArray();
@@ -122,7 +122,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
         private async Task<Tuple<Meeting, CalendarEntry>> GetAppointmentForRoom(IRoom room, string uniqueId)
         {
-            var apt = (await _graph.GetCalendarEvent(room.RoomAddress, uniqueId))?.Value;
+            var apt = (await _exchange.GetCalendarEvent(room.RoomAddress, uniqueId))?.Value;
             if (null == apt)
             {
                 return null;
@@ -346,7 +346,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 .Select(i => new Recipient { EmailAddress = i } )
                 .ToArray();
 
-            await _exchange.SendMessage(msg);
+            await _exchange.SendMessage(msg, room.RoomAddress);
         }
 
         public async Task WarnMeeting(IRoom room, string uniqueId, Func<string, string> buildStartUrl, Func<string, string> buildCancelUrl)

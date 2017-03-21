@@ -14,12 +14,25 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 {
     public class ExchangeRestWrapper : RestWrapperBase
     {
+        private readonly string _defaultUser;
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         protected override Uri BaseUri { get; } = new Uri("https://outlook.office.com/api/");
 
-        public ExchangeRestWrapper(HttpClient client, HttpClient longCallClient) : base(client, longCallClient)
+        public ExchangeRestWrapper(HttpClient client, HttpClient longCallClient, string defaultUser = "me") : base(client, longCallClient)
         {
+            _defaultUser = defaultUser;
+        }
+
+        public Task<Response<CalendarEntry[]>> GetCalendarEvents(string roomAddress, DateTime startDate, DateTime endDate)
+        {
+            var fields = "ShowAs,Attendees,ChangeKey,Start,End,Importance,IsAllDay,OnlineMeetingUrl,Organizer,Sensitivity,Subject,Location";
+            return Get<Response<CalendarEntry[]>>($"v2.0/users/{roomAddress}/calendarView?startDateTime={startDate:s}&endDateTime={endDate:s}&$top=1000&$select={fields}");
+        }
+
+        public Task<Response<CalendarEntry>> GetCalendarEvent(string roomAddress, string uniqueId)
+        {
+            return Get<Response<CalendarEntry>>($"v2.0/users/{roomAddress}/Events('{uniqueId}')");
         }
 
         public async Task Truncate(string roomAddress, CalendarEntry originalItem, DateTime targetEndDate)
@@ -30,9 +43,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             await Patch($"v2.0/users/{roomAddress}/Events('{originalItem.Id}')", new StringContent(JObject.FromObject(new { End = date.ToString("o"), TimeZone = "UTC" }).ToString(Formatting.None), Encoding.UTF8, "application/json"));
         }
 
-        public async Task SendMessage(Message message)
+        public async Task SendMessage(Message message, string sender)
         {
-            await Post($"v2.0/me/sendmail", new StringContent(JObject.FromObject(new { Message = message, SaveToSentItems = false}).ToString(Formatting.None), Encoding.UTF8, "application/json"));
+            if (_defaultUser == "me")
+            {
+                sender = _defaultUser;
+            }
+            await Post($"v2.0/{sender}/sendmail", new StringContent(JObject.FromObject(new { Message = message, SaveToSentItems = false}).ToString(Formatting.None), Encoding.UTF8, "application/json"));
         }
 
         public async Task<CalendarEntry> CreateEvent(string roomAddress, CalendarEntry calendarEntry)
@@ -48,12 +65,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 ChangeType = "Created,Deleted,Updated",
             });
             obj["@odata.type"] = "#Microsoft.OutlookServices.StreamingSubscription";
-            return await Post<SubscriptionResponse>($"beta/me/subscriptions", new StringContent(obj.ToString(Formatting.None), Encoding.UTF8, "application/json"));
+            return await Post<SubscriptionResponse>($"beta/{_defaultUser}/subscriptions", new StringContent(obj.ToString(Formatting.None), Encoding.UTF8, "application/json"));
         }
 
         public async Task GetNotifications(NotificationRequest request, Action<NotificationResponse> callback, CancellationToken cancellationToken)
         {
-            await PostStreamResponse($"beta/Me/GetNotifications", new StringContent(JObject.FromObject(request).ToString(Formatting.None), Encoding.UTF8, "application/json"),
+            await PostStreamResponse($"beta/{_defaultUser}/GetNotifications", new StringContent(JObject.FromObject(request).ToString(Formatting.None), Encoding.UTF8, "application/json"),
                 obj =>
                 {
                     var type = obj.Property("@odata.type")?.Value?.ToString();

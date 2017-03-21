@@ -27,17 +27,5 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 return (await Get<Response<UserResult[]>>($"v1.0/users?$filter=mail%20eq%20%27{roomAddress}%27"))?.Value?.SingleOrDefault()?.DisplayName;
             }
         }
-
-        public Task<Response<CalendarEntry[]>> GetCalendarEvents(string roomAddress, DateTime startDate, DateTime endDate)
-        {
-            var fields = "ShowAs,Attendees,ChangeKey,Start,End,Importance,IsAllDay,OnlineMeetingUrl,Organizer,Sensitivity,Subject,Location";
-            return Get<Response<CalendarEntry[]>>($"v1.0/users/{roomAddress}/calendarView?startDateTime={startDate:s}&endDateTime={endDate:s}&$top=1000&$select={fields}");
-        }
-
-        public Task<Response<CalendarEntry>> GetCalendarEvent(string roomAddress, string uniqueId)
-        {
-            return Get<Response<CalendarEntry>>($"v1.0/users/{roomAddress}/Events('{uniqueId}')");
-        }
-
     }
 }

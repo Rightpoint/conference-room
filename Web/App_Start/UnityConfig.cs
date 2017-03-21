@@ -133,13 +133,14 @@ namespace RightpointLabs.ConferenceRoom.Web
                     c =>
                     {
                         var f = c.Resolve<ExchangeRestWrapperFactoryFactory>();
-                        if (false)
+                        if (true)
                         {
                             return CreateOrganizationalService(c, "Exchange", _ =>
                                 f.GetFactory(null,
                                     ConfigurationManager.AppSettings["ExchangeApiAdminTenantId"],
                                     ConfigurationManager.AppSettings["ExchangeApiAdminClientId"],
-                                    ConfigurationManager.AppSettings["ExchangeApiAdminCert"]));
+                                    ConfigurationManager.AppSettings["ExchangeApiAdminCert"],
+                                    ConfigurationManager.AppSettings["ExchangeApiAdminDefaultUser"]));
                         }
                         else
                         {
@@ -148,7 +149,8 @@ namespace RightpointLabs.ConferenceRoom.Web
                                     ConfigurationManager.AppSettings["ExchangeApiClientId"],
                                     ConfigurationManager.AppSettings["ExchangeApiClientSecret"],
                                     (string) _.Username.Value,
-                                    (string) _.Password.Value));
+                                    (string) _.Password.Value,
+                                    "me"));
                         }
                     }));
 
