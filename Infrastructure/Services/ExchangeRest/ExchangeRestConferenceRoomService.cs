@@ -35,8 +35,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
         private readonly IRoomMetadataRepository _roomRepository;
         private readonly IMeetingCacheService _meetingCacheService;
         private readonly IExchangeRestChangeNotificationService _exchangeRestChangeNotificationService;
+        private readonly ISimpleTimedCache _simpleTimedCache;
 
-        public ExchangeRestConferenceRoomService(ExchangeRestWrapper exchange, GraphRestWrapper graph, IContextService contextService, IDateTimeService dateTimeService, IBuildingRepository buildingRepository, IFloorRepository floorRepository, IMeetingRepository meetingRepository, IBroadcastService broadcastService, ISignatureService signatureService, ISmsAddressLookupService smsAddressLookupService, ISmsMessagingService smsMessagingService, IInstantMessagingService instantMessagingService, IRoomMetadataRepository roomRepository, IMeetingCacheService meetingCacheService, IExchangeRestChangeNotificationService exchangeRestChangeNotificationService)
+        public ExchangeRestConferenceRoomService(ExchangeRestWrapper exchange, GraphRestWrapper graph, IContextService contextService, IDateTimeService dateTimeService, IBuildingRepository buildingRepository, IFloorRepository floorRepository, IMeetingRepository meetingRepository, IBroadcastService broadcastService, ISignatureService signatureService, ISmsAddressLookupService smsAddressLookupService, ISmsMessagingService smsMessagingService, IInstantMessagingService instantMessagingService, IRoomMetadataRepository roomRepository, IMeetingCacheService meetingCacheService, IExchangeRestChangeNotificationService exchangeRestChangeNotificationService, ISimpleTimedCache simpleTimedCache)
         {
             _exchange = exchange;
             _graph = graph;
@@ -53,14 +54,15 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             _roomRepository = roomRepository;
             _meetingCacheService = meetingCacheService;
             _exchangeRestChangeNotificationService = exchangeRestChangeNotificationService;
+            _simpleTimedCache = simpleTimedCache;
         }
 
         public async Task<RoomInfo> GetStaticInfo(IRoom room)
         {
-            var roomName = await _graph.GetUserDisplayName(room.RoomAddress);
+            var roomName = await GetRoomName(room.RoomAddress);
 
             var canControl = CanControl(room);
-            if (canControl )
+            if (canControl)
             {
                 // make sure we track rooms we're controlling
                 _exchangeRestChangeNotificationService.TrackOrganization(room.OrganizationId);
@@ -72,6 +74,13 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             var floor = (await floorTask) ?? new FloorEntity();
 
             return BuildRoomInfo(roomName, canControl, (RoomMetadataEntity)room, building, floor);
+        }
+
+        private async Task<string> GetRoomName(string roomAddress)
+        {
+            return await _simpleTimedCache.GetCachedValue("RoomInfo_" + roomAddress,
+                TimeSpan.FromHours(24),
+                () => Task.Run(async () => await _graph.GetUserDisplayName(roomAddress)));
         }
 
         private bool CanControl(IRoom room)
@@ -461,7 +470,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             var roomMetadatas = _roomRepository.GetRoomInfosForBuilding(buildingId).ToDictionary(_ => _.RoomAddress);
 
             // get these started in parallel while we load data from the repositories
-            var roomTasks = roomMetadatas.ToDictionary(i => i.Key, i => _graph.GetUserDisplayName(i.Key)).ToList();
+            var roomTasks = roomMetadatas.ToDictionary(i => i.Key, i => GetRoomName(i.Key)).ToList();
 
             __log.DebugFormat("Started room load calls");
 
