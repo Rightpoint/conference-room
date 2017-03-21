@@ -18,7 +18,6 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             return new UserExchangeRestWrapperFactory(clientId, clientSecret, username, password);
         }
 
-
         public ExchangeRestWrapperFactory GetFactory(OrganizationEntity org, string tenantId, string clientId, string clientCertificate)
         {
             return new AppOnlyExchangeRestWrapperFactory(tenantId, clientId, clientCertificate);
@@ -31,6 +30,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
             protected abstract Task<string> GetAccessTokenFor(string resource);
 
+            protected virtual void Update(HttpClient client)
+            {
+            }
+
             public async Task<ExchangeRestWrapper> CreateExchange()
             {
                 var token = await GetAccessTokenFor(OutlookResource);
@@ -39,6 +42,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 var longClient = new HttpClient();
                 longClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 longClient.Timeout = TimeSpan.FromMilliseconds(Timeout.Infinite);
+
+                Update(client);
+                Update(longClient);
 
                 return new ExchangeRestWrapper(client, longClient);
             }
@@ -51,6 +57,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 var longClient = new HttpClient();
                 longClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 longClient.Timeout = TimeSpan.FromMilliseconds(Timeout.Infinite);
+
+                Update(client);
+                Update(longClient);
 
                 return new GraphRestWrapper(client, longClient);
             }
@@ -70,12 +79,19 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 _clientCertificate = clientCertificate;
             }
 
+            protected override void Update(HttpClient client)
+            {
+                client.DefaultRequestHeaders.Add("UserAgent", "Rightpoint/RoomNinja/0.1");
+                client.DefaultRequestHeaders.Add("client-request-id", Guid.NewGuid().ToString());
+                client.DefaultRequestHeaders.Add("return-client-request-id", "true");
+            }
+
             protected override async Task<string> GetAccessTokenFor(string resource)
             {
                 var cert = new X509Certificate2();
                 cert.Import(Convert.FromBase64String(_clientCertificate));
 
-                var c= new AuthenticationContext(Authority + _tenantId);
+                var c = new AuthenticationContext(Authority + _tenantId);
                 var r = await c.AcquireTokenAsync(resource, new ClientAssertionCertificate(_clientId, cert));
                 return r.AccessToken;
             }
