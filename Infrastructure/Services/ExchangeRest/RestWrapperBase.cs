@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Reflection;
-using System.Security.Policy;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using RightpointLabs.ConferenceRoom.Domain.Models;
-using RightpointLabs.ConferenceRoom.Domain.Services;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 {
@@ -87,7 +81,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
         protected async Task PostStreamResponse(string url, HttpContent content, Action<JObject> callback, CancellationToken cancellationToken)
         {
-            var req= new HttpRequestMessage(HttpMethod.Post, new Uri(BaseUri, url).AbsoluteUri) { Content = content };
+            var uri = new Uri(BaseUri, url).AbsoluteUri;
+            log.DebugFormat("Starting request for {0}", uri);
+            var req = new HttpRequestMessage(HttpMethod.Post, uri) { Content = content };
             using (var r = await _longCallClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
             {
                 r.EnsureSuccessStatusCode();
@@ -97,6 +93,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                     {
                         using (var jr = new JsonTextReader(tr))
                         {
+                            log.DebugFormat("Starting reading response for {0}", uri);
                             cancellationToken.Register(() =>
                             {
                                 log.DebugFormat("Got cancellation request");
