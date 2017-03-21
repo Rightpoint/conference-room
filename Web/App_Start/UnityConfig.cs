@@ -76,7 +76,8 @@ namespace RightpointLabs.ConferenceRoom.Web
             container.RegisterType<IConnectionManager>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => GlobalHost.ConnectionManager));
             container.RegisterType<IDateTimeService>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => new DateTimeService(TimeSpan.FromHours(0))));
 
-            container.RegisterType<HttpRequestBase>(new HierarchicalLifetimeManager(), new InjectionFactory(c => new HttpRequestWrapper(HttpContext.Current.Request)));
+            container.RegisterType<HttpContextBase>(new HierarchicalLifetimeManager(), new InjectionFactory(c => new HttpContextWrapper(HttpContext.Current)));
+            container.RegisterType<HttpRequestBase>(new HierarchicalLifetimeManager(), new InjectionFactory(c => c.Resolve<HttpContextBase>().Request));
 
             container.RegisterType<ISmsAddressLookupService, SmsAddressLookupService>(new HierarchicalLifetimeManager());
             container.RegisterType<ISignatureService, SignatureService>(new ContainerControlledLifetimeManager());
@@ -126,20 +127,47 @@ namespace RightpointLabs.ConferenceRoom.Web
             }
             else
             {
-                container.RegisterType<ExchangeRestWrapperFactory, ExchangeRestWrapperFactory>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => 
-                    new ExchangeRestWrapperFactory(ConfigurationManager.AppSettings["ExchangeApiClientId"], ConfigurationManager.AppSettings["ExchangeApiClientSecret"])));
+                container.RegisterType<ExchangeRestWrapperFactoryFactory>(new ContainerControlledLifetimeManager());
+
+                container.RegisterType<ExchangeRestWrapperFactoryFactory.ExchangeRestWrapperFactory>(new HierarchicalLifetimeManager(), new InjectionFactory(
+                    c =>
+                    {
+                        var f = c.Resolve<ExchangeRestWrapperFactoryFactory>();
+                        if (false)
+                        {
+                            return CreateOrganizationalService(c, "Exchange", _ =>
+                                f.GetFactory(null,
+                                    ConfigurationManager.AppSettings["ExchangeApiAdminTenantId"],
+                                    ConfigurationManager.AppSettings["ExchangeApiAdminClientId"],
+                                    ConfigurationManager.AppSettings["ExchangeApiAdminCert"]));
+                        }
+                        else
+                        {
+                            return CreateOrganizationalService(c, "Exchange", _ =>
+                                f.GetFactory(null,
+                                    ConfigurationManager.AppSettings["ExchangeApiClientId"],
+                                    ConfigurationManager.AppSettings["ExchangeApiClientSecret"],
+                                    (string) _.Username.Value,
+                                    (string) _.Password.Value));
+                        }
+                    }));
+
                 container.RegisterType<IConferenceRoomService, ExchangeRestConferenceRoomService>(new HierarchicalLifetimeManager());
 
                 container.RegisterType<ExchangeRestWrapper>(new HierarchicalLifetimeManager(),
                     new InjectionFactory(
                         c =>
-                            CreateOrganizationalService(c, "Exchange",
-                                _ => System.Threading.Tasks.Task.Run(async () => await c.Resolve<ExchangeRestWrapperFactory>().CreateExchange(null, (string)_.Username.Value, (string)_.Password.Value)).Result)));
+                        {
+                            var svc = c.Resolve<ExchangeRestWrapperFactoryFactory.ExchangeRestWrapperFactory>();
+                            return System.Threading.Tasks.Task.Run(async () => await svc.CreateExchange()).Result;
+                        }));
                 container.RegisterType<GraphRestWrapper>(new HierarchicalLifetimeManager(),
                     new InjectionFactory(
                         c =>
-                            CreateOrganizationalService(c, "Exchange",
-                                _ => System.Threading.Tasks.Task.Run(async () => await c.Resolve<ExchangeRestWrapperFactory>().CreateGraph(null, (string)_.Username.Value, (string)_.Password.Value)).Result)));
+                        {
+                            var svc = c.Resolve<ExchangeRestWrapperFactoryFactory.ExchangeRestWrapperFactory>();
+                            return System.Threading.Tasks.Task.Run(async () => await svc.CreateGraph()).Result;
+                        }));
 
                 // create change notifier in a child container and register as a singleton with the main container (avoids creating it's dependencies in the global container)
                 var child = container.CreateChildContainer();

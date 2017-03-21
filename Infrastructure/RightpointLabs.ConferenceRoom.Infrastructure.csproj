@@ -176,7 +176,7 @@
     <Compile Include="Services\ExchangeRest\RestWrapperBase.cs" />
     <Compile Include="Services\ExchangeRest\ExchangeRestWrapper.cs" />
     <Compile Include="Services\ExchangeRest\ExchangeRestConferenceRoomService.cs" />
-    <Compile Include="Services\ExchangeRest\ExchangeRestWrapperFactory.cs" />
+    <Compile Include="Services\ExchangeRest\ExchangeRestWrapperFactoryFactory.cs" />
     <Compile Include="Services\HttpTokenProvider.cs" />
     <Compile Include="Services\IChangeNotificationService.cs" />
     <Compile Include="Services\ExchangeEWS\IExchangeServiceManager.cs" />
