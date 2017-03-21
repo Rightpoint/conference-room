@@ -154,7 +154,9 @@
     <Compile Include="Services\ExchangeEWS\ExchangeServiceManager.cs" />
     <Compile Include="Services\ExchangeEWS\ExchangeConferenceRoomDiscoveryService.cs" />
     <Compile Include="Services\ExchangeEWS\ExchangeConferenceRoomService.cs" />
+    <Compile Include="Services\ExchangeRest\ExchangeRestChangeNotificationService.cs" />
     <Compile Include="Services\ExchangeRest\GraphRestWrapper.cs" />
+    <Compile Include="Services\ExchangeRest\IExchangeRestChangeNotificationService.cs" />
     <Compile Include="Services\ExchangeRest\Models\Attendee.cs" />
     <Compile Include="Services\ExchangeRest\Models\AttendeeStatus.cs" />
     <Compile Include="Services\ExchangeRest\Models\BodyContent.cs" />
@@ -169,6 +171,7 @@
     <Compile Include="Services\ExchangeRest\Models\Recipient.cs" />
     <Compile Include="Services\ExchangeRest\Models\Sensitivity.cs" />
     <Compile Include="Services\ExchangeRest\Models\ShowAs.cs" />
+    <Compile Include="Services\ExchangeRest\Models\SubscriptionResponse.cs" />
     <Compile Include="Services\ExchangeRest\Models\UserResult.cs" />
     <Compile Include="Services\ExchangeRest\RestWrapperBase.cs" />
     <Compile Include="Services\ExchangeRest\ExchangeRestWrapper.cs" />

@@ -81,35 +81,12 @@ namespace RightpointLabs.ConferenceRoom.Web
             container.RegisterType<ISmsAddressLookupService, SmsAddressLookupService>(new HierarchicalLifetimeManager());
             container.RegisterType<ISignatureService, SignatureService>(new ContainerControlledLifetimeManager());
 
-            if (false)
-            {
-                container.RegisterType<ISyncConferenceRoomService, ExchangeConferenceRoomService>(new HierarchicalLifetimeManager());
-                container.RegisterType<IConferenceRoomService, SyncConferenceRoomServiceWrapper>(new HierarchicalLifetimeManager());
-            }
-            else
-            {
-                container.RegisterType<ExchangeRestWrapperFactory, ExchangeRestWrapperFactory>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => 
-                    new ExchangeRestWrapperFactory(ConfigurationManager.AppSettings["ExchangeApiClientId"], ConfigurationManager.AppSettings["ExchangeApiClientSecret"])));
-                container.RegisterType<IConferenceRoomService, ExchangeRestConferenceRoomService>(new HierarchicalLifetimeManager());
 
-                container.RegisterType<ExchangeRestWrapper>(new HierarchicalLifetimeManager(),
-                    new InjectionFactory(
-                        c =>
-                            CreateOrganizationalService(c, "Exchange",
-                                _ => System.Threading.Tasks.Task.Run(async () => await c.Resolve<ExchangeRestWrapperFactory>().CreateExchange(null, (string)_.Username.Value, (string)_.Password.Value)).Result)));
-                container.RegisterType<GraphRestWrapper>(new HierarchicalLifetimeManager(),
-                    new InjectionFactory(
-                        c =>
-                            CreateOrganizationalService(c, "Exchange",
-                                _ => System.Threading.Tasks.Task.Run(async () => await c.Resolve<ExchangeRestWrapperFactory>().CreateGraph(null, (string)_.Username.Value, (string)_.Password.Value)).Result)));
-            }
-
-            container.RegisterType<IExchangeServiceManager, ExchangeServiceManager>(new ContainerControlledLifetimeManager());
             container.RegisterType<IMeetingCacheService, MeetingCacheService>(new ContainerControlledLifetimeManager()); // singleton cache
             container.RegisterType<ISimpleTimedCache, SimpleTimedCache>(new ContainerControlledLifetimeManager()); // singleton cache
             container.RegisterType<IContextService, ContextService>(new HierarchicalLifetimeManager());
             container.RegisterType<IConferenceRoomDiscoveryService, ExchangeConferenceRoomDiscoveryService>(new HierarchicalLifetimeManager());
-            container.RegisterType<ITokenService, TokenService>(new HierarchicalLifetimeManager(), new InjectionFactory(c => 
+            container.RegisterType<ITokenService, TokenService>(new HierarchicalLifetimeManager(), new InjectionFactory(c =>
                 new TokenService(
                     ConfigurationManager.AppSettings["TokenIssuer"],
                     ConfigurationManager.AppSettings["TokenAudience"],
@@ -135,10 +112,40 @@ namespace RightpointLabs.ConferenceRoom.Web
             container.RegisterType<IIOCContainer, UnityIOCContainer>(new TransientLifetimeManager(), new InjectionFactory(c => new UnityIOCContainer(c, false)));
             container.RegisterType<ITokenProvider, HttpTokenProvider>(new HierarchicalLifetimeManager());
 
-            // create change notifier in a child container and register as a singleton with the main container (avoids creating it's dependencies in the global container)
-            var child = container.CreateChildContainer();
-            var changeNotificationService = child.Resolve<ExchangeEWSChangeNotificationService>();
-            container.RegisterInstance(typeof(IChangeNotificationService), changeNotificationService, new ContainerControlledLifetimeManager());
+            container.RegisterType<IExchangeServiceManager, ExchangeServiceManager>(new ContainerControlledLifetimeManager());
+
+            if (false)
+            {
+                container.RegisterType<ISyncConferenceRoomService, ExchangeConferenceRoomService>(new HierarchicalLifetimeManager());
+                container.RegisterType<IConferenceRoomService, SyncConferenceRoomServiceWrapper>(new HierarchicalLifetimeManager());
+
+                // create change notifier in a child container and register as a singleton with the main container (avoids creating it's dependencies in the global container)
+                var child = container.CreateChildContainer();
+                var changeNotificationService = child.Resolve<ExchangeEWSChangeNotificationService>();
+                container.RegisterInstance(typeof(IChangeNotificationService), changeNotificationService, new ContainerControlledLifetimeManager());
+            }
+            else
+            {
+                container.RegisterType<ExchangeRestWrapperFactory, ExchangeRestWrapperFactory>(new ContainerControlledLifetimeManager(), new InjectionFactory(c => 
+                    new ExchangeRestWrapperFactory(ConfigurationManager.AppSettings["ExchangeApiClientId"], ConfigurationManager.AppSettings["ExchangeApiClientSecret"])));
+                container.RegisterType<IConferenceRoomService, ExchangeRestConferenceRoomService>(new HierarchicalLifetimeManager());
+
+                container.RegisterType<ExchangeRestWrapper>(new HierarchicalLifetimeManager(),
+                    new InjectionFactory(
+                        c =>
+                            CreateOrganizationalService(c, "Exchange",
+                                _ => System.Threading.Tasks.Task.Run(async () => await c.Resolve<ExchangeRestWrapperFactory>().CreateExchange(null, (string)_.Username.Value, (string)_.Password.Value)).Result)));
+                container.RegisterType<GraphRestWrapper>(new HierarchicalLifetimeManager(),
+                    new InjectionFactory(
+                        c =>
+                            CreateOrganizationalService(c, "Exchange",
+                                _ => System.Threading.Tasks.Task.Run(async () => await c.Resolve<ExchangeRestWrapperFactory>().CreateGraph(null, (string)_.Username.Value, (string)_.Password.Value)).Result)));
+
+                // create change notifier in a child container and register as a singleton with the main container (avoids creating it's dependencies in the global container)
+                var child = container.CreateChildContainer();
+                var changeNotificationService = child.Resolve<ExchangeRestChangeNotificationService>();
+                container.RegisterInstance(typeof(IExchangeRestChangeNotificationService), changeNotificationService, new ContainerControlledLifetimeManager());
+            }
 
             // initialize all repositories in a child container (ie. create tables/etc.)
             {

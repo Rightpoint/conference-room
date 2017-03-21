@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json.Linq;
@@ -24,16 +26,26 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
         public async Task<ExchangeRestWrapper> CreateExchange(OrganizationEntity org, string username, string password)
         {
-            var outlookClient = new HttpClient();
-            outlookClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await GetAccessTokenFor(org, username, password, OutlookResource));
-            return new ExchangeRestWrapper(outlookClient);
+            var token = await GetAccessTokenFor(org, username, password, OutlookResource);
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var longClient = new HttpClient();
+            longClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            longClient.Timeout = TimeSpan.FromMilliseconds(Timeout.Infinite);
+
+            return new ExchangeRestWrapper(client, longClient);
         }
 
         public async Task<GraphRestWrapper> CreateGraph(OrganizationEntity org, string username, string password)
         {
-            var graphClient = new HttpClient();
-            graphClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", await GetAccessTokenFor(org, username, password, GraphResource));
-            return new GraphRestWrapper(graphClient);
+            var token = await GetAccessTokenFor(org, username, password, GraphResource);
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            var longClient = new HttpClient();
+            longClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            longClient.Timeout = TimeSpan.FromMilliseconds(Timeout.Infinite);
+
+            return new GraphRestWrapper(client, longClient);
         }
 
         private async Task<string> GetAccessTokenFor(OrganizationEntity org, string username, string password, string resource)

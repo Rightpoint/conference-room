@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RightpointLabs.ConferenceRoom.Domain.Models;
@@ -16,12 +18,15 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 {
     public abstract class RestWrapperBase
     {
+        private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private readonly HttpClient _client;
+        private readonly HttpClient _longCallClient;
         protected abstract Uri BaseUri { get; }
 
-        protected RestWrapperBase(HttpClient client)
+        protected RestWrapperBase(HttpClient client, HttpClient longCallClient)
         {
             _client = client;
+            _longCallClient = longCallClient;
         }
 
         protected async Task<T> GetRaw<T>(string url) where T : JToken
@@ -82,7 +87,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
         protected async Task PostStreamResponse(string url, HttpContent content, Action<JObject> callback, CancellationToken cancellationToken)
         {
-            using (var r = await _client.PostAsync(new Uri(BaseUri, url).AbsoluteUri, content, cancellationToken))
+            var req= new HttpRequestMessage(HttpMethod.Post, new Uri(BaseUri, url).AbsoluteUri) { Content = content };
+            using (var r = await _longCallClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
             {
                 r.EnsureSuccessStatusCode();
                 using (var s = await r.Content.ReadAsStreamAsync())
@@ -91,19 +97,34 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                     {
                         using (var jr = new JsonTextReader(tr))
                         {
+                            cancellationToken.Register(() =>
+                            {
+                                log.DebugFormat("Got cancellation request");
+                                jr.Close();
+                                tr.Close();
+                                s.Close();
+                            });
+                            cancellationToken.ThrowIfCancellationRequested();
                             await Task.Run(() =>
                             {
                                 while (jr.TokenType != JsonToken.StartArray)
                                 {
+                                    cancellationToken.ThrowIfCancellationRequested();
+                                    log.DebugFormat("Pre-consuming {0}", jr.TokenType);
                                     jr.Read();
                                 }
+                                cancellationToken.ThrowIfCancellationRequested();
+                                log.DebugFormat("Consuming {0}, CT: {1}", jr.TokenType, cancellationToken);
                                 jr.Read();
                                 while (jr.TokenType != JsonToken.EndArray)
                                 {
+                                    log.DebugFormat("Processing {0}", jr.TokenType);
                                     callback(JObject.Load(jr));
+                                    cancellationToken.ThrowIfCancellationRequested();
+                                    log.DebugFormat("Processing complete with {0}, consuming", jr.TokenType);
+                                    jr.Read();
                                 }
-                            });
-
+                            }, cancellationToken);
                         }
                     }
                 }

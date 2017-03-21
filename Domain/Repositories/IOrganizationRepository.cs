@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
@@ -12,5 +13,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Repositories
         IEnumerable<OrganizationEntity> GetByAdministrator(string user);
         IEnumerable<OrganizationEntity> GetAll();
         void Save(OrganizationEntity model);
+        Task<OrganizationEntity> GetAsync(string organizationId);
     }
 }

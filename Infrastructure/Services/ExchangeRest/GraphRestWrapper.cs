@@ -10,7 +10,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
     {
         protected override Uri BaseUri { get; } = new Uri("https://graph.microsoft.com/");
 
-        public GraphRestWrapper(HttpClient client) : base(client)
+        public GraphRestWrapper(HttpClient client, HttpClient longCallClient) : base(client, longCallClient)
         {
         }
 

@@ -33,8 +33,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
         private readonly ISmsMessagingService _smsMessagingService;
         private readonly IInstantMessagingService _instantMessagingService;
         private readonly IRoomMetadataRepository _roomRepository;
+        private readonly IMeetingCacheService _meetingCacheService;
+        private readonly IExchangeRestChangeNotificationService _exchangeRestChangeNotificationService;
 
-        public ExchangeRestConferenceRoomService(ExchangeRestWrapper exchange, GraphRestWrapper graph, IContextService contextService, IDateTimeService dateTimeService, IBuildingRepository buildingRepository, IFloorRepository floorRepository, IMeetingRepository meetingRepository, IBroadcastService broadcastService, ISignatureService signatureService, ISmsAddressLookupService smsAddressLookupService, ISmsMessagingService smsMessagingService, IInstantMessagingService instantMessagingService, IRoomMetadataRepository roomRepository)
+        public ExchangeRestConferenceRoomService(ExchangeRestWrapper exchange, GraphRestWrapper graph, IContextService contextService, IDateTimeService dateTimeService, IBuildingRepository buildingRepository, IFloorRepository floorRepository, IMeetingRepository meetingRepository, IBroadcastService broadcastService, ISignatureService signatureService, ISmsAddressLookupService smsAddressLookupService, ISmsMessagingService smsMessagingService, IInstantMessagingService instantMessagingService, IRoomMetadataRepository roomRepository, IMeetingCacheService meetingCacheService, IExchangeRestChangeNotificationService exchangeRestChangeNotificationService)
         {
             _exchange = exchange;
             _graph = graph;
@@ -49,6 +51,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             _smsMessagingService = smsMessagingService;
             _instantMessagingService = instantMessagingService;
             _roomRepository = roomRepository;
+            _meetingCacheService = meetingCacheService;
+            _exchangeRestChangeNotificationService = exchangeRestChangeNotificationService;
         }
 
         public async Task<RoomInfo> GetStaticInfo(IRoom room)
@@ -56,14 +60,16 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             var roomName = await _graph.GetUserDisplayName(room.RoomAddress);
 
             var canControl = CanControl(room);
-            //if (canControl && _useChangeNotification)
-            //{
-            //    // make sure we track rooms we're controlling
-            //    _changeNotificationService.TrackRoom(room, _exchangeServiceManager, _contextService.CurrentOrganization);
-            //}
+            if (canControl )
+            {
+                // make sure we track rooms we're controlling
+                _exchangeRestChangeNotificationService.TrackOrganization(room.OrganizationId);
+            }
 
-            var building = (await _buildingRepository.GetAsync(room.BuildingId)) ?? new BuildingEntity();
-            var floor = (await _floorRepository.GetAsync(room.FloorId)) ?? new FloorEntity();
+            var buildingTask = _buildingRepository.GetAsync(room.BuildingId);
+            var floorTask = _floorRepository.GetAsync(room.FloorId);
+            var building = (await buildingTask) ?? new BuildingEntity();
+            var floor = (await floorTask) ?? new FloorEntity();
 
             return BuildRoomInfo(roomName, canControl, (RoomMetadataEntity)room, building, floor);
         }
@@ -94,15 +100,24 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             };
         }
 
-        private async Task<IEnumerable<Meeting>> GetUpcomingAppointmentsForRoom(IRoom room)
+        private Task<IEnumerable<Meeting>> GetUpcomingAppointmentsForRoom(IRoom room)
         {
-            var apt = (await _graph.GetCalendarEvents(room.RoomAddress, _dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2)))?.Value ?? new CalendarEntry[0];
-            if (_ignoreFree)
-            {
-                apt = apt.Where(i => i.ShowAs != ShowAs.Free).ToArray();
-            }
+            _exchangeRestChangeNotificationService.TrackOrganization(room.OrganizationId);
+            var isTracked = true;
 
-            return await BuildMeetings(room, apt);
+            return _meetingCacheService.GetUpcomingAppointmentsForRoom(room.RoomAddress, isTracked, () =>
+            {
+                return Task.Run(async () =>
+                {
+                    var apt = (await _graph.GetCalendarEvents(room.RoomAddress, _dateTimeService.Now.Date, _dateTimeService.Now.Date.AddDays(2)))?.Value ?? new CalendarEntry[0];
+                    if (_ignoreFree)
+                    {
+                        apt = apt.Where(i => i.ShowAs != ShowAs.Free).ToArray();
+                    }
+
+                    return (await BuildMeetings(room, apt)).AsEnumerable();
+                });
+            });
         }
 
         private async Task<Tuple<Meeting, CalendarEntry>> GetAppointmentForRoom(IRoom room, string uniqueId)
@@ -178,8 +193,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
             var prev = allMeetings.LastOrDefault(i => i.End < now);
             var current = meetings.FirstOrDefault();
-            //var isTracked = _changeNotificationService.IsTrackedForChanges(room);
-            var isTracked = false;
+            //_changeNotificationService.IsTrackedForChanges(room);
+            var isTracked = true;
 
             var info = new RoomStatusInfo
             {

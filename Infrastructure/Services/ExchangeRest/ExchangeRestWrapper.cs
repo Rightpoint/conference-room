@@ -18,10 +18,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
         protected override Uri BaseUri { get; } = new Uri("https://outlook.office.com/api/");
 
-        public ExchangeRestWrapper(HttpClient client) : base(client)
+        public ExchangeRestWrapper(HttpClient client, HttpClient longCallClient) : base(client, longCallClient)
         {
         }
-        
+
         public async Task Truncate(string roomAddress, CalendarEntry originalItem, DateTime targetEndDate)
         {
             var oldEnd = originalItem.End.ToOffset();
@@ -38,6 +38,17 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
         public async Task<CalendarEntry> CreateEvent(string roomAddress, CalendarEntry calendarEntry)
         {
             return await Post<CalendarEntry>($"v2.0/users/{roomAddress}/events", new StringContent(JObject.FromObject(calendarEntry).ToString(Formatting.None), Encoding.UTF8, "application/json"));
+        }
+
+        public async Task<SubscriptionResponse> CreateNotification(string roomAddress)
+        {
+            var obj = JObject.FromObject(new
+            {
+                Resource = new Uri(BaseUri, $"beta/users/{roomAddress}/events"),
+                ChangeType = "Created,Deleted,Updated",
+            });
+            obj["@odata.type"] = "#Microsoft.OutlookServices.StreamingSubscription";
+            return await Post<SubscriptionResponse>($"beta/me/subscriptions", new StringContent(obj.ToString(Formatting.None), Encoding.UTF8, "application/json"));
         }
 
         public async Task GetNotifications(NotificationRequest request, Action<NotificationResponse> callback, CancellationToken cancellationToken)

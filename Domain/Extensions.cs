@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RightpointLabs.ConferenceRoom.Domain
 {
@@ -48,6 +49,12 @@ namespace RightpointLabs.ConferenceRoom.Domain
         public static DateTime TruncateToTheMinute(this DateTime date)
         {
             return new DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, 0, date.Kind);
+        }
+
+        public static T[][] Chunk<T>(this IEnumerable<T> input, int size)
+        {
+            var data = input.ToList();
+            return Enumerable.Range(0, (data.Count - 1) / size + 1).Select(i => data.Skip(i * size).Take(size).ToArray()).ToArray();
         }
     }
 }
