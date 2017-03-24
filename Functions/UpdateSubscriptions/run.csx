@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 #r "Microsoft.WindowsAzure.Storage"
 using Microsoft.WindowsAzure.Storage.Table;
 
-public static readonly string WebHookUri = "https://rprooms-func.azurewebsites.net/HandleSubscriptionEvent";
+public static readonly string WebHookUri = ConfigurationManager.AppSettings["WebHookUri"];
 public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log, IQueryable<DynamicTableEntity> rooms, CloudTable roomsTable, IQueryable<DynamicTableEntity> serviceConfig)
 {
     log.Info($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");

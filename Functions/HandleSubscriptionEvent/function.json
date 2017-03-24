@@ -1,5 +1,4 @@
 ﻿{
-  "disabled": false,
   "bindings": [
     {
       "authLevel": "anonymous",
@@ -15,17 +14,20 @@
     {
       "name": "rooms",
       "type": "table",
-      "connection": "StorageConnection",
+      "connection": "rplabs_STORAGE",
       "tableName": "RoomMetadataEntity",
-      "direction": "in"
+      "direction": "in",
+      "take": 50
     },
     {
       "name": "topic",
-      "topicName": "calendarChange",
-      "connection": "ServiceBusConnection",
+      "topicName": "calendarchange",
+      "connection": "topicConnection",
       "accessRights": "manage",
       "type": "serviceBus",
-      "direction": "out"
+      "direction": "out",
+      "accessRights_": "Manage"
     }
-  ]
+  ],
+  "disabled": false
 }
