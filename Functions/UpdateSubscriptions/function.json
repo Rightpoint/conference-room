@@ -16,16 +16,21 @@
       "type": "table",
       "connection": "rplabs_STORAGE",
       "tableName": "RoomMetadataEntity",
-      "direction": "in",
-      "take": 50
+      "direction": "in"
+    },
+    {
+      "name": "roomsTable",
+      "type": "table",
+      "connection": "rplabs_STORAGE",
+      "tableName": "RoomMetadataEntity",
+      "direction": "in"
     },
     {
       "name": "serviceConfig",
       "type": "table",
       "connection": "rplabs_STORAGE",
       "tableName": "OrganizationServiceConfigurationEntity",
-      "direction": "in",
-      "take": 50
+      "direction": "in"
     }
   ],
   "disabled": false

@@ -16,8 +16,7 @@
       "type": "table",
       "connection": "rplabs_STORAGE",
       "tableName": "RoomMetadataEntity",
-      "direction": "in",
-      "take": 50
+      "direction": "in"
     },
     {
       "name": "topic",

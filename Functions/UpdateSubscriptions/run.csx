@@ -16,13 +16,13 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
 {
     log.Info($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
 
-    var allRooms = rooms.GroupBy(i => i.PartitionKey).ToDictionary(i => i.Key, i => i.ToList());
+    var allRooms = rooms.ToList().GroupBy(i => i.PartitionKey).ToDictionary(i => i.Key, i => i.ToList());
     foreach (var org in allRooms)
     {
-        var config = serviceConfig.SingleOrDefault(i => i.PartitionKey == org.Key && i.RowKey == "Exchange");
-        if (null != config)
+        var config = serviceConfig.Where(i => i.PartitionKey == org.Key && i.RowKey == "Exchange").ToList().SingleOrDefault();
+        if (null == config)
         {
-            log.Info($"No exchange configuration found for {org.Key}- skipping {org.Value.Count} rooms");
+            log.Info($"No exchange configuration found for {org.Key} - skipping {org.Value.Count} rooms");
             continue;
         }
 
@@ -32,16 +32,20 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         var tenantId = (string)configData["TenantId"];
         if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientCertificate) || string.IsNullOrEmpty(tenantId))
         {
-            log.Info($"Missing some exchange configuration for {org.Key}- skipping {org.Value.Count} rooms");
+            log.Info($"Missing some exchange configuration for {org.Key} - skipping {org.Value.Count} rooms");
             continue;
         }
 
+        log.Info("Loading cert");
         var cert = new X509Certificate2();
-        cert.Import(Convert.FromBase64String(clientCertificate));
+        cert.Import(Convert.FromBase64String(clientCertificate), string.Empty, X509KeyStorageFlags.MachineKeySet);
+        log.Info($"Using cert: {cert.GetPublicKeyString()}");
 
         var ctx = new AuthenticationContext(Authority + tenantId);
         var result = await ctx.AcquireTokenAsync(OutlookResource, new ClientAssertionCertificate(clientId, cert));
         var authToken = result.AccessToken;
+
+        log.Info("Got access token");
 
         var client = new HttpClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
@@ -51,7 +55,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         {
             foreach (var room in org.Value)
             {
-                var subId = room["SubscriptionId"]?.StringValue;
+                var subId = room.Properties.ContainsKey("SubscriptionId") ? room["SubscriptionId"]?.StringValue : null;
                 var roomAddress = (string)JObject.Parse(room["Data"]?.StringValue)["RoomAddress"];
                 var roomUri = new Uri(baseUri, $"Users('{roomAddress}')/");
                 if (!string.IsNullOrEmpty(subId))
@@ -90,8 +94,11 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
                     });
                     obj["@odata.type"] = "#Microsoft.OutlookServices.PushSubscription";
                     var content = new StringContent(obj.ToString(Formatting.None), Encoding.UTF8, "application/json");
+                    var uri = new Uri(roomUri, $"subscriptions").AbsoluteUri;
 
-                    var reqH = new HttpRequestMessage(HttpMethod.Post, new Uri(roomUri, $"subscriptions").AbsoluteUri) { Content = content };
+                    log.Info($"POSTing to {uri} with {await content.ReadAsStringAsync()}");
+
+                    var reqH = new HttpRequestMessage(HttpMethod.Post, uri) { Content = content };
                     using (var r = await client.SendAsync(reqH))
                     {
                         r.EnsureSuccessStatusCode();
