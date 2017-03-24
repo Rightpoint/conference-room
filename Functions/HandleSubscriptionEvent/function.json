@@ -1,0 +1,31 @@
+﻿{
+  "disabled": false,
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "name": "req",
+      "type": "httpTrigger",
+      "direction": "in"
+    },
+    {
+      "name": "res",
+      "type": "http",
+      "direction": "out"
+    },
+    {
+      "name": "rooms",
+      "type": "table",
+      "connection": "StorageConnection",
+      "tableName": "RoomMetadataEntity",
+      "direction": "in"
+    },
+    {
+      "name": "topic",
+      "topicName": "calendarChange",
+      "connection": "ServiceBusConnection",
+      "accessRights": "manage",
+      "type": "serviceBus",
+      "direction": "out"
+    }
+  ]
+}

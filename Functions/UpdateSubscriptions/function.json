@@ -1,0 +1,30 @@
+﻿{
+  "disabled": false,
+  "bindings": [
+    {
+      "authLevel": "admin",
+      "name": "req",
+      "type": "httpTrigger",
+      "direction": "in"
+    },
+    {
+      "name": "res",
+      "type": "http",
+      "direction": "out"
+    },
+    {
+      "name": "rooms",
+      "type": "table",
+      "connection": "StorageConnection",
+      "tableName": "RoomMetadataEntity",
+      "direction": "in"
+    },
+    {
+      "name": "serviceConfig",
+      "type": "table",
+      "connection": "StorageConnection",
+      "tableName": "OrganizationServiceConfigurationEntity",
+      "direction": "in"
+    }
+  ]
+}
