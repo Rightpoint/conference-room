@@ -15,7 +15,7 @@ using Newtonsoft.Json.Linq;
 
 namespace RightpointLabs.ConferenceRoom.Functions.Implementation
 {
-    public class UpdateSubscription
+    public class UpdateSubscriptions
     {
         public static readonly string WebHookUri = ConfigurationManager.AppSettings["WebHookUri"];
         public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log, IQueryable<DynamicTableEntity> rooms, CloudTable roomsTable, IQueryable<DynamicTableEntity> serviceConfig)
