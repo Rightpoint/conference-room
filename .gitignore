@@ -205,3 +205,5 @@ FakesAssemblies/
 /Web/custom-icons.css
 /Web/Web.Release.config
 /Functions/appsettings.json
+/Functions/host.json
+/Functions/host.json

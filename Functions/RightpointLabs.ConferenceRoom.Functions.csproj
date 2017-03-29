@@ -122,6 +122,7 @@
     <Content Include="appsettings.json" />
     <Content Include="host.json" />
     <Content Include="appsettings.template.json" />
+    <Content Include="host.template.json" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
