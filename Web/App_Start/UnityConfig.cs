@@ -173,7 +173,21 @@ namespace RightpointLabs.ConferenceRoom.Web
 
                 // create change notifier in a child container and register as a singleton with the main container (avoids creating it's dependencies in the global container)
                 var child = container.CreateChildContainer();
-                var changeNotificationService = child.Resolve<ExchangeRestChangeNotificationService>();
+                //var changeNotificationService = child.Resolve<ExchangeRestChangeNotificationService>();
+                //container.RegisterInstance(typeof(IExchangeRestChangeNotificationService), changeNotificationService, new ContainerControlledLifetimeManager());
+                child.RegisterType<ExchangePushChangeNotificationService>(new TransientLifetimeManager(),
+                    new InjectionFactory(
+                        c =>
+                        {
+                            return new ExchangePushChangeNotificationService(c.Resolve<IBroadcastService>(),
+                                c.Resolve<IMeetingCacheService>(), 
+                                c.Resolve<IIOCContainer>(),
+                                ConfigurationManager.AppSettings["ServiceBusConnectionString"],
+                                ConfigurationManager.AppSettings["ServiceBusConnectionTopic"],
+                                ConfigurationManager.AppSettings["ServiceBusConnectionSubscription"]);
+                        }));
+                var changeNotificationService = child.Resolve<ExchangePushChangeNotificationService>();
+                new System.Threading.Thread(changeNotificationService.RecieveMessages).Start();
                 container.RegisterInstance(typeof(IExchangeRestChangeNotificationService), changeNotificationService, new ContainerControlledLifetimeManager());
             }
 
