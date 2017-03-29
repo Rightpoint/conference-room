@@ -1,4 +1,6 @@
 {
+  "scriptFile": "..\\bin\\RightpointLabs.ConferenceRoom.Functions.dll",
+  "entryPoint": "RightpointLabs.ConferenceRoom.Functions.Implementation.HandleSubscriptionEvent.Run",
   "bindings": [
     {
       "authLevel": "anonymous",
