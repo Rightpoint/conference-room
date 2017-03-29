@@ -1,4 +1,4 @@
-﻿#r "Microsoft.WindowsAzure.Storage"
+#r "Microsoft.WindowsAzure.Storage"
 #r "Newtonsoft.Json"
 #r "Microsoft.ServiceBus"
 using Microsoft.WindowsAzure.Storage;
@@ -23,14 +23,14 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     }
 
     var clientState = req.Headers.GetValues("ClientState").FirstOrDefault();
-    if (string.IsNullOrEmpty(clientState))
+    if(string.IsNullOrEmpty(clientState))
     {
         log.Info("Missing clientState");
         return req.CreateResponse(HttpStatusCode.BadRequest, "Missing clientState");
     }
 
     var parts = clientState.Split('_');
-    if (parts.Length != 2)
+    if(parts.Length != 2)
     {
         log.Info("Invalid clientState");
         return req.CreateResponse(HttpStatusCode.BadRequest, "Invalid clientState");
@@ -39,7 +39,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     var orgId = parts[0];
     var roomId = parts[1];
     var roomEntity = rooms.Where(i => i.PartitionKey == orgId && i.RowKey == roomId).SingleOrDefault();
-    if (null == roomEntity)
+    if(null == roomEntity)
     {
         log.Info("Cannot find room");
         return req.CreateResponse(HttpStatusCode.BadRequest, "Cannot find room");
@@ -47,21 +47,21 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
 
     var room = JObject.Parse(roomEntity["Data"]?.StringValue);
     var subId = roomEntity.Properties.ContainsKey("SubscriptionId") ? roomEntity["SubscriptionId"]?.StringValue : null;
-    if (string.IsNullOrEmpty(subId))
+    if(string.IsNullOrEmpty(subId))
     {
         log.Info("No active subscription for room");
         return req.CreateResponse(HttpStatusCode.BadRequest, "No active subscription for room");
     }
 
     var data = JObject.Parse(await req.Content.ReadAsStringAsync());
-    foreach (JObject notification in (JArray)data["value"])
+    foreach(JObject notification in (JArray)data["value"])
     {
         var nSubId = (string)notification["SubscriptionId"];
         var nType = (string)notification["@odata.type"];
         switch (nType)
         {
             case "#Microsoft.OutlookServices.Notification":
-                if (subId == nSubId)
+                if(subId == nSubId)
                 {
                     log.Info($"Broadcasting {notification} on {room}");
                     await topic.AddAsync(JObject.FromObject(new { notification, room }).ToString());

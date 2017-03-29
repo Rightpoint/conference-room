@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RightpointLabs.ConferenceRoom.Web", "Web\RightpointLabs.ConferenceRoom.Web.csproj", "{D542CB1E-F9B0-4E2D-920D-7D0909FDDC2A}"
 EndProject
@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RightpointLabs.ConferenceRo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{44CCB45C-B227-4812-B59F-A6AFD8444C51}"
 EndProject
-Project("{33AD0EE8-D99B-4E14-8CD9-3F56ABEF97A2}") = "RightpointLabs.ConferenceRoom.Functions", "Functions\RightpointLabs.ConferenceRoom.Functions.funproj", "{11B1DDB1-84A9-4AE1-9211-B9437DA095FB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RightpointLabs.ConferenceRoom.Functions", "Functions\RightpointLabs.ConferenceRoom.Functions.csproj", "{466B71C0-1DD4-41F7-807E-F617EAA162F4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +53,14 @@ Global
 		{11B1DDB1-84A9-4AE1-9211-B9437DA095FB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{11B1DDB1-84A9-4AE1-9211-B9437DA095FB}.Release|x64.ActiveCfg = Release|Any CPU
 		{11B1DDB1-84A9-4AE1-9211-B9437DA095FB}.Release|x64.Build.0 = Release|Any CPU
+		{466B71C0-1DD4-41F7-807E-F617EAA162F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{466B71C0-1DD4-41F7-807E-F617EAA162F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{466B71C0-1DD4-41F7-807E-F617EAA162F4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{466B71C0-1DD4-41F7-807E-F617EAA162F4}.Debug|x64.Build.0 = Debug|Any CPU
+		{466B71C0-1DD4-41F7-807E-F617EAA162F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{466B71C0-1DD4-41F7-807E-F617EAA162F4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{466B71C0-1DD4-41F7-807E-F617EAA162F4}.Release|x64.ActiveCfg = Release|Any CPU
+		{466B71C0-1DD4-41F7-807E-F617EAA162F4}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

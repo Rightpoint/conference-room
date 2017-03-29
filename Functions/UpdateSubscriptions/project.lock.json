@@ -1,12 +1,62 @@
-﻿{
-  "locked": false,
+{
   "version": 2,
   "targets": {
-    ".NETFramework,Version=v4.6": {}
+    ".NETFramework,Version=v4.6": {
+      "Microsoft.IdentityModel.Clients.ActiveDirectory/3.13.8": {
+        "type": "package",
+        "compile": {
+          "lib/net45/Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll": {},
+          "lib/net45/Microsoft.IdentityModel.Clients.ActiveDirectory.dll": {}
+        },
+        "runtime": {
+          "lib/net45/Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll": {},
+          "lib/net45/Microsoft.IdentityModel.Clients.ActiveDirectory.dll": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "Microsoft.IdentityModel.Clients.ActiveDirectory/3.13.8": {
+      "sha512": "RAYmpEVVnl8qWdPmm62k9wm6MUB9H4Gk3l7uBADDCCQJDOkpTAINzgWHTBF8hkaTHFLaGIfgOeeLcKT+K1PG7A==",
+      "type": "package",
+      "path": "microsoft.identitymodel.clients.activedirectory/3.13.8",
+      "files": [
+        "lib/MonoAndroid10/Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.XML",
+        "lib/MonoAndroid10/Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll",
+        "lib/MonoAndroid10/Microsoft.IdentityModel.Clients.ActiveDirectory.XML",
+        "lib/MonoAndroid10/Microsoft.IdentityModel.Clients.ActiveDirectory.dll",
+        "lib/Xamarin.iOS10/Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.XML",
+        "lib/Xamarin.iOS10/Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll",
+        "lib/Xamarin.iOS10/Microsoft.IdentityModel.Clients.ActiveDirectory.XML",
+        "lib/Xamarin.iOS10/Microsoft.IdentityModel.Clients.ActiveDirectory.dll",
+        "lib/net45/Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.XML",
+        "lib/net45/Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll",
+        "lib/net45/Microsoft.IdentityModel.Clients.ActiveDirectory.XML",
+        "lib/net45/Microsoft.IdentityModel.Clients.ActiveDirectory.dll",
+        "lib/netcore45/Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.XML",
+        "lib/netcore45/Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll",
+        "lib/netcore45/Microsoft.IdentityModel.Clients.ActiveDirectory.XML",
+        "lib/netcore45/Microsoft.IdentityModel.Clients.ActiveDirectory.dll",
+        "lib/netstandard1.4/Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.XML",
+        "lib/netstandard1.4/Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll",
+        "lib/netstandard1.4/Microsoft.IdentityModel.Clients.ActiveDirectory.XML",
+        "lib/netstandard1.4/Microsoft.IdentityModel.Clients.ActiveDirectory.dll",
+        "lib/portable-net45+win/Microsoft.IdentityModel.Clients.ActiveDirectory.XML",
+        "lib/portable-net45+win/Microsoft.IdentityModel.Clients.ActiveDirectory.dll",
+        "microsoft.identitymodel.clients.activedirectory.3.13.8.nupkg.sha512",
+        "microsoft.identitymodel.clients.activedirectory.nuspec"
+      ]
+    }
+  },
   "projectFileDependencyGroups": {
     "": [],
-    ".NETFramework,Version=v4.6": []
+    ".NETFramework,Version=v4.6": [
+      "Microsoft.IdentityModel.Clients.ActiveDirectory >= 3.13.8"
+    ]
+  },
+  "tools": {},
+  "projectFileToolGroups": {},
+  "packageFolders": {
+    "D:\\home\\data\\Functions\\packages\\nuget": {}
   }
 }

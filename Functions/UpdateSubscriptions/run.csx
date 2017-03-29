@@ -1,4 +1,4 @@
-﻿#r "Microsoft.WindowsAzure.Storage"
+#r "Microsoft.WindowsAzure.Storage"
 #r "Newtonsoft.Json"
 
 using System.Configuration;
@@ -17,10 +17,10 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     log.Info($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
 
     var allRooms = rooms.ToList().GroupBy(i => i.PartitionKey).ToDictionary(i => i.Key, i => i.ToList());
-    foreach (var org in allRooms)
+    foreach(var org in allRooms)
     {
         var config = serviceConfig.Where(i => i.PartitionKey == org.Key && i.RowKey == "Exchange").ToList().SingleOrDefault();
-        if (null == config)
+        if(null == config)
         {
             log.Info($"No exchange configuration found for {org.Key} - skipping {org.Value.Count} rooms");
             continue;
@@ -30,7 +30,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         var clientId = (string)configData["ClientId"];
         var clientCertificate = (string)configData["ClientCertificate"];
         var tenantId = (string)configData["TenantId"];
-        if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientCertificate) || string.IsNullOrEmpty(tenantId))
+        if(string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientCertificate) || string.IsNullOrEmpty(tenantId))
         {
             log.Info($"Missing some exchange configuration for {org.Key} - skipping {org.Value.Count} rooms");
             continue;
@@ -53,12 +53,12 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
         var baseUri = new Uri("https://outlook.office.com/api/v2.0/");
         using (client)
         {
-            foreach (var room in org.Value)
+            foreach(var room in org.Value)
             {
                 var subId = room.Properties.ContainsKey("SubscriptionId") ? room["SubscriptionId"]?.StringValue : null;
                 var roomAddress = (string)JObject.Parse(room["Data"]?.StringValue)["RoomAddress"];
                 var roomUri = new Uri(baseUri, $"Users('{roomAddress}')/");
-                if (!string.IsNullOrEmpty(subId))
+                if(!string.IsNullOrEmpty(subId))
                 {
                     // extend the current subscription by another day
                     log.Info($"Extending {subId} for {roomAddress}");
@@ -72,7 +72,7 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
                     var reqH = new HttpRequestMessage(new HttpMethod("PATCH"), new Uri(roomUri, $"subscriptions/{subId}").AbsoluteUri) { Content = content };
                     using (var r = await client.SendAsync(reqH))
                     {
-                        if (r.StatusCode == System.Net.HttpStatusCode.OK)
+                        if(r.StatusCode == System.Net.HttpStatusCode.OK)
                         {
                             // nothing further needed
                             continue;
