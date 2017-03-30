@@ -68,6 +68,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                         MaxConcurrentCalls = 10,
                         AutoRenewTimeout = TimeSpan.FromMinutes(1)
                     });
+
+                    log.Debug("Push change notification listener started");
                     break;
                 }
                 catch (Exception ex)
