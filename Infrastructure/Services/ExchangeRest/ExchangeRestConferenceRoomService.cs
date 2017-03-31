@@ -131,7 +131,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
         private async Task<Tuple<Meeting, CalendarEntry>> GetAppointmentForRoom(IRoom room, string uniqueId)
         {
-            var apt = (await _exchange.GetCalendarEvent(room.RoomAddress, uniqueId))?.Value;
+            var apt = await _exchange.GetCalendarEvent(room.RoomAddress, uniqueId);
             if (null == apt)
             {
                 return null;
@@ -170,8 +170,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 UniqueId = i.Id,
                 Subject = i.Sensitivity != Sensitivity.Normal ? i.Sensitivity.ToString() :
                     i.Subject != null && i.Subject.Trim() == i.Organizer?.EmailAddress?.Name.Trim() ? null : i.Subject,
-                Start = i.Start.ToOffset().DateTime,
-                End = i.End.ToOffset().DateTime,
+                Start = i.Start.ToOffset().UtcDateTime,
+                End = i.End.ToOffset().UtcDateTime,
                 Organizer = i.Organizer?.EmailAddress?.Name,
                 RequiredAttendees = i.Attendees?.Count(ii => ii.Type == "Required") ?? 0,
                 OptionalAttendees = i.Attendees?.Count(ii => ii.Type == "Optional") ?? 0,
@@ -426,10 +426,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
             var item = await _exchange.CreateEvent(room.RoomAddress, new CalendarEntry
             {
-                Start = new DateTimeReference() { DateTime = now.ToUniversalTime().ToString("o") },
-                End = new DateTimeReference() { DateTime = endTime.ToUniversalTime().ToString("o") },
+                Attendees = new Attendee[0],
+                Start = new DateTimeReference() { DateTime = now.ToUniversalTime().ToString("o"), TimeZone = "UTC" },
+                End = new DateTimeReference() { DateTime = endTime.ToUniversalTime().ToString("o"), TimeZone = "UTC" },
                 Subject = title,
                 Body = new BodyContent() {  Content = "Scheduled via conference room management system", ContentType = "Text" },
+                Importance = Importance.Normal,
+                ShowAs = ShowAs.Busy,
+                Sensitivity = Sensitivity.Normal,
             });
 
             _meetingRepository.StartMeeting(room.OrganizationId, item.Id);
@@ -499,7 +503,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
         private async Task BroadcastUpdate(IRoom room)
         {
-            //_meetingCacheService.ClearUpcomingAppointmentsForRoom(room.RoomAddress);
+            _meetingCacheService.ClearUpcomingAppointmentsForRoom(room.RoomAddress);
             _broadcastService.BroadcastUpdate(_contextService.CurrentOrganization, room);
         }
 

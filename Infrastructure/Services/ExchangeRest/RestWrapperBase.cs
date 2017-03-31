@@ -69,7 +69,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
         protected async Task Patch(string url, HttpContent content)
         {
-            using (var r = await _client.SendAsync(new HttpRequestMessage(HttpMethod.Post, new Uri(BaseUri, url).AbsoluteUri)
+            using (var r = await _client.SendAsync(new HttpRequestMessage(new HttpMethod("PATCH"), new Uri(BaseUri, url).AbsoluteUri)
             {
                 Content = content
             }))

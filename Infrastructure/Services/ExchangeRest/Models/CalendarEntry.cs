@@ -1,3 +1,6 @@
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest.Models
 {
     public class CalendarEntry

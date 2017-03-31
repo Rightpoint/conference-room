@@ -13,7 +13,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest.Mod
             {
                 throw new ArgumentException($"Invalid timezone: {TimeZone}");
             }
-            return DateTimeOffset.Parse(DateTime);
+            return DateTimeOffset.Parse(DateTime + " +0:00");
         }
     }
 }

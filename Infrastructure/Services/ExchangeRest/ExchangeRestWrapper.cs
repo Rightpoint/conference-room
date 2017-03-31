@@ -30,9 +30,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             return Get<Response<CalendarEntry[]>>($"v2.0/users/{roomAddress}/calendarView?startDateTime={startDate:s}&endDateTime={endDate:s}&$top=1000&$select={fields}");
         }
 
-        public Task<Response<CalendarEntry>> GetCalendarEvent(string roomAddress, string uniqueId)
+        public Task<CalendarEntry> GetCalendarEvent(string roomAddress, string uniqueId)
         {
-            return Get<Response<CalendarEntry>>($"v2.0/users/{roomAddress}/Events('{uniqueId}')");
+            return Get<CalendarEntry>($"v2.0/users/{roomAddress}/Events('{uniqueId}')");
         }
 
         public async Task Truncate(string roomAddress, CalendarEntry originalItem, DateTime targetEndDate)
@@ -40,7 +40,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             var oldEnd = originalItem.End.ToOffset();
             var oldStart = originalItem.Start.ToOffset();
             var date = targetEndDate < oldStart ? oldStart : targetEndDate > oldEnd ? oldEnd : new DateTimeOffset(targetEndDate);
-            await Patch($"v2.0/users/{roomAddress}/Events('{originalItem.Id}')", new StringContent(JObject.FromObject(new { End = date.ToString("o"), TimeZone = "UTC" }).ToString(Formatting.None), Encoding.UTF8, "application/json"));
+            await Patch($"v2.0/users/{roomAddress}/Events('{originalItem.Id}')", new StringContent(JObject.FromObject(new { End = new DateTimeReference() { DateTime = date.UtcDateTime.ToString("o"), TimeZone = "UTC" } }).ToString(Formatting.None), Encoding.UTF8, "application/json"));
         }
 
         public async Task SendMessage(Message message, string sender)
