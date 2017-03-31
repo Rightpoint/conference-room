@@ -39,6 +39,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
         public void RecieveMessages()
         {
+            ServiceBusEnvironment.SystemConnectivity.Mode = ConnectivityMode.Https;
             while (true)
             {
                 log.DebugFormat("Starting push change notification listener");
