@@ -26,6 +26,7 @@ using RightpointLabs.ConferenceRoom.Web.SignalR;
 using Unity.WebApi;
 
 using AzureTable = RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.AzureTable;
+using Microsoft.Practices.Unity.InterceptionExtension;
 
 namespace RightpointLabs.ConferenceRoom.Web
 {
@@ -36,6 +37,7 @@ namespace RightpointLabs.ConferenceRoom.Web
         public static void RegisterComponents()
         {
             var container = new UnityContainer();
+            container.AddNewExtension<Interception>();
 
             container.RegisterType<ExchangeConferenceRoomServiceConfiguration>(new HierarchicalLifetimeManager(),
                 new InjectionFactory(
@@ -99,16 +101,16 @@ namespace RightpointLabs.ConferenceRoom.Web
                 CloudStorageAccount.Parse(ConfigurationManager.ConnectionStrings["AzureStorage"]?.ConnectionString).CreateCloudTableClient()
             ));
 
-            container.RegisterType<IDeviceStatusRepository, AzureTable.DeviceStatusRepository>(new HierarchicalLifetimeManager());
-
+            container.RegisterType<CachingBehavior>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IDeviceStatusRepository, AzureTable.DeviceStatusRepository>(new HierarchicalLifetimeManager(), new Interceptor<InterfaceInterceptor>(), new InterceptionBehavior<CachingBehavior>());
             container.RegisterType<IMeetingRepository, AzureTable.MeetingRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IRoomMetadataRepository, AzureTable.RoomMetadataRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IFloorRepository, AzureTable.FloorRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IBuildingRepository, AzureTable.BuildingRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IDeviceRepository, AzureTable.DeviceRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IOrganizationRepository, AzureTable.OrganizationRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IOrganizationServiceConfigurationRepository, AzureTable.OrganizationServiceConfigurationRepository>(new HierarchicalLifetimeManager());
-            container.RegisterType<IGlobalAdministratorRepository, AzureTable.GlobalAdministratorRepository>(new HierarchicalLifetimeManager());
+            container.RegisterType<IRoomMetadataRepository, AzureTable.RoomMetadataRepository>(new HierarchicalLifetimeManager(), new Interceptor<InterfaceInterceptor>(), new InterceptionBehavior<CachingBehavior>());
+            container.RegisterType<IFloorRepository, AzureTable.FloorRepository>(new HierarchicalLifetimeManager(), new Interceptor<InterfaceInterceptor>(), new InterceptionBehavior<CachingBehavior>());
+            container.RegisterType<IBuildingRepository, AzureTable.BuildingRepository>(new HierarchicalLifetimeManager(), new Interceptor<InterfaceInterceptor>(), new InterceptionBehavior<CachingBehavior>());
+            container.RegisterType<IDeviceRepository, AzureTable.DeviceRepository>(new HierarchicalLifetimeManager(), new Interceptor<InterfaceInterceptor>(), new InterceptionBehavior<CachingBehavior>());
+            container.RegisterType<IOrganizationRepository, AzureTable.OrganizationRepository>(new HierarchicalLifetimeManager(), new Interceptor<InterfaceInterceptor>(), new InterceptionBehavior<CachingBehavior>());
+            container.RegisterType<IOrganizationServiceConfigurationRepository, AzureTable.OrganizationServiceConfigurationRepository>(new HierarchicalLifetimeManager(), new Interceptor<InterfaceInterceptor>(), new InterceptionBehavior<CachingBehavior>());
+            container.RegisterType<IGlobalAdministratorRepository, AzureTable.GlobalAdministratorRepository>(new HierarchicalLifetimeManager(), new Interceptor<InterfaceInterceptor>(), new InterceptionBehavior<CachingBehavior>());
 
             container.RegisterType<IIOCContainer, UnityIOCContainer>(new TransientLifetimeManager(), new InjectionFactory(c => new UnityIOCContainer(c, false)));
             container.RegisterType<ITokenProvider, HttpTokenProvider>(new HierarchicalLifetimeManager());
