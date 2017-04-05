@@ -50,6 +50,17 @@ namespace RightpointLabs.ConferenceRoom.Web.Areas.Admin.Controllers
                 IsGlobalAdmin = true;
                 CurrentOrganization = _organizationRepository.Get(Session[SelectedOrganizationIdKey] as string);
                 MyOrganizations = new Lazy<List<OrganizationEntity>>(() => _organizationRepository.GetAll().ToList());
+
+                // if I don't have an organization set, but there's only one organization, let's just assume I picked it, ok?
+                if (null == CurrentOrganization)
+                {
+                    var orgs = MyOrganizations.Value;
+                    if (orgs.Count == 1)
+                    {
+                        CurrentOrganization = orgs.Single();
+                        Session[SelectedOrganizationIdKey] = CurrentOrganization.Id;
+                    }
+                }
             }
             else
             {
