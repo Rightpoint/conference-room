@@ -12,7 +12,7 @@ namespace RightpointLabs.ConferenceRoom.Web
     public class CachingBehavior: IInterceptionBehavior
     {
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        private ConcurrentDictionary<string, CachedObject> _cache = new ConcurrentDictionary<string, CachedObject>();
+        private ConcurrentDictionary<string, ConcurrentDictionary<string, CachedObject>> _cache = new ConcurrentDictionary<string, ConcurrentDictionary<string, CachedObject>>();
 
         private class CachedObject
         {
@@ -37,30 +37,40 @@ namespace RightpointLabs.ConferenceRoom.Web
                     var parameters = method.GetParameters();
                     if (parameters.All(i => i.ParameterType == typeof(string)))
                     {
-                        var key = $"{method.ReflectedType.FullName}_{method.Name}_{parameters.Length}_" + string.Join("_", input.Inputs.Cast<object>());
-                        log.Debug($"Using key {key}");
+                        var key1 = method.ReflectedType.FullName;
+                        var key2 = $"{method.Name}_{parameters.Length}_" + string.Join("_", input.Inputs.Cast<object>());
+                        log.Debug($"Using keys {key1} {key2}");
 
                         CachedObject result;
-                        while(true)
+                        while (true)
                         {
-                            result = _cache.GetOrAdd(key, _ =>
+                            var cache = _cache.GetOrAdd(key1, new ConcurrentDictionary<string, CachedObject>());
+                            result = cache.GetOrAdd(key2, _ =>
                             {
-                                log.Debug($"Cache miss on {key}");
+                                log.Debug($"Cache miss on {key2}");
                                 var r = getNext()(input, getNext);
                                 return new CachedObject(DateTime.UtcNow, r?.ReturnValue, r?.Exception);
                             });
                             if (result.CacheTime.AddMinutes(5) < DateTime.UtcNow)
                             {
-                                _cache.TryRemove(key, out result);
+                                cache.TryRemove(key2, out result);
                             }
                             else
                             {
-                                return result.Exception != null ? 
-                                    input.CreateExceptionMethodReturn(result.Exception) : 
-                                    input.CreateMethodReturn(result.Object);
+                                return result.Exception != null
+                                    ? input.CreateExceptionMethodReturn(result.Exception)
+                                    : input.CreateMethodReturn(result.Object);
                             }
                         }
                     }
+                }
+                else
+                {
+                    // hmm.... we better clear the cache for this object to be sure....
+                    var key1 = method.ReflectedType.FullName;
+                    log.Debug("Clearing cache for {key1}");
+                    ConcurrentDictionary<string, CachedObject> removed;
+                    _cache.TryRemove(key1, out removed);
                 }
             }
             
