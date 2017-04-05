@@ -33,9 +33,10 @@ namespace RightpointLabs.ConferenceRoom.Functions.Implementation
                 }
 
                 var configData = JObject.Parse(config["Data"]?.StringValue);
-                var clientId = (string)configData["ClientId"];
-                var clientCertificate = (string)configData["ClientCertificate"];
-                var tenantId = (string)configData["TenantId"];
+                var configParameters = (JObject)configData["Parameters"];
+                var clientId = (string)configParameters["ClientId"];
+                var clientCertificate = (string)configParameters["ClientCertificate"];
+                var tenantId = (string)configParameters["TenantId"];
                 if(string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientCertificate) || string.IsNullOrEmpty(tenantId))
                 {
                     log.Info($"Missing some exchange configuration for {org.Key} - skipping {org.Value.Count} rooms");

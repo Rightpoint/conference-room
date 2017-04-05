@@ -139,17 +139,17 @@ namespace RightpointLabs.ConferenceRoom.Web
                         {
                             return CreateOrganizationalService(c, "Exchange", _ =>
                                 f.GetFactory(null,
-                                    ConfigurationManager.AppSettings["ExchangeApiAdminTenantId"],
-                                    ConfigurationManager.AppSettings["ExchangeApiAdminClientId"],
-                                    ConfigurationManager.AppSettings["ExchangeApiAdminCert"],
-                                    ConfigurationManager.AppSettings["ExchangeApiAdminDefaultUser"]));
+                                    (string)_.TenantId.Value,
+                                    (string)_.ClientId.Value,
+                                    (string)_.ClientCertificate.Value,
+                                    (string)_.DefaultUser.Value));
                         }
                         else
                         {
                             return CreateOrganizationalService(c, "Exchange", _ =>
                                 f.GetFactory(null,
-                                    ConfigurationManager.AppSettings["ExchangeApiClientId"],
-                                    ConfigurationManager.AppSettings["ExchangeApiClientSecret"],
+                                    (string)_.ClientId.Value,
+                                    (string)_.ClientSecret.Value,
                                     (string) _.Username.Value,
                                     (string) _.Password.Value,
                                     "me"));
