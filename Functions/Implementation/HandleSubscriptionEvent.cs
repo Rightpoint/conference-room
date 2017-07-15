@@ -11,7 +11,7 @@ namespace RightpointLabs.ConferenceRoom.Functions.Implementation
 {
     public class HandleSubscriptionEvent
     {
-        public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log, IQueryable<DynamicTableEntity> rooms, IAsyncCollector<string> topic)
+        public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log, CloudTable rooms, IAsyncCollector<string> topic)
         {
             log.Info($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
 
@@ -41,7 +41,7 @@ namespace RightpointLabs.ConferenceRoom.Functions.Implementation
 
             var orgId = parts[0];
             var roomId = parts[1];
-            var roomEntity = rooms.Where(i => i.PartitionKey == orgId && i.RowKey == roomId).SingleOrDefault();
+            var roomEntity = rooms.CreateQuery<DynamicTableEntity>().Where(i => i.PartitionKey == orgId && i.RowKey == roomId).SingleOrDefault();
             if(null == roomEntity)
             {
                 log.Info("Cannot find room");
@@ -56,6 +56,8 @@ namespace RightpointLabs.ConferenceRoom.Functions.Implementation
                 return req.CreateResponse(HttpStatusCode.BadRequest, "No active subscription for room");
             }
 
+            var lastBroadcast = roomEntity.Properties.ContainsKey("LastBroadcastEtag") ? roomEntity["LastBroadcastEtag"]?.StringValue : null;
+
             var data = JObject.Parse(await req.Content.ReadAsStringAsync());
             foreach(JObject notification in (JArray)data["value"])
             {
@@ -66,8 +68,21 @@ namespace RightpointLabs.ConferenceRoom.Functions.Implementation
                     case "#Microsoft.OutlookServices.Notification":
                         if(subId == nSubId)
                         {
+                            var etag = (notification["ResourceData"] as JObject)?["@odata.etag"]?.Value<string>();
+                            if (!string.IsNullOrEmpty(lastBroadcast) && !string.IsNullOrEmpty(etag) && etag == lastBroadcast)
+                            {
+                                log.Info($"Ignoring duplicate broadcast of {etag} on {room}");
+                                break;
+                            }
+
                             log.Info($"Broadcasting {notification} on {room}");
                             await topic.AddAsync(JObject.FromObject(new { notification, room }).ToString());
+                            if (!string.IsNullOrEmpty(etag))
+                            {
+                                roomEntity.Properties["LastBroadcastEtag"] = new EntityProperty(etag);
+                                await rooms.ExecuteAsync(TableOperation.Replace(roomEntity));
+                                log.Info($"Updated etag on {room} to {etag}");
+                            }
                         }
                         else
                         {
