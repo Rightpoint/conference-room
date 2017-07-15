@@ -4,6 +4,7 @@ using System.Web.Helpers;
 using System.Web.Http;
 using System.Web.Mvc;
 using Elmah.Contrib.WebApi;
+using RightpointLabs.ConferenceRoom.Web.Attributes;
 
 namespace RightpointLabs.ConferenceRoom.Web
 {
@@ -14,6 +15,7 @@ namespace RightpointLabs.ConferenceRoom.Web
             InitLogging();
 
             GlobalConfiguration.Configure(WebApiConfig.Register);
+            GlobalConfiguration.Configuration.Filters.Add(new ErrorHandlerAttribute());
             GlobalConfiguration.Configuration.Filters.Add(new ElmahHandleErrorApiAttribute());
             AreaRegistration.RegisterAllAreas();
 
