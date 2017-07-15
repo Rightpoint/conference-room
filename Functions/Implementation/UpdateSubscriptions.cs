@@ -54,18 +54,18 @@ namespace RightpointLabs.ConferenceRoom.Functions.Implementation
 
                 log.Info("Got access token");
 
-                var client = new HttpClient();
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-
                 var baseUri = new Uri("https://outlook.office.com/api/v2.0/");
-                using (client)
+                var tasks = org.Value.Select(room => Task.Run(async () => 
                 {
-                    foreach(var room in org.Value)
+                    var client = new HttpClient();
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+                    using (client)
                     {
+
                         var subId = room.Properties.ContainsKey("SubscriptionId") ? room["SubscriptionId"]?.StringValue : null;
                         var roomAddress = (string)JObject.Parse(room["Data"]?.StringValue)["RoomAddress"];
                         var roomUri = new Uri(baseUri, $"Users('{roomAddress}')/");
-                        if(!string.IsNullOrEmpty(subId))
+                        if (!string.IsNullOrEmpty(subId))
                         {
                             // extend the current subscription by another day
                             log.Info($"Extending {subId} for {roomAddress}");
@@ -79,10 +79,10 @@ namespace RightpointLabs.ConferenceRoom.Functions.Implementation
                             var reqH = new HttpRequestMessage(new HttpMethod("PATCH"), new Uri(roomUri, $"subscriptions/{subId}").AbsoluteUri) { Content = content };
                             using (var r = await client.SendAsync(reqH))
                             {
-                                if(r.StatusCode == System.Net.HttpStatusCode.OK)
+                                if (r.StatusCode == System.Net.HttpStatusCode.OK)
                                 {
                                     // nothing further needed
-                                    continue;
+                                    return;
                                 }
                                 log.Info($"Unable to renew existing sub {subId} for {roomAddress}: {r.StatusCode}");
                             }
@@ -118,7 +118,8 @@ namespace RightpointLabs.ConferenceRoom.Functions.Implementation
                             log.Info($"Created subscription {subId} for {roomAddress} and updated room object");
                         }
                     }
-                }
+                })).ToArray();
+                await Task.WhenAll(tasks);
             }
 
             return req.CreateResponse(HttpStatusCode.OK, "");
