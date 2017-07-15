@@ -92,7 +92,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             protected override async Task<string> GetAccessTokenFor(string resource)
             {
                 var cert = new X509Certificate2();
-                cert.Import(Convert.FromBase64String(_clientCertificate));
+                cert.Import(Convert.FromBase64String(_clientCertificate), "", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
 
                 var c = new AuthenticationContext(Authority + _tenantId);
                 var r = await c.AcquireTokenAsync(resource, new ClientAssertionCertificate(_clientId, cert));
