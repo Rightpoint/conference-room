@@ -95,7 +95,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                             var msg = obj.ToObject<Message>();
                             var room = msg.Room;
                             log.Debug($"Got notification for {room.RoomAddress} as {room.Id} @ {room.OrganizationId}");
-                            _meetingCacheService.ClearUpcomingAppointmentsForRoom(room.Id);
+                            _meetingCacheService.ClearUpcomingAppointmentsForRoom(room.RoomAddress);
                             _broadcastService.BroadcastUpdate(new OrganizationEntity() { Id = room.OrganizationId }, room);
                         }
                     }
