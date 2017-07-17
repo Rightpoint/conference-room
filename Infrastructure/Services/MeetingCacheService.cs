@@ -30,18 +30,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         {
             var now = DateTime.UtcNow;
             var cached = _tasks.GetOrAdd(roomAddress, (a) => new ValueHolder(now, loader()));
-            if (isTracked)
-            {
-                // we don't care when it was loaded, if we're tracking changes, it's guaranteed to be good
-                return cached.Value;
-            }
 
             // let's make sure it's not too stale....
+            var allowedDelay = isTracked ? TimeSpan.FromHours(1) : TimeSpan.FromSeconds(15);
             lock (cached)
             {
-                if (cached.Created.AddSeconds(15) < now)
+                if (cached.Created.Add(allowedDelay) < now)
                 {
-                    // more than 15 seconds old
+                    // too old
                     cached.Created = now;
                     cached.Value = loader();
                 }
