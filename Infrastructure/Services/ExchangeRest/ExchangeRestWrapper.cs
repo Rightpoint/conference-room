@@ -45,11 +45,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
         public async Task SendMessage(Message message, string sender)
         {
-            if (_defaultUser == "me")
-            {
-                sender = _defaultUser;
-            }
-            await Post($"v2.0/{sender}/sendmail", new StringContent(JObject.FromObject(new { Message = message, SaveToSentItems = false}).ToString(Formatting.None), Encoding.UTF8, "application/json"));
+            var from = _defaultUser == "me" ? _defaultUser : $"users/{sender}";
+            await Post($"v2.0/{from}/sendmail", new StringContent(JObject.FromObject(new { Message = message, SaveToSentItems = false}).ToString(Formatting.None), Encoding.UTF8, "application/json"));
         }
 
         public async Task<CalendarEntry> CreateEvent(string roomAddress, CalendarEntry calendarEntry)
