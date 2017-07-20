@@ -31,13 +31,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
         private readonly ISignatureService _signatureService;
         private readonly ISmsAddressLookupService _smsAddressLookupService;
         private readonly ISmsMessagingService _smsMessagingService;
-        private readonly IInstantMessagingService _instantMessagingService;
         private readonly IRoomMetadataRepository _roomRepository;
         private readonly IMeetingCacheService _meetingCacheService;
         private readonly IExchangeRestChangeNotificationService _exchangeRestChangeNotificationService;
         private readonly ISimpleTimedCache _simpleTimedCache;
 
-        public ExchangeRestConferenceRoomService(ExchangeRestWrapper exchange, GraphRestWrapper graph, IContextService contextService, IDateTimeService dateTimeService, IBuildingRepository buildingRepository, IFloorRepository floorRepository, IMeetingRepository meetingRepository, IBroadcastService broadcastService, ISignatureService signatureService, ISmsAddressLookupService smsAddressLookupService, ISmsMessagingService smsMessagingService, IInstantMessagingService instantMessagingService, IRoomMetadataRepository roomRepository, IMeetingCacheService meetingCacheService, IExchangeRestChangeNotificationService exchangeRestChangeNotificationService, ISimpleTimedCache simpleTimedCache)
+        public ExchangeRestConferenceRoomService(ExchangeRestWrapper exchange, GraphRestWrapper graph, IContextService contextService, IDateTimeService dateTimeService, IBuildingRepository buildingRepository, IFloorRepository floorRepository, IMeetingRepository meetingRepository, IBroadcastService broadcastService, ISignatureService signatureService, ISmsAddressLookupService smsAddressLookupService, ISmsMessagingService smsMessagingService, IRoomMetadataRepository roomRepository, IMeetingCacheService meetingCacheService, IExchangeRestChangeNotificationService exchangeRestChangeNotificationService, ISimpleTimedCache simpleTimedCache)
         {
             _exchange = exchange;
             _graph = graph;
@@ -50,7 +49,6 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             _signatureService = signatureService;
             _smsAddressLookupService = smsAddressLookupService;
             _smsMessagingService = smsMessagingService;
-            _instantMessagingService = instantMessagingService;
             _roomRepository = roomRepository;
             _meetingCacheService = meetingCacheService;
             _exchangeRestChangeNotificationService = exchangeRestChangeNotificationService;
@@ -462,7 +460,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             }
             if (addresses.Any())
             {
-                _instantMessagingService.SendMessage(addresses, string.Format("Meeting in {0} is over", meeting.Item2.Location?.DisplayName), string.Format("Your meeting in {0} is over - people for the next meeting are patiently waiting at the door. Please wrap up ASAP.", meeting.Item2.Location?.DisplayName), InstantMessagePriority.Urgent);
+                throw new NotImplementedException("IMs no longer supported");
             }
         }
 

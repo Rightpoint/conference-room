@@ -56,12 +56,6 @@ namespace RightpointLabs.ConferenceRoom.Web
                         CreateOrganizationalService(c, "Exchange",
                             _ => ExchangeConferenceRoomService.GetExchangeServiceBuilder((string)_.Username.Value, (string)_.Password.Value, (string)_.ServiceUrl.Value))));
 
-            container.RegisterType<IInstantMessagingService>(new HierarchicalLifetimeManager(),
-                new InjectionFactory(
-                    c =>
-                        CreateOrganizationalService(c, "Exchange",
-                            _ => new InstantMessagingService((string)_.Username.Value, (string)_.Password.Value))));
-
             container.RegisterType<ISmsMessagingService>(new HierarchicalLifetimeManager(),
                 new InjectionFactory(
                     c =>

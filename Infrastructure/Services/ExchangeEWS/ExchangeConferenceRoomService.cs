@@ -24,7 +24,6 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeEWS
         private readonly IChangeNotificationService _changeNotificationService;
         private readonly IExchangeServiceManager _exchangeServiceManager;
         private readonly ISimpleTimedCache _simpleTimedCache;
-        private readonly IInstantMessagingService _instantMessagingService;
         private readonly ISmsMessagingService _smsMessagingService;
         private readonly ISmsAddressLookupService _smsAddressLookupService;
         private readonly ISignatureService _signatureService;
@@ -45,7 +44,6 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeEWS
             IChangeNotificationService changeNotificationService,
             IExchangeServiceManager exchangeServiceManager,
             ISimpleTimedCache simpleTimedCache,
-            IInstantMessagingService instantMessagingService,
             ISmsMessagingService smsMessagingService,
             ISmsAddressLookupService smsAddressLookupService,
             ISignatureService signatureService,
@@ -64,7 +62,6 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeEWS
             _changeNotificationService = changeNotificationService;
             _exchangeServiceManager = exchangeServiceManager;
             _simpleTimedCache = simpleTimedCache;
-            _instantMessagingService = instantMessagingService;
             _smsMessagingService = smsMessagingService;
             _smsAddressLookupService = smsAddressLookupService;
             _signatureService = signatureService;
@@ -451,7 +448,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeEWS
             }
             if (addresses.Any())
             {
-                _instantMessagingService.SendMessage(addresses, string.Format("Meeting in {0} is over", item.Location), string.Format("Your meeting in {0} is over - people for the next meeting are patiently waiting at the door. Please wrap up ASAP.", item.Location), InstantMessagePriority.Urgent);
+                throw new NotImplementedException("IMs not supported");
             }
         }
 

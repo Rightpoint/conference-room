@@ -7,7 +7,7 @@
     - src - AngularJS+Bootstrap-based UI for devices and normal users
 - StatusMonitor - Node.JS-based LED control based on availability
 
-This application now is x64-only on the .Net server-side, and requires the installation of the UCMA 4.0 SDK (https://www.microsoft.com/en-us/download/details.aspx?id=35463) to build.
+This application now is x64-only on the .Net server-side.
 
 AppSettings.config and ConnectionStrings.config must be created in Web directory (based on the .template files) in order to get that part to work.
 

@@ -93,11 +93,6 @@
       <HintPath>..\packages\Microsoft.IdentityModel.Protocol.Extensions.1.0.0\lib\net45\Microsoft.IdentityModel.Protocol.Extensions.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Rtc.Collaboration, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Program Files\Microsoft UCMA 4.0\SDK\Core\Bin\Microsoft.Rtc.Collaboration.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Microsoft.ServiceBus, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WindowsAzure.ServiceBus.3.4.2\lib\net45-full\Microsoft.ServiceBus.dll</HintPath>
     </Reference>
@@ -190,7 +185,6 @@
     <Compile Include="Services\ITokenProvider.cs" />
     <Compile Include="Services\ITokenService.cs" />
     <Compile Include="Services\MeetingCacheService.cs" />
-    <Compile Include="Services\InstantMessagingService.cs" />
     <Compile Include="Services\SignatureService.cs" />
     <Compile Include="Services\SimpleTimedCache.cs" />
     <Compile Include="Services\SmsAddressLookupService.cs" />
