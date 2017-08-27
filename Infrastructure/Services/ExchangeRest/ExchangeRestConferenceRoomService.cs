@@ -35,8 +35,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
         private readonly IMeetingCacheService _meetingCacheService;
         private readonly IExchangeRestChangeNotificationService _exchangeRestChangeNotificationService;
         private readonly ISimpleTimedCache _simpleTimedCache;
+        private readonly MeetingCacheReloaderFactory _meetingCacheReloaderFactory;
 
-        public ExchangeRestConferenceRoomService(ExchangeRestWrapper exchange, GraphRestWrapper graph, IContextService contextService, IDateTimeService dateTimeService, IBuildingRepository buildingRepository, IFloorRepository floorRepository, IMeetingRepository meetingRepository, IBroadcastService broadcastService, ISignatureService signatureService, ISmsAddressLookupService smsAddressLookupService, ISmsMessagingService smsMessagingService, IRoomMetadataRepository roomRepository, IMeetingCacheService meetingCacheService, IExchangeRestChangeNotificationService exchangeRestChangeNotificationService, ISimpleTimedCache simpleTimedCache)
+        public ExchangeRestConferenceRoomService(ExchangeRestWrapper exchange, GraphRestWrapper graph, IContextService contextService, IDateTimeService dateTimeService, IBuildingRepository buildingRepository, IFloorRepository floorRepository, IMeetingRepository meetingRepository, IBroadcastService broadcastService, ISignatureService signatureService, ISmsAddressLookupService smsAddressLookupService, ISmsMessagingService smsMessagingService, IRoomMetadataRepository roomRepository, IMeetingCacheService meetingCacheService, IExchangeRestChangeNotificationService exchangeRestChangeNotificationService, ISimpleTimedCache simpleTimedCache, MeetingCacheReloaderFactory meetingCacheReloaderFactory)
         {
             _exchange = exchange;
             _graph = graph;
@@ -53,6 +54,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             _meetingCacheService = meetingCacheService;
             _exchangeRestChangeNotificationService = exchangeRestChangeNotificationService;
             _simpleTimedCache = simpleTimedCache;
+            _meetingCacheReloaderFactory = meetingCacheReloaderFactory;
         }
 
         public async Task<RoomInfo> GetStaticInfo(IRoom room)
@@ -111,6 +113,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
         {
             _exchangeRestChangeNotificationService.TrackOrganization(room.OrganizationId);
             var isTracked = true;
+
+            // TODO: add config option to enable auto-reload of cache
+            if (true)
+            {
+                _meetingCacheService.ConfigureReloader(room.RoomAddress, _meetingCacheReloaderFactory.CreateForOrganization(_contextService.CurrentOrganization));
+            }
 
             return _meetingCacheService.GetUpcomingAppointmentsForRoom(room.RoomAddress, isTracked, () =>
             {

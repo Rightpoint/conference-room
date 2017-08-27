@@ -5,6 +5,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
 using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 
@@ -25,6 +27,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         }
 
         private ConcurrentDictionary<string, ValueHolder> _tasks = new ConcurrentDictionary<string, ValueHolder>();
+        private ConcurrentDictionary<string, IMeetingCacheReloader> _cacheReloaders = new ConcurrentDictionary<string, IMeetingCacheReloader>();
+
+        public void ConfigureReloader(string roomAddress, IMeetingCacheReloader reloader)
+        {
+            _cacheReloaders.AddOrUpdate(roomAddress, reloader, (k,v) => reloader);
+        }
 
         public Task<IEnumerable<Meeting>> GetUpcomingAppointmentsForRoom(string roomAddress, bool isTracked, Func<Task<IEnumerable<Meeting>>> loader)
         {
@@ -67,6 +75,17 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             ValueHolder value;
             _tasks.TryRemove(roomAddress, out value);
             // we don't care if there was an item to remove or not
+
+            // however, if we have a reloader, we should use it to reload our cache
+            if (_cacheReloaders.TryGetValue(roomAddress, out IMeetingCacheReloader reloader))
+            {
+                Task.Run(async () =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5));
+                    new TelemetryClient().TrackTrace($"Reloading cache for {roomAddress}", SeverityLevel.Verbose);
+                    await reloader.ReloadCache(roomAddress);
+                });
+            }
         }
     }
 }

@@ -110,6 +110,7 @@ namespace RightpointLabs.ConferenceRoom.Web
             container.RegisterType<ITokenProvider, HttpTokenProvider>(new HierarchicalLifetimeManager());
 
             container.RegisterType<IExchangeServiceManager, ExchangeServiceManager>(new ContainerControlledLifetimeManager());
+            container.RegisterInstance(new MeetingCacheReloaderFactory(new UnityIOCContainer(container, false)));
 
             if (false)
             {
