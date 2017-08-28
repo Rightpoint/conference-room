@@ -22,6 +22,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
             log.Info($"Webhook was triggered!");
 
             // Initialize the azure bot
+            using(new AzureFunctionsResolveAssembly())
             using (BotService.Initialize())
             {
                 // Deserialize the incoming activity
