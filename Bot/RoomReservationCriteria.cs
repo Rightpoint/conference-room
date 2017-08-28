@@ -7,6 +7,17 @@ namespace RightpointLabs.ConferenceRoom.Bot
     [Serializable]
     public class RoomReservationCriteria : RoomBaseCriteria
     {
+        public RoomReservationCriteria()
+        {
+        }
+
+        public RoomReservationCriteria(RoomBaseCriteria baseCriteria)
+        {
+            this.StartTime = baseCriteria.StartTime;
+            this.EndTime = baseCriteria.EndTime;
+            this.office = baseCriteria.office;
+        }
+
         public string Room { get; set; }
 
         public static IForm<RoomReservationCriteria> BuildForm()
