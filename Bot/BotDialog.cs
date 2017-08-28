@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-
+using Chronic;
 using Microsoft.Bot.Builder.Azure;
 using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.FormFlow;
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
@@ -29,61 +31,22 @@ namespace RightpointLabs.ConferenceRoom.Bot
         [LuisIntent("findRoom")]
         public async Task FindRoom(IDialogContext context, LuisResult result)
         {
-            var numbers = result.Entities.Where(i => i.Type == "builtin.number").Select(i => int.Parse((string)i.Resolution["value"])).ToArray();
-            var equipment = result.Entities.Where(i => i.Type == "equipment").Select(i => i.Entity).ToArray();
-            var timeRange = result.Entities
-                .Where(i => i.Type == "builtin.datetimeV2.timerange")
-                .SelectMany(i => (List<object>)i.Resolution["values"])
-                .Select(i => ParseTimeRange((IDictionary<string, object>)i))
-                .FirstOrDefault(i => i.HasValue);
-            var time = result.Entities
-                .Where(i => i.Type == "builtin.datetimeV2.time")
-                .SelectMany(i => (List<object>)i.Resolution["values"])
-                .Select(i => ParseTime((IDictionary<string, object>)i))
-                .Where(i => i.HasValue)
-                .Select(i => i.Value)
-                .ToArray();
-            var duration = result.Entities
-                .Where(i => i.Type == "builtin.datetimeV2.duration")
-                .SelectMany(i => (List<object>)i.Resolution["values"])
-                .Select(i => ParseDuration((IDictionary<string, object>)i))
-                .FirstOrDefault(i => i.HasValue);
+            var criteria = RoomSearchCriteria.ParseCriteria(result);
+            var dialog = new FormDialog<RoomSearchCriteria>(criteria, RoomSearchCriteria.BuildForm, entities: result.Entities);
+            await context.Forward(dialog, DoRoomSearch, context.Activity, new CancellationToken());
+        }
 
-            var size = numbers.Cast<int?>().FirstOrDefault() ?? 6;
-            var start = timeRange.HasValue ? 
-                timeRange.Value.start : 
-                time.Length >= 2 ?
-                    time[0] :
-                    time.Length == 1 && duration.HasValue ?
-                        time[0] :
-                        GetAssumedStartTime(DateTime.Now);
-            var end = timeRange.HasValue
-                ? timeRange.Value.end
-                : time.Length >= 2
-                    ? time[1]
-                    : duration.HasValue
-                        ? start.Add(duration.Value)
-                        : start.Add(TimeSpan.FromMinutes(30));
+        private async Task DoRoomSearch(IDialogContext context, IAwaitable<RoomSearchCriteria> callback)
+        {
+            var criteria = await callback;
+            if (null == criteria)
+            {
+                context.Wait(MessageReceived);
+                return;
+            }
 
             // searching...
-            var searchMsg = $"Searching for a room for {size} people";
-            if (equipment.Any())
-            {
-                if (equipment.Length == 1)
-                {
-                    searchMsg += $" with a {equipment[0]}";
-                }
-                else if (equipment.Length == 2)
-                {
-                    searchMsg += $" with a {equipment[0]} and a {equipment[1]}";
-                }
-                else
-                {
-                    searchMsg += " with " + string.Join(", ", equipment.Select((i, ix) => (ix == equipment.Length - 1 ? "and " : "") + $"a {i}"));
-                }
-            }
-            searchMsg += $" from {start:h:mm tt} to {end:h:mm tt}";
-
+            var searchMsg = $"Searching for {criteria}";
             var msg = context.MakeMessage();
             msg.Text = searchMsg;
             msg.Speak = searchMsg;
@@ -101,58 +64,32 @@ namespace RightpointLabs.ConferenceRoom.Bot
             context.Wait(MessageReceived);
         }
 
-        private DateTime GetAssumedStartTime(DateTime time)
-        {
-            var last15 = new DateTime(time.Year, time.Month, time.Day, time.Hour, (time.Minute / 15) * 15, 0, time.Kind);
-            if (time.Minute % 15 > 10)
-            {
-                // round up
-                return last15.Add(TimeSpan.FromMinutes(15));
-            }
-            // round down
-            return last15;
-        }
-
-        private (DateTime start, DateTime end)? ParseTimeRange(IDictionary<string, object> values)
-        {
-            switch ((string) values["type"])
-            {
-                case "timerange":
-                    var start = DateTime.Parse((string)values["start"]);
-                    var end = DateTime.Parse((string)values["end"]);
-                    return (start, end);
-                default:
-                    return null;
-            }
-        }
-
-        private DateTime? ParseTime(IDictionary<string, object> values)
-        {
-            switch ((string)values["type"])
-            {
-                case "time":
-                    return DateTime.Parse((string)values["value"]);
-                default:
-                    return null;
-            }
-        }
-
-        private TimeSpan? ParseDuration(IDictionary<string, object> values)
-        {
-            switch ((string)values["type"])
-            {
-                case "duration":
-                    return TimeSpan.FromSeconds(int.Parse((string)values["value"]));
-                default:
-                    return null;
-            }
-        }
 
         [LuisIntent("bookRoom")]
         public async Task BookRoom(IDialogContext context, LuisResult result)
         {
             await context.PostAsync($"You have reached the bookRoom intent. You said: {result.Query}"); //
             context.Wait(MessageReceived);
+        }
+
+
+        private TimeZoneInfo GetTimezone(RoomSearchCriteria.OfficeOptions office)
+        {
+            switch (office)
+            {
+                case RoomSearchCriteria.OfficeOptions.Atlanta:
+                case RoomSearchCriteria.OfficeOptions.Boston:
+                case RoomSearchCriteria.OfficeOptions.Detroit:
+                    return TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                case RoomSearchCriteria.OfficeOptions.Chicago:
+                case RoomSearchCriteria.OfficeOptions.Dallas:
+                    return TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time");
+                case RoomSearchCriteria.OfficeOptions.Denver:
+                    return TimeZoneInfo.FindSystemTimeZoneById("Mountain Standard Time");
+                case RoomSearchCriteria.OfficeOptions.Los_Angeles:
+                    return TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+            }
+            return null;
         }
     }
 }
