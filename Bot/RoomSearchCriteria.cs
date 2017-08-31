@@ -97,11 +97,29 @@ namespace RightpointLabs.ConferenceRoom.Bot
                 EndTime = end,
                 Equipment = equipment.Select(ParseEquipment).Where(i => i.HasValue).Select(i => i.Value).ToList(),
                 NumberOfPeople = size,
-                office = RoomSearchCriteria.OfficeOptions.Chicago,
+                Office = RoomSearchCriteria.OfficeOptions.Chicago,
             };
             return criteria;
         }
 
-
+        protected static RoomSearchCriteria.EquipmentOptions? ParseEquipment(string input)
+        {
+            if (Enum.TryParse(input, out RoomSearchCriteria.EquipmentOptions option))
+                return option;
+            switch (input.ToLowerInvariant())
+            {
+                case "tv":
+                case "screen":
+                case "projector":
+                    return RoomSearchCriteria.EquipmentOptions.Display;
+                case "telephone":
+                case "phone":
+                case "speakerphone":
+                    return RoomSearchCriteria.EquipmentOptions.Telephone;
+                case "whiteboard":
+                    return RoomSearchCriteria.EquipmentOptions.Whiteboard;
+            }
+            return null;
+        }
     }
 }

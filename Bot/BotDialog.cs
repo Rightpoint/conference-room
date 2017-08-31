@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Chronic;
+using Microsoft.Azure.Documents.SystemFunctions;
 using Microsoft.Bot.Builder.Azure;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.FormFlow;
@@ -64,15 +65,15 @@ namespace RightpointLabs.ConferenceRoom.Bot
 
             var api = new RoomsService(Utils.GetAppSetting("RoomNinjaApiAccessToken"));
 
-            var building = (await api.GetBuildings()).FirstOrDefault(i => i.Name == criteria.office.ToString());
+            var building = (await api.GetBuildings()).FirstOrDefault(i => i.Name == criteria.Office.ToString());
             if (null == building)
             {
-                await context.PostAsync(context.CreateMessage($"Can't find building {criteria.office}", InputHints.AcceptingInput));
+                await context.PostAsync(context.CreateMessage($"Can't find building {criteria.Office}", InputHints.AcceptingInput));
             }
             else
             {
                 var rooms = await api.GetRoomsStatusForBuilding(building.Id);
-                var tz = GetTimezone(criteria.office ?? RoomBaseCriteria.OfficeOptions.Chicago);
+                var tz = GetTimezone(criteria.Office ?? RoomBaseCriteria.OfficeOptions.Chicago);
                 var now = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
 
                 if (criteria.NumberOfPeople.HasValue)
@@ -154,8 +155,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
             var result = await awaitable;
             if (result)
             {
-                //new RoomReservationCriteria(_criteria) {Room = _roomResults[0].Info.DisplayName};
-                await context.PostAsync(context.CreateMessage("Booking not implemented yet.", InputHints.AcceptingInput));
+                await BookIt(context, _roomResults[0].Id, _criteria.StartTime, _criteria.EndTime);
             }
             else
             {
@@ -171,8 +171,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
             var room = _roomResults.FirstOrDefault(i => i.Info.SpeakableName == answer);
             if (room != null)
             {
-                //new RoomReservationCriteria(_criteria) {Room = room.Info.DisplayName};
-                await context.PostAsync(context.CreateMessage("Booking not implemented yet.", InputHints.AcceptingInput));
+                await BookIt(context, room.Id, _criteria.StartTime, _criteria.EndTime);
             }
             else if (answer == "no" || answer == "cancel")
             {
@@ -189,8 +188,130 @@ namespace RightpointLabs.ConferenceRoom.Bot
         [LuisIntent("bookRoom")]
         public async Task BookRoom(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync($"You have reached the bookRoom intent. You said: {result.Query}"); //
+            var criteria = RoomBookingCriteria.ParseCriteria(result);
+            var dialog = new FormDialog<RoomBookingCriteria>(criteria, RoomBookingCriteria.BuildForm, entities: result.Entities);
+            await context.Forward(dialog, DoBookRoom, context.Activity, new CancellationToken());
+        }
+
+        private async Task DoBookRoom(IDialogContext context, IAwaitable<RoomBookingCriteria> callback)
+        {
+            var criteria = await callback;
+            if (null == criteria)
+            {
+                context.Wait(MessageReceived);
+                return;
+            }
+
+            // searching...
+            await context.PostAsync(context.CreateMessage($"Booking {criteria}", InputHints.IgnoringInput));
+
+            var api = new RoomsService(Utils.GetAppSetting("RoomNinjaApiAccessToken"));
+
+            var building = (await api.GetBuildings()).FirstOrDefault(i => i.Name == criteria.Office.ToString());
+            if (null == building)
+            {
+                await context.PostAsync(context.CreateMessage($"Can't find building {criteria.Office}", InputHints.AcceptingInput));
+            }
+            else
+            {
+                var rooms = await api.GetRoomsForBuilding(building.Id);
+                var room = rooms.FirstOrDefault(i => i.Info.SpeakableName == criteria.Room);
+                if (null == room)
+                {
+                    await context.PostAsync(context.CreateMessage($"Can't find room {criteria.Room}", InputHints.AcceptingInput));
+                }
+                else
+                {
+                    await BookIt(context, room.Id, criteria.StartTime, criteria.EndTime);
+                }
+            }
+
             context.Wait(MessageReceived);
+        }
+
+
+        [LuisIntent("checkRoom")]
+        public async Task CheckRoom(IDialogContext context, LuisResult result)
+        {
+            var criteria = RoomStatusCriteria.ParseCriteria(result);
+            var dialog = new FormDialog<RoomStatusCriteria>(criteria, RoomStatusCriteria.BuildForm, entities: result.Entities);
+            await context.Forward(dialog, DoRoomCheck, context.Activity, new CancellationToken());
+        }
+
+        private async Task DoRoomCheck(IDialogContext context, IAwaitable<RoomStatusCriteria> callback)
+        {
+            var criteria = await callback;
+            if (null == criteria)
+            {
+                context.Wait(MessageReceived);
+                return;
+            }
+
+            // searching...
+            await context.PostAsync(context.CreateMessage($"Checking status of {criteria}", InputHints.IgnoringInput));
+
+            var api = new RoomsService(Utils.GetAppSetting("RoomNinjaApiAccessToken"));
+
+            var building = (await api.GetBuildings()).FirstOrDefault(i => i.Name == criteria.Office.ToString());
+            if (null == building)
+            {
+                await context.PostAsync(context.CreateMessage($"Can't find building {criteria.Office}", InputHints.AcceptingInput));
+            }
+            else
+            {
+                var rooms = await api.GetRoomsForBuilding(building.Id);
+                var room = rooms.FirstOrDefault(i => i.Info.SpeakableName == criteria.Room);
+                if (null == room)
+                {
+                    await context.PostAsync(context.CreateMessage($"Can't find room {criteria.Room}", InputHints.AcceptingInput));
+                }
+                else
+                {
+                    var r = await api.GetRoomsStatus(room.Id);
+                    var tz = GetTimezone(criteria.Office ?? RoomBaseCriteria.OfficeOptions.Chicago);
+                    var now = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
+
+                    // ok, now we just have rooms that meet the criteria - let's see what's free when asked
+                    var meetings = r.Status.NearTermMeetings.Where(i => i.End >= (criteria.StartTime ?? now)).OrderBy(i => i.Start).ToList();
+                    var firstMeeting = meetings.FirstOrDefault();
+                    var result =
+                        (null == firstMeeting)
+                            ? new {busy = false, room = r, Until = (DateTime?) null}
+                            : (firstMeeting.Start > (criteria.EndTime ?? now) && !firstMeeting.IsStarted)
+                                ? new {busy = false, room = r, Until = (DateTime?)firstMeeting.Start }
+                                : new {busy = true, room = r, Until = (DateTime?) null };
+
+                    if (result.busy)
+                    {
+                        if (result.Until.HasValue)
+                        {
+                            await context.PostAsync(context.CreateMessage($"{criteria.Room} is busy until {result.Until:h:mm tt}", InputHints.AcceptingInput));
+                        }
+                        else
+                        {
+                            await context.PostAsync(context.CreateMessage($"{criteria.Room} is busy", InputHints.AcceptingInput));
+                        }
+                    }
+                    else
+                    {
+                        if (result.Until.HasValue)
+                        {
+                            await context.PostAsync(context.CreateMessage($"{criteria.Room} is free until {result.Until:h:mm tt}", InputHints.AcceptingInput));
+                        }
+                        else
+                        {
+                            await context.PostAsync(context.CreateMessage($"{criteria.Room} is free", InputHints.AcceptingInput));
+                        }
+                    }
+                }
+            }
+
+            context.Wait(MessageReceived);
+        }
+
+        private async Task BookIt(IDialogContext context, string roomId, DateTime? criteriaStartTime, DateTime? criteriaEndTime)
+        {
+            await context.PostAsync(context.CreateMessage("Booking not implemented yet.", InputHints.AcceptingInput));
         }
 
         private TimeZoneInfo GetTimezone(RoomSearchCriteria.OfficeOptions office)

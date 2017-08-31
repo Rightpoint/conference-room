@@ -27,6 +27,18 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
             public string Name { get; set; }
         }
 
+        public async Task<RoomResult[]> GetRoomsForBuilding(string buildingId)
+        {
+            var rooms = await Get<RoomResult[]>($"api/room/all/{buildingId}");
+
+            foreach (var room in rooms)
+            {
+                room.Info.SpeakableName = MakeSpeakable(room.Info.DisplayName);
+            }
+
+            return rooms;
+        }
+
         public async Task<RoomStatusResult[]> GetRoomsStatusForBuilding(string buildingId)
         {
             var rooms = await Get<RoomStatusResult[]>($"api/room/all/status/{buildingId}");
@@ -39,6 +51,15 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
             return rooms;
         }
 
+        public async Task<RoomStatusResult> GetRoomsStatus(string roomId)
+        {
+            var room = await Get<RoomStatusResult>($"api/room/{roomId}/status");
+
+            room.Info.SpeakableName = MakeSpeakable(room.Info.DisplayName);
+
+            return room;
+        }
+
         private string MakeSpeakable(string name)
         {
             name = new Regex(@"\(.[^)]+\)").Replace(name, "");
@@ -48,19 +69,8 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
         }
 
         [Serializable]
-        public class RoomStatusResult
+        public class RoomStatusResult : RoomResult
         {
-            [Serializable]
-            public class RoomInfo
-            {
-                public string DisplayName { get; set; }
-                public string SpeakableName { get; set; }
-                public string FloorName { get; set; }
-                public string BuildingName { get; set; }
-                public int Size { get; set; }
-                public List<RoomSearchCriteria.EquipmentOptions> Equipment { get; set; }
-            }
-
             [Serializable]
             public class RoomStatus
             {
@@ -79,9 +89,26 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
                 public bool IsStarted { get; set; }
             }
 
+            public RoomStatus Status { get; set; }
+        }
+
+        [Serializable]
+        public class RoomResult
+        {
+            [Serializable]
+            public class RoomInfo
+            {
+                public string DisplayName { get; set; }
+                public string SpeakableName { get; set; }
+                public string FloorName { get; set; }
+                public string BuildingName { get; set; }
+                public int Size { get; set; }
+                public List<RoomSearchCriteria.EquipmentOptions> Equipment { get; set; }
+            }
+
+            public string Id { get; set; }
             public string Address { get; set; }
             public RoomInfo Info { get; set; }
-            public RoomStatus Status { get; set; }
         }
     }
 }

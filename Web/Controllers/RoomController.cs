@@ -204,7 +204,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
                     .Select(i => new { Address = i.Key, i.Value.Item2.Id, Info = i.Value.Item1 })
                     .ToList();
         }
-
+        
         [Route("all/status/{buildingId}")]
         public async Task<object> GetAllStatus(string buildingId)
         {
