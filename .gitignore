@@ -207,3 +207,5 @@ FakesAssemblies/
 /Functions/appsettings.json
 /Functions/host.json
 /Functions/host.json
+/StatusMonitor/control.txt
+/StatusMonitor/devicekey

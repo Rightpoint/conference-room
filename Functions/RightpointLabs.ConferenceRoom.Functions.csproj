@@ -123,6 +123,8 @@
     <Content Include="host.json" />
     <Content Include="appsettings.template.json" />
     <Content Include="host.template.json" />
+    <None Include="Properties\PublishProfiles\rprooms-func - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\rprooms-func - Web Deploy.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
