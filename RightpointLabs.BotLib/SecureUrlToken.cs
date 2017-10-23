@@ -32,7 +32,10 @@ namespace RightpointLabs.BotLib
         public static string Encode<T>(T item)
         {
             var rsa = new RSACryptoServiceProvider();
-            rsa.ImportCspBlob(Convert.FromBase64String(ConfigurationManager.AppSettings["EncryptionKey"]));
+            var key = ConfigurationManager.AppSettings["EncryptionKey"];
+            if (string.IsNullOrEmpty(key))
+                throw new Exception("AppSetting 'EncryptionKey' is missing");
+            rsa.ImportCspBlob(Convert.FromBase64String(key));
 
             using (var memoryStream = new MemoryStream())
             {
@@ -52,7 +55,10 @@ namespace RightpointLabs.BotLib
         public static T Decode<T>(string token)
         {
             var rsa = new RSACryptoServiceProvider();
-            rsa.ImportCspBlob(Convert.FromBase64String(ConfigurationManager.AppSettings["EncryptionKey"]));
+            var key = ConfigurationManager.AppSettings["EncryptionKey"];
+            if (string.IsNullOrEmpty(key))
+                throw new Exception("AppSetting 'EncryptionKey' is missing");
+            rsa.ImportCspBlob(Convert.FromBase64String(key));
             var data = HttpServerUtility.UrlTokenDecode(token);
             data = rsa.Decrypt(data, true);
 

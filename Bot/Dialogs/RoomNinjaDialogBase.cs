@@ -5,24 +5,37 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
-using RightpointLabs.BotLib.Dialogs;
-using RightpointLabs.ConferenceRoom.Bot.Services;
 
 namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 {
-    public abstract class RoomNinjaDialogBase<T> : AuthenticatedResourceActionDialogBase<T> where T:class
+    [Serializable]
+    public abstract class RoomNinjaDialogBase : IDialog<string>
     {
-        public RoomNinjaDialogBase(Uri requestUri) : base(requestUri)
+        public abstract Task StartAsync(IDialogContext context);
+
+        protected async Task BookIt(IDialogContext context, string roomId, DateTime? criteriaStartTime, DateTime? criteriaEndTime)
         {
+            await context.PostAsync(context.CreateMessage("Booking not implemented yet.", InputHints.AcceptingInput));
+            context.Done(string.Empty);
         }
 
-        protected override string Resource => "https://roomninja.rightpoint.com/";
-
-        protected override async Task DoWork(IDialogContext context, string accessToken)
+        protected TimeZoneInfo GetTimezone(RoomSearchCriteria.OfficeOptions office)
         {
-            await DoWork(context, new RoomsService(accessToken));
+            switch (office)
+            {
+                case RoomSearchCriteria.OfficeOptions.Atlanta:
+                case RoomSearchCriteria.OfficeOptions.Boston:
+                case RoomSearchCriteria.OfficeOptions.Detroit:
+                    return TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                case RoomSearchCriteria.OfficeOptions.Chicago:
+                case RoomSearchCriteria.OfficeOptions.Dallas:
+                    return TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time");
+                case RoomSearchCriteria.OfficeOptions.Denver:
+                    return TimeZoneInfo.FindSystemTimeZoneById("Mountain Standard Time");
+                case RoomSearchCriteria.OfficeOptions.Los_Angeles:
+                    return TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+            }
+            return null;
         }
-
-        protected abstract Task DoWork(IDialogContext context, RoomsService accessToken);
     }
 }

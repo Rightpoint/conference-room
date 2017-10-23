@@ -43,7 +43,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
                     switch (activity.GetActivityType())
                     {
                         case ActivityTypes.Message:
-                            await Conversation.SendAsync(activity, () => new BotDialog());
+                            await Conversation.SendAsync(activity, () => new BotDialog(req.RequestUri));
                             break;
                         case ActivityTypes.ConversationUpdate:
                             var client = new ConnectorClient(new Uri(activity.ServiceUrl));

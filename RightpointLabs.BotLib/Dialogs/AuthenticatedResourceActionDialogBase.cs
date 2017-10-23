@@ -37,14 +37,14 @@ namespace RightpointLabs.BotLib.Dialogs
             if (string.IsNullOrEmpty(accessToken))
             {
                 await context.PostAsync(NoAccessTokenMessage);
-                context.Done(DoneObject);
+                context.Done(ErrorDoneObject);
             }
             else
             {
                 try
                 {
-                    await DoWork(context, accessToken);
-                    context.Done(DoneObject);
+                    var result = await DoWork(context, accessToken);
+                    context.Done(result);
                 }
                 catch (HttpRequestException ex)
                 {
@@ -69,8 +69,8 @@ namespace RightpointLabs.BotLib.Dialogs
             }
         }
 
-        protected abstract Task DoWork(IDialogContext context, string accessToken);
+        protected abstract Task<T> DoWork(IDialogContext context, string accessToken);
 
-        protected virtual T DoneObject => string.Empty as T;
+        protected virtual T ErrorDoneObject => string.Empty as T;
     }
 }
