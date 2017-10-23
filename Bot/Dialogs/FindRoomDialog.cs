@@ -148,7 +148,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         private async Task ConfirmBookOneOfManyRooms(IDialogContext context, IAwaitable<string> awaitable)
         {
             var answer = await awaitable;
-            var room = _roomResults.FirstOrDefault(i => i.Info.SpeakableName == answer);
+            var room = _roomResults.MatchName(answer);
             if (room != null)
             {
                 await BookIt(context, room.Id, _criteria.StartTime, _criteria.EndTime);

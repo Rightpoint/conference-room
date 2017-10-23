@@ -42,7 +42,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
         {
             var room = result.Entities
                 .Where(i => i.Type == "room")
-                .Select(i => (string)i.Resolution["value"])
+                .Select(i => i.Entity ?? (string)i.Resolution["value"])
                 .FirstOrDefault(i => !string.IsNullOrEmpty(i));
             var timeRange = result.Entities
                 .Where(i => i.Type == "builtin.datetimeV2.timerange")

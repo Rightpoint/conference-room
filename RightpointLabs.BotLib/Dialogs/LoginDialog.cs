@@ -59,7 +59,7 @@ namespace RightpointLabs.BotLib.Dialogs
             var authority = ConfigurationManager.AppSettings["Authority"];
             var p = new Dictionary<string, string>();
             p["client_id"] = ConfigurationManager.AppSettings["ClientId"];
-            p["redirect_uri"] = new Uri(_requestUri, "/Authorize").AbsoluteUri;
+            p["redirect_uri"] = new Uri(_requestUri, "/api/Authorize").AbsoluteUri;
             p["response_mode"] = "form_post";
             p["response_type"] = "code";
             p["scope"] = "openid profile";

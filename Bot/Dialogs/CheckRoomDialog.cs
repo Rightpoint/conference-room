@@ -62,7 +62,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         private async Task GotRoomStatus(IDialogContext context, IAwaitable<RoomsService.RoomStatusResult[]> callback)
         {
             var rooms = await callback;
-            var room = rooms.FirstOrDefault(i => i.Info.SpeakableName == _criteria.Room);
+            var room = rooms.MatchName(_criteria.Room);
             // TODO: do we need to use api.GetRoomsStatus(room.Id) ?
             if (null == room)
             {
@@ -106,6 +106,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                     }
                 }
             }
+            context.Done(string.Empty);
         }
     }
 }

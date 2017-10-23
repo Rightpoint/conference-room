@@ -116,4 +116,15 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
             public RoomInfo Info { get; set; }
         }
     }
+
+    public static class RoomServiceResultExtensions
+    {
+        public static RoomsService.RoomStatusResult MatchName(this ICollection<RoomsService.RoomStatusResult> values, string name)
+        {
+            return values.FirstOrDefault(i => i.Info.SpeakableName.ToLowerInvariant() == name.ToLowerInvariant()) ??
+                   values.FirstOrDefault(i =>
+                       string.Join(" ", i.Info.SpeakableName.ToLowerInvariant().Split(' ').Where(ii => ii != "the")) ==
+                       string.Join(" ", name.ToLowerInvariant().Split(' ').Where(ii => ii != "the")));
+        }
+    }
 }

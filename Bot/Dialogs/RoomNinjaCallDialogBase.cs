@@ -23,14 +23,24 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         protected override async Task<T> DoWork(IDialogContext context, string accessToken)
         {
-            // TODO: rework this so we cache the result token here, instead of the input one...
-            using (var c = new HttpClient())
-            {
-                c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                var r = await c.PostAsync(new Uri(RoomsService.BaseUrl, "/api/tokens/get"), new StringContent(""));
-                var token = await r.Content.ReadAsStringAsync();
-                return await DoWork(context, new RoomsService(token));
-            }
+            //// TODO: rework this so we cache the result token here, instead of the input one...
+            //try
+            //{
+            //    using (var c = new HttpClient())
+            //    {
+            //        c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            //        var r = await c.PostAsync(new Uri(RoomsService.BaseUrl, "/api/tokens/get"), new StringContent(""));
+            //        var token = await r.Content.ReadAsStringAsync();
+            //        return await DoWork(context, new RoomsService(token));
+            //    }
+            //}
+            //catch
+            //{
+            //    throw;
+            //}
+
+            // actually, think we can use the Azure AD resource token directly....
+            return await DoWork(context, new RoomsService(accessToken));
         }
 
         protected abstract Task<T> DoWork(IDialogContext context, RoomsService accessToken);

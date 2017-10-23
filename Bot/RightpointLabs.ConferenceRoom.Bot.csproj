@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>    
     <PackageReference Include="Microsoft.Bot.Builder.Azure" Version="3.2.3" />    
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.13.9" />    
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.6" />    
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
   </ItemGroup>
@@ -12,6 +13,9 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory">
+      <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.3.13.9\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.dll</HintPath>
+    </Reference>
     <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>

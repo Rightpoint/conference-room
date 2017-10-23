@@ -62,10 +62,11 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         private async Task GotRoomStatus(IDialogContext context, IAwaitable<RoomsService.RoomStatusResult[]> callback)
         {
             var rooms = await callback;
-            var room = rooms.FirstOrDefault(i => i.Info.SpeakableName == _criteria.Room);
+            var room = rooms.MatchName(_criteria.Room);
             if (null == room)
             {
                 await context.PostAsync(context.CreateMessage($"Can't find room {_criteria.Room}", InputHints.AcceptingInput));
+                context.Done(string.Empty);
             }
             else
             {
