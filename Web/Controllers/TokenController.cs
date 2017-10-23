@@ -76,6 +76,29 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             };
         }
 
+        //[Route("getCustom")]
+        //public HttpResponseMessage PostGetCustom()
+        //{
+        //    if (!_contextService.IsAuthenticated) 
+        //    {
+        //        return new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new StringContent("Not authenticated") };
+        //    }
+
+        //    var username = _contextService.UserId;
+        //    var orgId = _contextService.CurrentOrganization?.Id;
+        //    if (string.IsNullOrEmpty(username))
+        //    {
+        //        return new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new StringContent("No username available") };
+        //    }
+        //    if (string.IsNullOrEmpty(orgId))
+        //    {
+        //        return new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new StringContent("No organization available") };
+        //    }
+
+        //    var token = _tokenService.CreateUserToken(username, orgId);
+        //    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(token, Encoding.UTF8) };
+        //}
+
         private string BuildId(string deviceId, int length)
         {
             return string.IsNullOrEmpty(deviceId) 

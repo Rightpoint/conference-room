@@ -29,7 +29,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             //    using (var c = new HttpClient())
             //    {
             //        c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            //        var r = await c.PostAsync(new Uri(RoomsService.BaseUrl, "/api/tokens/get"), new StringContent(""));
+            //        var r = await c.PostAsync(new Uri(RoomsService.BaseUrl, "/api/tokens/getCustom"), new StringContent(""));
             //        var token = await r.Content.ReadAsStringAsync();
             //        return await DoWork(context, new RoomsService(token));
             //    }
