@@ -11,6 +11,7 @@ using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Bot.Builder.Azure;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
+using RightpointLabs.ConferenceRoom.Bot.Dialogs;
 
 namespace RightpointLabs.ConferenceRoom.Bot
 {
