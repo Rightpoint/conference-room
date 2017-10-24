@@ -193,21 +193,20 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
 
                 await _conferenceRoomService.ScheduleNewMeeting(room, p.Title, p.StartTime, p.EndTime);
                 var msg = $"Booked {data.DisplayName} from {p.StartTime:h:mm tt} to {p.EndTime:h:mm tt}";
-                var start = new DateTimeOffset(p.StartTime);
                 var now = DateTimeOffset.Now;
-                if (now.Date <= start.Date)
+                if (now.Date <= p.StartTime.Date)
                 {
-                    if (now.Date.AddDays(1) == start.Date)
+                    if (now.Date.AddDays(1) == p.StartTime.Date)
                     {
                         msg += " tomorrow";
                     }
-                    else if (now.Date.AddDays(7) > start.Date)
+                    else if (now.Date.AddDays(7) > p.StartTime.Date)
                     {
-                        msg += $" {start:dddd}";
+                        msg += $" {p.StartTime:dddd}";
                     }
                     else
                     {
-                        msg += $" {start:MMMM d}";
+                        msg += $" {p.StartTime:MMMM d}";
                     }
                 }
                 return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(msg)};
@@ -221,8 +220,8 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         public class MeetingParameters
         {
             public string Title { get; set; }
-            public DateTime StartTime { get; set; }
-            public DateTime EndTime { get; set; }
+            public DateTimeOffset StartTime { get; set; }
+            public DateTimeOffset EndTime { get; set; }
         }
 
         /// <summary>
