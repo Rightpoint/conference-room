@@ -52,6 +52,37 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
             }
         }
 
+
+        protected async Task<string> Post(string url, HttpContent content)
+        {
+            if (null == _client)
+            {
+                var h = new HttpClientHandler()
+                {
+                    AllowAutoRedirect = false,
+                    CookieContainer = await GetCookieContainer(),
+                    Credentials = await GetCredentials()
+                };
+                var c = new HttpClient(h);
+                AddAuthentication(c);
+                if (null != Interlocked.CompareExchange(ref _client, c, null))
+                {
+                    c.Dispose();
+                    h.Dispose();
+                }
+            }
+
+            using (var r = await _client.PostAsync(new Uri(Url, url).AbsoluteUri, content))
+            {
+                if (!r.IsSuccessStatusCode)
+                {
+                    throw new ApplicationException(await r.Content.ReadAsStringAsync());
+                }
+                r.EnsureSuccessStatusCode();
+                return await r.Content.ReadAsStringAsync();
+            }
+        }
+
         protected virtual async Task<ICredentials> GetCredentials()
         {
             return null;

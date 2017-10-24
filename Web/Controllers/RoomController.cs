@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -162,6 +164,65 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             var room = _roomRepository.GetRoomInfo(roomId);
             await AssertRoomIsFromOrg(room);
             await _conferenceRoomService.StartNewMeeting(room, title, endTime);
+        }
+
+        /// <summary>
+        /// Start a new meeting
+        /// </summary>
+        /// <param name="roomId">The address of the room</param>
+        /// <param name="title">The title of the meeting</param>
+        /// <param name="startTime">The time the meeting will end</param>
+        /// <param name="endTime">The time the meeting will end</param>
+        [Route("{roomId}/meeting/scheduleNew")]
+        public async Task<HttpResponseMessage> PostScheduleNewMeeting(string roomId, MeetingParameters p)
+        {
+            var room = _roomRepository.GetRoomInfo(roomId);
+            await AssertRoomIsFromOrg(room);
+            if (string.IsNullOrEmpty(_contextService.UserId))
+            {
+                throw new ApplicationException("Only users can book rooms with a start time");
+            }
+            if (p.StartTime < DateTime.Now.AddMinutes(-10))
+            {
+                throw new ApplicationException("Cannot book a meeting in the past");
+            }
+
+            try
+            {
+                var data = await _conferenceRoomService.GetStaticInfo(room);
+
+                await _conferenceRoomService.ScheduleNewMeeting(room, p.Title, p.StartTime, p.EndTime);
+                var msg = $"Booked {data.DisplayName} from {p.StartTime:h:mm tt} to {p.EndTime:h:mm tt}";
+                var start = new DateTimeOffset(p.StartTime);
+                var now = DateTimeOffset.Now;
+                if (now.Date <= start.Date)
+                {
+                    if (now.Date.AddDays(1) == start.Date)
+                    {
+                        msg += " tomorrow";
+                    }
+                    else if (now.Date.AddDays(7) > start.Date)
+                    {
+                        msg += $" {start:dddd}";
+                    }
+                    else
+                    {
+                        msg += $" {start:MMMM d}";
+                    }
+                }
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(msg)};
+            }
+            catch (ApplicationException ex)
+            {
+                return new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new StringContent(ex.Message) };
+            }
+        }
+
+        public class MeetingParameters
+        {
+            public string Title { get; set; }
+            public DateTime StartTime { get; set; }
+            public DateTime EndTime { get; set; }
         }
 
         /// <summary>

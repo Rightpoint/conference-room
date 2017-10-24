@@ -72,6 +72,11 @@ namespace RightpointLabs.ConferenceRoom.Bot
                     : time.Length == 1 && duration.HasValue
                         ? time[0]
                         : (DateTime?)null;
+            while (start.HasValue && start.Value < DateTime.Now.AddMinutes(-15))
+            {
+                start = start.Value.AddDays(1);
+            }
+
             var end = timeRange.HasValue
                 ? timeRange.Value.end
                 : time.Length >= 2
@@ -79,6 +84,10 @@ namespace RightpointLabs.ConferenceRoom.Bot
                     : duration.HasValue && start.HasValue
                         ? start.Value.Add(duration.Value)
                         : (DateTime?)null;
+            while (end.HasValue && end.Value < DateTime.Now.AddMinutes(-15))
+            {
+                end = end.Value.AddDays(1);
+            }
 
             var criteria = new RoomStatusCriteria()
             {

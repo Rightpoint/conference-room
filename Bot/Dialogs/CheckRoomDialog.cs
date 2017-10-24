@@ -15,7 +15,6 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
     [Serializable]
     public class CheckRoomDialog : RoomNinjaDialogBase
     {
-        private readonly Uri _requestUri;
         private RoomStatusCriteria _criteria;
         private List<RoomsService.RoomStatusResult> _roomResults;
 
@@ -98,7 +97,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                         }
                         else
                         {
-                            until += $" on {result.Until:mmm d}";
+                            until += $" on {result.Until:MMM d}";
                         }
                     }
                 }

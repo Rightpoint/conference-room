@@ -15,7 +15,6 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
     [Serializable]
     public class BookRoomDialog : RoomNinjaDialogBase
     {
-        private readonly Uri _requestUri;
         private RoomBookingCriteria _criteria;
         private List<RoomsService.RoomStatusResult> _roomResults;
 

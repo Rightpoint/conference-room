@@ -21,6 +21,7 @@ namespace RightpointLabs.ConferenceRoom.Domain.Services
         Task<bool> CancelMeetingFromClient(IRoom room, string uniqueId, string signature);
         Task SecurityCheck(IRoom room);
         Task<Dictionary<string, Tuple<RoomInfo, IRoom>>> GetInfoForRoomsInBuilding(string buildingId);
+        Task ScheduleNewMeeting(IRoom room, string title, DateTimeOffset startTime, DateTimeOffset endTime);
     }
 
 }

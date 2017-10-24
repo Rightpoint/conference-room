@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Azure;
@@ -63,6 +64,15 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
             room.Info.SpeakableName = MakeSpeakable(room.Info.DisplayName);
 
             return room;
+        }
+
+        public async Task<string> ScheduleMeeting(string roomId, DateTimeOffset startTime, DateTimeOffset endTime)
+        {
+            return await Post($"api/room/{roomId}/meeting/scheduleNew", new FormUrlEncodedContent(new Dictionary<string, string>()
+            {
+                {"startTime", $"{startTime:O}" },
+                {"endTime", $"{endTime:O}" },
+            }));
         }
 
         private string MakeSpeakable(string name)

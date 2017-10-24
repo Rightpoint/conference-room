@@ -39,7 +39,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
         {
             var room = result.Entities
                 .Where(i => i.Type == "room")
-                .Select(i => (string)i.Resolution["value"])
+                .Select(i => i.Entity ?? (string)i.Resolution["value"])
                 .FirstOrDefault(i => !string.IsNullOrEmpty(i));
             var timeRange = result.Entities
                 .Where(i => i.Type == "builtin.datetimeV2.timerange")
@@ -66,6 +66,11 @@ namespace RightpointLabs.ConferenceRoom.Bot
                     : time.Length == 1 && duration.HasValue
                         ? time[0]
                         : GetAssumedStartTime(DateTime.Now);
+            while(start < DateTime.Now.AddMinutes(-15))
+            {
+                start = start.AddDays(1);
+            }
+
             var end = timeRange.HasValue
                 ? timeRange.Value.end
                 : time.Length >= 2
@@ -73,6 +78,10 @@ namespace RightpointLabs.ConferenceRoom.Bot
                     : duration.HasValue
                         ? start.Add(duration.Value)
                         : start.Add(TimeSpan.FromMinutes(30));
+            while (end < DateTime.Now.AddMinutes(-15))
+            {
+                end = end.AddDays(1);
+            }
 
             var criteria = new RoomBookingCriteria()
             {

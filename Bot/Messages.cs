@@ -11,6 +11,7 @@ using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Bot.Builder.Azure;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
+using RightpointLabs.BotLib.Dialogs;
 using RightpointLabs.ConferenceRoom.Bot.Dialogs;
 
 namespace RightpointLabs.ConferenceRoom.Bot
@@ -43,7 +44,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
                     switch (activity.GetActivityType())
                     {
                         case ActivityTypes.Message:
-                            await Conversation.SendAsync(activity, () => new BotDialog(req.RequestUri));
+                            await Conversation.SendAsync(activity, () => new ExceptionHandlerDialog<object>(new BotDialog(req.RequestUri), true));
                             break;
                         case ActivityTypes.ConversationUpdate:
                             var client = new ConnectorClient(new Uri(activity.ServiceUrl));

@@ -446,6 +446,48 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             await BroadcastUpdate(room);
         }
 
+        public async Task ScheduleNewMeeting(IRoom room, string title, DateTimeOffset startTime, DateTimeOffset endTime)
+        {
+            if (string.IsNullOrEmpty(_contextService.UserId))
+            {
+                throw new ApplicationException("User required to create future meeting");
+            }
+            var meetings = await GetUpcomingAppointmentsForRoom(room);
+            var conflict = meetings.Where(i => !i.IsCancelled && !i.IsEndedEarly).FirstOrDefault(i =>
+                (i.Start <= startTime && startTime < i.End) ||
+                (i.Start < endTime && endTime <= i.End) ||
+                (startTime <= i.Start && i.Start < endTime) ||
+                (startTime < i.End && i.End <= endTime));
+            if (null != conflict)
+            {
+                throw new ApplicationException($"Conflicts with existing meeting");
+            }
+            if (endTime.Subtract(startTime).TotalHours > 2)
+            {
+                throw new ApplicationException("Cannot create a meeting for more than 2 hours");
+            }
+
+            var item = await _exchange.CreateEvent(room.RoomAddress, new CalendarEntry
+            {
+                Attendees = new Attendee[0],
+                Start = new DateTimeReference() { DateTime = startTime.ToUniversalTime().ToString("o"), TimeZone = "UTC" },
+                End = new DateTimeReference() { DateTime = endTime.ToUniversalTime().ToString("o"), TimeZone = "UTC" },
+                Subject = title ?? $"Scheduled via conference room management system by {_contextService.UserId}",
+                Body = new BodyContent() { Content = $"Scheduled via conference room management system by {_contextService.UserId}", ContentType = "Text" },
+                Importance = Importance.Normal,
+                ShowAs = ShowAs.Busy,
+                Sensitivity = Sensitivity.Normal,
+            });
+
+            // autostart if within the next 10 minutes
+            var now = _dateTimeService.Now;
+            if (startTime <= now.AddMinutes(10))
+            {
+                _meetingRepository.StartMeeting(room.OrganizationId, item.Id);
+            }
+            await BroadcastUpdate(room);
+        }
+
         public async Task MessageMeeting(IRoom room, string uniqueId)
         {
             var meeting = await SecurityCheck(room, uniqueId);
