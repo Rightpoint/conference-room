@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Bot.Builder.FormFlow;
+using Microsoft.Bot.Builder.FormFlow.Advanced;
 using Microsoft.Bot.Builder.Luis.Models;
 
 namespace RightpointLabs.ConferenceRoom.Bot
@@ -17,7 +18,9 @@ namespace RightpointLabs.ConferenceRoom.Bot
         public static IForm<RoomStatusCriteria> BuildForm()
         {
             return new FormBuilder<RoomStatusCriteria>()
-                .AddRemainingFields()
+                // when prompting, only prompt for room/office, other fields are only optinoal
+                .Field(new FieldReflector<RoomStatusCriteria>(nameof(Room)))
+                .Field(new FieldReflector<RoomStatusCriteria>(nameof(Office)))
                 .Build();
         }
         public override string ToString()

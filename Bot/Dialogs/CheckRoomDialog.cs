@@ -80,14 +80,34 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                     (null == firstMeeting)
                         ? new { busy = false, room = room, Until = (DateTime?)null }
                         : (firstMeeting.Start > (_criteria.EndTime ?? now) && !firstMeeting.IsStarted)
-                            ? new { busy = false, room = room, Until = (DateTime?)firstMeeting.Start }
+                            ? new { busy = false, room = room, Until = (DateTime?)TimeZoneInfo.ConvertTime(firstMeeting.Start, tz)}
                             : new { busy = true, room = room, Until = (DateTime?)null };
+
+                var until = result.Until.HasValue ? $"{result.Until:h:mm tt}" : "";
+                if (result.Until.HasValue)
+                {
+                    if (result.Until.Value.Date > now.Date)
+                    {
+                        if (result.Until.Value.Date == now.Date.AddDays(1))
+                        {
+                            until += " tomorrow";
+                        }
+                        else if (result.Until.Value.Date < now.Date.AddDays(7))
+                        {
+                            until += $" {result.Until:dddd}";
+                        }
+                        else
+                        {
+                            until += $" on {result.Until:mmm d}";
+                        }
+                    }
+                }
 
                 if (result.busy)
                 {
                     if (result.Until.HasValue)
                     {
-                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is busy until {result.Until:h:mm tt}", InputHints.AcceptingInput));
+                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is busy until {until}", InputHints.AcceptingInput));
                     }
                     else
                     {
@@ -98,7 +118,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                 {
                     if (result.Until.HasValue)
                     {
-                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is free until {result.Until:h:mm tt}", InputHints.AcceptingInput));
+                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is free until {until}", InputHints.AcceptingInput));
                     }
                     else
                     {
