@@ -129,8 +129,11 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
 
     public static class RoomServiceResultExtensions
     {
+        private static readonly Regex _cleanup = new Regex("[^A-Za-z0-9 ]*", RegexOptions.Compiled);
+
         public static RoomsService.RoomStatusResult MatchName(this ICollection<RoomsService.RoomStatusResult> values, string name)
         {
+            name = _cleanup.Replace(name, "");
             return values.FirstOrDefault(i => i.Info.SpeakableName.ToLowerInvariant() == name.ToLowerInvariant()) ??
                    values.FirstOrDefault(i =>
                        string.Join(" ", i.Info.SpeakableName.ToLowerInvariant().Split(' ').Where(ii => ii != "the")) ==

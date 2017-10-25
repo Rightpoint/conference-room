@@ -64,7 +64,8 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             var room = rooms.MatchName(_criteria.Room);
             if (null == room)
             {
-                await context.PostAsync(context.CreateMessage($"Can't find room {_criteria.Room}", InputHints.AcceptingInput));
+                var speak = $"Can't find room {_criteria.Room}";
+                await context.PostAsync(context.CreateMessage($"{speak}, options: {string.Join(", ", rooms.Select(i => i.Info.SpeakableName))}", speak, InputHints.AcceptingInput));
                 context.Done(string.Empty);
             }
             else

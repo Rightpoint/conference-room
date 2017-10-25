@@ -74,12 +74,17 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
 
             using (var r = await _client.PostAsync(new Uri(Url, url).AbsoluteUri, content))
             {
+                var responseString = await r.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(responseString))
+                {
+                    responseString = r.StatusCode.ToString();
+                }
                 if (!r.IsSuccessStatusCode)
                 {
-                    throw new ApplicationException(await r.Content.ReadAsStringAsync());
+                    throw new ApplicationException(responseString);
                 }
                 r.EnsureSuccessStatusCode();
-                return await r.Content.ReadAsStringAsync();
+                return responseString;
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.Bot.Builder.FormFlow;
 using Microsoft.Bot.Builder.Luis.Models;
 
@@ -111,8 +112,11 @@ namespace RightpointLabs.ConferenceRoom.Bot
             return criteria;
         }
 
+        private static readonly Regex _cleanup = new Regex("[^A-Za-z ]*", RegexOptions.Compiled);
+
         protected static RoomSearchCriteria.EquipmentOptions? ParseEquipment(string input)
         {
+            input = _cleanup.Replace(input, "");
             if (Enum.TryParse(input, out RoomSearchCriteria.EquipmentOptions option))
                 return option;
             switch (input.ToLowerInvariant())
@@ -123,8 +127,10 @@ namespace RightpointLabs.ConferenceRoom.Bot
                     return RoomSearchCriteria.EquipmentOptions.Display;
                 case "telephone":
                 case "phone":
+                case "speaker phone":
                 case "speakerphone":
                     return RoomSearchCriteria.EquipmentOptions.Telephone;
+                case "white board":
                 case "whiteboard":
                     return RoomSearchCriteria.EquipmentOptions.Whiteboard;
             }
