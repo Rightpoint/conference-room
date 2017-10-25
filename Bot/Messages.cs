@@ -19,7 +19,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
     public static class Messages
     {
         [FunctionName("messages")]
-        public static async Task<object> Run([HttpTrigger(WebHookType = "genericJson")]HttpRequestMessage req, TraceWriter log)
+        public static async Task<object> Run([HttpTrigger(AuthorizationLevel.Anonymous, "POST")]HttpRequestMessage req, TraceWriter log)
         {
             log.Info($"Webhook was triggered!");
 
