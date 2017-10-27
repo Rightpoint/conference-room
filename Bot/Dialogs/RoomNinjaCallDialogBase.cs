@@ -15,8 +15,11 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
     [Serializable]
     public abstract class RoomNinjaCallDialogBase<T> : AuthenticatedResourceActionDialogBase<T> where T:class
     {
-        public RoomNinjaCallDialogBase(Uri requestUri) : base(requestUri)
+        private readonly Uri _requestUri;
+
+        public RoomNinjaCallDialogBase(Uri requestUri)
         {
+            _requestUri = requestUri;
         }
 
         protected override string Resource => RoomsService.Resource;
@@ -44,5 +47,78 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         }
 
         protected abstract Task<T> DoWork(IDialogContext context, RoomsService accessToken);
+
+        protected override ResourceAuthTokenDialog CreateResourceAuthTokenDialog(string resource, bool ignoreCache, bool requireConsent)
+        {
+            return new CustomResourceAuthTokenDialog(_requestUri, resource, ignoreCache, requireConsent);
+        }
+
+        protected override void Log(string message)
+        {
+            Messages.CurrentLog.Info(message);
+        }
+
+        [Serializable]
+        public class CustomResourceAuthTokenDialog : ResourceAuthTokenDialog
+        {
+            private readonly Uri _requestUri;
+
+            public CustomResourceAuthTokenDialog(Uri requestUri, string resource, bool ignoreCache, bool requireConsent) : base(resource, ignoreCache, requireConsent)
+            {
+                _requestUri = requestUri;
+            }
+
+            protected override AppAuthTokenDialog CreateAppAuthTokenDialog(bool ignoreCache, bool requireConsent)
+            {
+                return new CustomAppAuthTokenDialog(_requestUri, ignoreCache, requireConsent);
+            }
+
+            protected override void Log(string message)
+            {
+                Messages.CurrentLog.Info(message);
+            }
+        }
+
+        [Serializable]
+        public class CustomAppAuthTokenDialog : AppAuthTokenDialog
+        {
+            private readonly Uri _requestUri;
+
+            public CustomAppAuthTokenDialog(Uri requestUri, bool ignoreCache, bool requireConsent) : base(ignoreCache, requireConsent)
+            {
+                _requestUri = requestUri;
+            }
+
+            protected override LoginDialog CreateLoginDialog(bool requireConsent)
+            {
+                return new CustomLoginDialog(_requestUri, requireConsent);
+            }
+
+            protected override void Log(string message)
+            {
+                Messages.CurrentLog.Info(message);
+            }
+        }
+
+        [Serializable]
+        public class CustomLoginDialog : LoginDialog
+        {
+            private readonly Uri _requestUri;
+
+            public CustomLoginDialog(Uri requestUri, bool requireConsent) : base(requireConsent)
+            {
+                _requestUri = requestUri;
+            }
+
+            protected override string GetRedirectUri()
+            {
+                return new Uri(_requestUri, "/api/Authorize").AbsoluteUri;
+            }
+
+            protected override void Log(string message)
+            {
+                Messages.CurrentLog.Info(message);
+            }
+        }
     }
 }

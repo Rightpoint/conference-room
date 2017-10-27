@@ -11,16 +11,14 @@ using Microsoft.Bot.Connector;
 namespace RightpointLabs.BotLib.Dialogs
 {
     [Serializable]
-    public class LoginDialog : IDialog<string>
+    public abstract class LoginDialog : IDialog<string>
     {
-        private readonly Uri _requestUri;
         private readonly bool _requireConsent;
         private SimpleAuthenticationResultModel _authResult;
         private bool _promptForKey = true;
 
-        public LoginDialog(Uri requestUri, bool requireConsent)
+        public LoginDialog(bool requireConsent)
         {
-            _requestUri = requestUri;
             _requireConsent = requireConsent;
         }
 
@@ -52,6 +50,7 @@ namespace RightpointLabs.BotLib.Dialogs
 
             _promptForKey = activity.ChannelId != "cortana";
 
+            Log($"LD: Prompting for login from {activity.From.Id}/{activity.From.Name} on {activity.ChannelId}");
             await context.PostAsync(replyToConversation);
 
             context.Wait<object>(ReceiveTokenAsync);
@@ -62,7 +61,7 @@ namespace RightpointLabs.BotLib.Dialogs
             var authority = ConfigurationManager.AppSettings["Authority"];
             var p = new Dictionary<string, string>();
             p["client_id"] = ConfigurationManager.AppSettings["ClientId"];
-            p["redirect_uri"] = new Uri(_requestUri, "/api/Authorize").AbsoluteUri;
+            p["redirect_uri"] = GetRedirectUri();
             p["response_mode"] = "form_post";
             p["response_type"] = "code";
             p["scope"] = "openid profile";
@@ -90,16 +89,19 @@ namespace RightpointLabs.BotLib.Dialogs
             {
                 if (!string.IsNullOrEmpty(result.Error))
                 {
+                    Log($"LD: {result.Error}: {result.ErrorDescription}");
                     await context.PostAsync($"{result.Error}: {result.ErrorDescription}");
                     context.Done(string.Empty);
                 }
                 if (string.IsNullOrEmpty(result.SecurityKey))
                 {
+                    Log($"LD: got token, no key needed");
                     await context.PostAsync("Got your token, no security key is required");
                     context.Done(result.AccessToken);
                 }
                 else
                 {
+                    Log($"LD: got token, waiting for key");
                     _authResult = result.ToSimpleAuthenticationResultModel();
                     if(_promptForKey)
                         await context.PostAsync("Please enter your security key");
@@ -127,6 +129,7 @@ namespace RightpointLabs.BotLib.Dialogs
             }
             else if (_authResult.SecurityKey == securityKeyRegex.Replace(message.Text, ""))
             {
+                Log($"LD: security key matches");
                 await context.PostAsync("Security key matches");
                 context.Done(_authResult.AccessToken);
             }
@@ -135,6 +138,12 @@ namespace RightpointLabs.BotLib.Dialogs
                 await context.PostAsync("Sorry, I didn't understand you.  Enter your security key, or 'cancel' to abort, or 'retry' to get a new authentication link.");
                 context.Wait(ReceiveSecurityKeyAsync);
             }
+        }
+
+        protected abstract string GetRedirectUri();
+
+        protected virtual void Log(string message)
+        {
         }
     }
 }

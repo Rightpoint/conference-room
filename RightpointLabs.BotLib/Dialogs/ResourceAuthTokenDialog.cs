@@ -9,16 +9,14 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 namespace RightpointLabs.BotLib.Dialogs
 {
     [Serializable]
-    public class ResourceAuthTokenDialog : IDialog<string>
+    public abstract class ResourceAuthTokenDialog : IDialog<string>
     {
-        private readonly Uri _requestUri;
         private readonly string _resource;
         private readonly bool _ignoreCache;
         private readonly bool _requireConsent;
 
-        public ResourceAuthTokenDialog(Uri requestUri, string resource, bool ignoreCache, bool requireConsent)
+        public ResourceAuthTokenDialog(string resource, bool ignoreCache, bool requireConsent)
         {
-            _requestUri = requestUri;
             _resource = resource;
             _ignoreCache = ignoreCache;
             _requireConsent = requireConsent;
@@ -34,11 +32,13 @@ namespace RightpointLabs.BotLib.Dialogs
             string accessToken;
             if (!_ignoreCache && !_requireConsent && context.UserData.TryGetValue("AuthToken_" + _resource, out accessToken) && !string.IsNullOrEmpty(accessToken))
             {
+                Log($"RATD: using {accessToken}");
                 context.Done(accessToken);
             }
             else
             {
-                await context.Forward(new AppAuthTokenDialog(_requestUri, _ignoreCache, _requireConsent), RecieveAppAuthTokenAsync, context.Activity, new CancellationToken());
+                Log($"RATD: prompting for token");
+                await context.Forward(CreateAppAuthTokenDialog(_ignoreCache, _requireConsent), RecieveAppAuthTokenAsync, context.Activity, new CancellationToken());
             }
         }
 
@@ -56,6 +56,7 @@ namespace RightpointLabs.BotLib.Dialogs
             AuthenticationResult newToken;
             try
             {
+                Log($"RATD: redeeming for token");
                 newToken = await authenticationContext.AcquireTokenAsync(_resource, clientCredential, userAssertion);
             }
             catch (Exception ex)
@@ -63,15 +64,17 @@ namespace RightpointLabs.BotLib.Dialogs
                 if (ex.Message.Contains("AADSTS65001"))
                 {
                     // consent required
+                    Log($"RATD: need consent");
                     await context.PostAsync("Looks like we haven't asked your consent for this, doing that now....");
-                    await context.Forward(new AppAuthTokenDialog(_requestUri, true, true), RecieveAppAuthTokenAsync, context.Activity, new CancellationToken());
+                    await context.Forward(CreateAppAuthTokenDialog(true, true), RecieveAppAuthTokenAsync, context.Activity, new CancellationToken());
                     return;
                 }
                 if (ex.Message.Contains("AADSTS50013"))
                 {
                     // invalid app access token
+                    Log($"RATD: token expired");
                     await context.PostAsync("Looks like your application token is expired - need a new one....");
-                    await context.Forward(new AppAuthTokenDialog(_requestUri, true, false), RecieveAppAuthTokenAsync, context.Activity, new CancellationToken());
+                    await context.Forward(CreateAppAuthTokenDialog(true, false), RecieveAppAuthTokenAsync, context.Activity, new CancellationToken());
                     return;
                 }
                 throw;
@@ -79,9 +82,16 @@ namespace RightpointLabs.BotLib.Dialogs
             
             if (!string.IsNullOrEmpty(newToken.AccessToken))
             {
+                Log($"RATD: saving token");
                 context.UserData.SetValue("AuthToken_" + _resource, newToken.AccessToken);
             }
             context.Done(newToken.AccessToken);
+        }
+
+        protected abstract AppAuthTokenDialog CreateAppAuthTokenDialog(bool ignoreCache, bool requireConsent);
+
+        protected virtual void Log(string message)
+        {
         }
     }
 }

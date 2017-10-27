@@ -18,9 +18,12 @@ namespace RightpointLabs.ConferenceRoom.Bot
 {
     public static class Messages
     {
+        public static TraceWriter CurrentLog { get; private set; }
+
         [FunctionName("messages")]
         public static async Task<object> Run([HttpTrigger(AuthorizationLevel.Anonymous, "POST")]HttpRequestMessage req, TraceWriter log)
         {
+            CurrentLog = log; // not sure if we get a private runtime for each request or not....
             log.Info($"Webhook was triggered!");
 
             // Initialize the azure bot
@@ -44,6 +47,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
                     switch (activity.GetActivityType())
                     {
                         case ActivityTypes.Message:
+                            log.Info($"Processing message: '{activity.AsMessageActivity().Text}' from {activity.From.Id}/{activity.From.Name} on {activity.ChannelId}");
                             await Conversation.SendAsync(activity, () => new ExceptionHandlerDialog<object>(new BotDialog(req.RequestUri), true));
                             break;
                         case ActivityTypes.ConversationUpdate:

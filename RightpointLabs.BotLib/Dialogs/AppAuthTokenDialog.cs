@@ -7,15 +7,13 @@ using Microsoft.Bot.Connector;
 namespace RightpointLabs.BotLib.Dialogs
 {
     [Serializable]
-    public class AppAuthTokenDialog : IDialog<string>
+    public abstract class AppAuthTokenDialog : IDialog<string>
     {
-        private readonly Uri _requestUri;
         private readonly bool _ignoreCache;
         private readonly bool _requireConsent;
 
-        public AppAuthTokenDialog(Uri requestUri, bool ignoreCache, bool requireConsent)
+        public AppAuthTokenDialog(bool ignoreCache, bool requireConsent)
         {
-            _requestUri = requestUri;
             _ignoreCache = ignoreCache;
             _requireConsent = requireConsent;
         }
@@ -30,11 +28,13 @@ namespace RightpointLabs.BotLib.Dialogs
             string accessToken;
             if (!_ignoreCache && !_requireConsent && context.UserData.TryGetValue("AuthToken", out accessToken) && !string.IsNullOrEmpty(accessToken))
             {
+                Log($"AATD: using {accessToken}");
                 context.Done(accessToken);
             }
             else
             {
-                await context.Forward(new LoginDialog(_requestUri, _requireConsent), ReceiveTokenAsync, context.Activity, new CancellationToken());
+                Log($"AATD: prompting");
+                await context.Forward(CreateLoginDialog(_requireConsent), ReceiveTokenAsync, context.Activity, new CancellationToken());
             }
         }
 
@@ -43,9 +43,16 @@ namespace RightpointLabs.BotLib.Dialogs
             var accessToken = await awaitableArgument;
             if (!string.IsNullOrEmpty(accessToken))
             {
+                Log($"AATD: saving {accessToken}");
                 context.UserData.SetValue("AuthToken", accessToken);
             }
             context.Done(accessToken);
+        }
+
+        protected abstract LoginDialog CreateLoginDialog(bool requireConsent);
+
+        protected virtual void Log(string message)
+        {
         }
     }
 }
