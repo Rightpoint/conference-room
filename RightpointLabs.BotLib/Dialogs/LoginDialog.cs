@@ -16,6 +16,7 @@ namespace RightpointLabs.BotLib.Dialogs
         private readonly Uri _requestUri;
         private readonly bool _requireConsent;
         private SimpleAuthenticationResultModel _authResult;
+        private bool _promptForKey = true;
 
         public LoginDialog(Uri requestUri, bool requireConsent)
         {
@@ -39,22 +40,24 @@ namespace RightpointLabs.BotLib.Dialogs
 
             var signinButton = new CardAction()
             {
-                Value = GetAuthUrl(activity).AbsoluteUri,
-                Type = activity.ChannelId == "msteams" ? "openUrl" : "signin",
+                Value = (await GetAuthUrl(context, activity)).AbsoluteUri,
+                Type = (activity.ChannelId == "msteams" || activity.ChannelId == "cortana") ? "openUrl" : "signin",
                 Title = "Authentication Required"
             };
-            var signinCard = 
-                activity.ChannelId == "msteams" ? 
+            var signinCard =
+                (activity.ChannelId == "msteams" || activity.ChannelId == "cortana") ? 
                 new ThumbnailCard("Please login to this bot", null, null, null, new List<CardAction>() { signinButton }).ToAttachment() : 
                 new SigninCard("Please login to this bot", new List<CardAction>() { signinButton }).ToAttachment();
             replyToConversation.Attachments = new List<Attachment>() { signinCard };
+
+            _promptForKey = activity.ChannelId != "cortana";
 
             await context.PostAsync(replyToConversation);
 
             context.Wait<object>(ReceiveTokenAsync);
         }
 
-        private Uri GetAuthUrl(IMessageActivity activity)
+        private async Task<Uri> GetAuthUrl(IDialogContext context, IMessageActivity activity)
         {
             var authority = ConfigurationManager.AppSettings["Authority"];
             var p = new Dictionary<string, string>();
@@ -98,7 +101,8 @@ namespace RightpointLabs.BotLib.Dialogs
                 else
                 {
                     _authResult = result.ToSimpleAuthenticationResultModel();
-                    await context.PostAsync("Please enter your security key");
+                    if(_promptForKey)
+                        await context.PostAsync("Please enter your security key");
                     context.Wait(ReceiveSecurityKeyAsync);
                 }
                 return;
