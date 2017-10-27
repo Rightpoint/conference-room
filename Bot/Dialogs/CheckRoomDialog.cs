@@ -80,7 +80,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                         ? new { busy = false, room = room, Until = (DateTime?)null }
                         : (firstMeeting.Start > (_criteria.EndTime ?? now) && !firstMeeting.IsStarted)
                             ? new { busy = false, room = room, Until = (DateTime?)TimeZoneInfo.ConvertTime(firstMeeting.Start, tz)}
-                            : new { busy = true, room = room, Until = (DateTime?)null };
+                            : new { busy = true, room = room, Until = (DateTime?)TimeZoneInfo.ConvertTime(GetNextFree(meetings), tz) };
 
                 var until = result.Until.HasValue ? $"{result.Until:h:mm tt}" : "";
                 if (result.Until.HasValue)
@@ -126,6 +126,18 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                 }
             }
             context.Done(string.Empty);
+        }
+
+        private DateTime GetNextFree(IEnumerable<RoomsService.RoomStatusResult.MeetingResult> meetings)
+        {
+            var time = meetings.First().End;
+            foreach (var meeting in meetings)
+            {
+                if (time < meeting.Start)
+                    return time;
+                time = meeting.End;
+            }
+            return time;
         }
     }
 }
