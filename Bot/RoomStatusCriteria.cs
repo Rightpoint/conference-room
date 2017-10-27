@@ -10,8 +10,19 @@ namespace RightpointLabs.ConferenceRoom.Bot
     [Serializable]
     public class RoomStatusCriteria : BaseCriteria
     {
-        public string Room { get; set; }
+        public string Room
+        {
+            get { return _room; }
+            set
+            {
+                _room = value;
+                if ((_room ?? "").ToLowerInvariant() == "away sis")
+                    _room = "oasis";
+            }
+        }
+
         public RoomBaseCriteria.OfficeOptions? Office = RoomBaseCriteria.OfficeOptions.Chicago;
+        private string _room;
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
 

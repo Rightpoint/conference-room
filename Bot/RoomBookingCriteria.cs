@@ -9,6 +9,8 @@ namespace RightpointLabs.ConferenceRoom.Bot
     [Serializable]
     public class RoomBookingCriteria : RoomBaseCriteria
     {
+        private string _room;
+
         public RoomBookingCriteria()
         {
         }
@@ -20,7 +22,16 @@ namespace RightpointLabs.ConferenceRoom.Bot
             this.Office = baseCriteria.Office;
         }
 
-        public string Room { get; set; }
+        public string Room
+        {
+            get { return _room; }
+            set
+            {
+                _room = value;
+                if ((_room ?? "").ToLowerInvariant() == "away sis")
+                    _room = "oasis";
+            }
+        }
 
         public static IForm<RoomBookingCriteria> BuildForm()
         {
