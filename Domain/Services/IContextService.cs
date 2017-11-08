@@ -8,5 +8,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Services
         string UserId { get; }
         DeviceEntity CurrentDevice { get; }
         OrganizationEntity CurrentOrganization { get; }
+        TokenStyle TokenStyle { get; }
     }
 }

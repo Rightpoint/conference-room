@@ -55,6 +55,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 public string UserId => null;
                 public DeviceEntity CurrentDevice => null;
                 public OrganizationEntity CurrentOrganization => _org;
+                public TokenStyle TokenStyle => TokenStyle.Default;
             }
         }
     }

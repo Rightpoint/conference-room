@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using RightpointLabs.ConferenceRoom.Domain.Services;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 {
@@ -17,6 +18,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private static readonly string ClaimKeyDeviceId = "deviceid";
         private static readonly string ClaimKeyOrganizationId = "organizationid";
         private static readonly string ClaimKeyUserId = "userid";
+        private static readonly string ClaimKeyStyle = "style";
         private static readonly string AzureAdClaimKeyUserId = "upn";
 
         public TokenService(string issuer, string audience, string signingKey, OpenIdConnectConfigurationService configurationService)
@@ -86,6 +88,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             return CreateToken(TimeSpan.FromHours(4), new Claim(ClaimKeyUserId, userId), new Claim(ClaimKeyOrganizationId, organizationId));
         }
 
+        public string CreateLongTermUserToken(string userId, string organizationId)
+        {
+            return CreateToken(TimeSpan.FromDays(365), new Claim(ClaimKeyUserId, userId), new Claim(ClaimKeyOrganizationId, organizationId), new Claim(ClaimKeyStyle, ((int)TokenStyle.LongTerm).ToString()));
+        }
+
         public string GetDeviceId(JwtSecurityToken token)
         {
             return GetClaimValueByType(token, ClaimKeyDeviceId);
@@ -99,6 +106,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         public string GetOrganizationId(JwtSecurityToken token)
         {
             return GetClaimValueByType(token, ClaimKeyOrganizationId);
+        }
+
+        public TokenStyle GetStyle(JwtSecurityToken token)
+        {
+            var value = GetClaimValueByType(token, ClaimKeyStyle);
+            return (TokenStyle?) (string.IsNullOrEmpty(value) ? (int?) null : int.Parse(value)) ?? TokenStyle.Default;
         }
 
         private string GetClaimValueByType(JwtSecurityToken token, string claimType)

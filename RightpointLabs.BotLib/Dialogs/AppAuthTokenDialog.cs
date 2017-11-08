@@ -26,7 +26,7 @@ namespace RightpointLabs.BotLib.Dialogs
         public async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
             string accessToken;
-            if (!_ignoreCache && !_requireConsent && context.UserData.TryGetValue("AuthToken", out accessToken) && !string.IsNullOrEmpty(accessToken))
+            if (!_ignoreCache && !_requireConsent && context.UserData.TryGetValue(CacheKey, out accessToken) && !string.IsNullOrEmpty(accessToken))
             {
                 Log($"AATD: using {accessToken}");
                 context.Done(accessToken);
@@ -44,10 +44,12 @@ namespace RightpointLabs.BotLib.Dialogs
             if (!string.IsNullOrEmpty(accessToken))
             {
                 Log($"AATD: saving {accessToken}");
-                context.UserData.SetValue("AuthToken", accessToken);
+                context.UserData.SetValue(CacheKey, accessToken);
             }
             context.Done(accessToken);
         }
+
+        protected string CacheKey => $"AuthToken_{this.GetType().Name}";
 
         protected abstract LoginDialog CreateLoginDialog(bool requireConsent);
 

@@ -103,6 +103,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         public string UserId => _tokenService.GetUserId(_token.Value);
 
+        public TokenStyle TokenStyle => _tokenService.GetStyle(_token.Value);
+
         public DeviceEntity CurrentDevice => _device.Value;
 
         public OrganizationEntity CurrentOrganization => _organization.Value;

@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens;
+using RightpointLabs.ConferenceRoom.Domain.Services;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 {
@@ -10,5 +11,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         string GetDeviceId(JwtSecurityToken token);
         string GetUserId(JwtSecurityToken token);
         string GetOrganizationId(JwtSecurityToken token);
+        string CreateLongTermUserToken(string userId, string organizationId);
+        TokenStyle GetStyle(JwtSecurityToken token);
     }
+
 }

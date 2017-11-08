@@ -81,6 +81,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 public string UserId => null;
                 public DeviceEntity CurrentDevice => null;
                 public OrganizationEntity CurrentOrganization => _organization;
+                public TokenStyle TokenStyle => TokenStyle.Default;
             }
 
             private async Task DoWork()

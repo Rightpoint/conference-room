@@ -76,28 +76,32 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             };
         }
 
-        //[Route("getCustom")]
-        //public HttpResponseMessage PostGetCustom()
-        //{
-        //    if (!_contextService.IsAuthenticated) 
-        //    {
-        //        return new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new StringContent("Not authenticated") };
-        //    }
+        [Route("getLongTerm")]
+        public HttpResponseMessage PostGetLongTerm()
+        {
+            if (!_contextService.IsAuthenticated)
+            {
+                return new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new StringContent("Not authenticated") };
+            }
 
-        //    var username = _contextService.UserId;
-        //    var orgId = _contextService.CurrentOrganization?.Id;
-        //    if (string.IsNullOrEmpty(username))
-        //    {
-        //        return new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new StringContent("No username available") };
-        //    }
-        //    if (string.IsNullOrEmpty(orgId))
-        //    {
-        //        return new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new StringContent("No organization available") };
-        //    }
+            var username = _contextService.UserId;
+            var orgId = _contextService.CurrentOrganization?.Id;
+            if (string.IsNullOrEmpty(username))
+            {
+                return new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new StringContent("No username available") };
+            }
+            if (string.IsNullOrEmpty(orgId))
+            {
+                return new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new StringContent("No organization available") };
+            }
+            if (_contextService.TokenStyle == TokenStyle.LongTerm)
+            {
+                return new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new StringContent("Cannot use a long-term key to create another") };
+            }
 
-        //    var token = _tokenService.CreateUserToken(username, orgId);
-        //    return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(token, Encoding.UTF8) };
-        //}
+            var token = _tokenService.CreateLongTermUserToken(username, orgId);
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(token, Encoding.UTF8) };
+        }
 
         private string BuildId(string deviceId, int length)
         {

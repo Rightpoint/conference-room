@@ -74,7 +74,7 @@ namespace RightpointLabs.BotLib.Dialogs
 
         protected virtual T ErrorDoneObject => string.Empty as T;
 
-        protected abstract ResourceAuthTokenDialog CreateResourceAuthTokenDialog(string resource, bool ignoreCache, bool requireConsent);
+        protected abstract IDialog<string> CreateResourceAuthTokenDialog(string resource, bool ignoreCache, bool requireConsent);
 
         protected virtual void Log(string message)
         {

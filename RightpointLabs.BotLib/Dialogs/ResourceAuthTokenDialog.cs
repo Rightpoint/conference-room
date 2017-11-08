@@ -30,7 +30,7 @@ namespace RightpointLabs.BotLib.Dialogs
         public async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
             string accessToken;
-            if (!_ignoreCache && !_requireConsent && context.UserData.TryGetValue("AuthToken_" + _resource, out accessToken) && !string.IsNullOrEmpty(accessToken))
+            if (!_ignoreCache && !_requireConsent && context.UserData.TryGetValue(CacheKey, out accessToken) && !string.IsNullOrEmpty(accessToken))
             {
                 Log($"RATD: using {accessToken}");
                 context.Done(accessToken);
@@ -83,10 +83,12 @@ namespace RightpointLabs.BotLib.Dialogs
             if (!string.IsNullOrEmpty(newToken.AccessToken))
             {
                 Log($"RATD: saving token");
-                context.UserData.SetValue("AuthToken_" + _resource, newToken.AccessToken);
+                context.UserData.SetValue(CacheKey, newToken.AccessToken);
             }
             context.Done(newToken.AccessToken);
         }
+
+        protected string CacheKey => $"AuthToken_{this.GetType().Name}_{_resource}";
 
         protected abstract AppAuthTokenDialog CreateAppAuthTokenDialog(bool ignoreCache, bool requireConsent);
 
