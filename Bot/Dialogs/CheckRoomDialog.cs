@@ -81,7 +81,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                 var start = _criteria.StartTime.HasValue ? $" at {_criteria.StartTime.ToSimpleTime()}" : "";
 
                 var reason = firstMeeting == null ? "" :
-                    !string.IsNullOrEmpty(firstMeeting.Organizer) ?
+                    !string.IsNullOrEmpty(firstMeeting.Organizer) && firstMeeting.Organizer != room.Info.DisplayName ?
                         $" by {firstMeeting.Organizer}" :
                         !string.IsNullOrEmpty(firstMeeting.Subject) ?
                             $" for {firstMeeting.Subject}" :

@@ -18,6 +18,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         public ChooseBuildingDialog(Uri requestUri, string buildingName)
         {
+            _requestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
             _buildingName = buildingName;
         }
 

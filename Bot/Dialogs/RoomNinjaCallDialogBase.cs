@@ -19,7 +19,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         protected RoomNinjaCallDialogBase(Uri requestUri)
         {
-            _requestUri = requestUri;
+            _requestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
         }
 
         protected override string Resource => RoomsService.Resource;

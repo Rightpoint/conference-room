@@ -18,6 +18,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         public ChooseFloorDialog(Uri requestUri, string floorName)
         {
+            _requestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
             _floorName = floorName;
         }
 

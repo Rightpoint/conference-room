@@ -20,7 +20,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         public RoomNinjaCustomTokenDialog(Uri requestUri, string resource, bool ignoreCache, bool requireConsent)
         {
-            _requestUri = requestUri;
+            _requestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
             _resource = resource;
             _ignoreCache = ignoreCache;
             _requireConsent = requireConsent;
@@ -93,7 +93,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
             public CustomResourceAuthTokenDialog(Uri requestUri, string resource, bool ignoreCache, bool requireConsent) : base(resource, ignoreCache, requireConsent)
             {
-                _requestUri = requestUri;
+                _requestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
             }
 
             protected override AppAuthTokenDialog CreateAppAuthTokenDialog(bool ignoreCache, bool requireConsent)
@@ -114,7 +114,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
             public CustomAppAuthTokenDialog(Uri requestUri, bool ignoreCache, bool requireConsent) : base(ignoreCache, requireConsent)
             {
-                _requestUri = requestUri;
+                _requestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
             }
 
             protected override LoginDialog CreateLoginDialog(bool requireConsent)
@@ -135,7 +135,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
             public CustomLoginDialog(Uri requestUri, bool requireConsent) : base(requireConsent)
             {
-                _requestUri = requestUri;
+                _requestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
             }
 
             protected override string GetRedirectUri()
