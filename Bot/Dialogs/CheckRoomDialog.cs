@@ -77,27 +77,8 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                             ? new { busy = false, room = room, Until = (DateTime?)TimeZoneInfo.ConvertTime(firstMeeting.Start, tz)}
                             : new { busy = true, room = room, Until = (DateTime?)TimeZoneInfo.ConvertTime(GetNextFree(meetings), tz) };
 
-                var until = result.Until.HasValue ? $"{result.Until:h:mm tt}" : "";
-                if (result.Until.HasValue)
-                {
-                    if (result.Until.Value.Date > now.Date)
-                    {
-                        if (result.Until.Value.Date == now.Date.AddDays(1))
-                        {
-                            until += " tomorrow";
-                        }
-                        else if (result.Until.Value.Date < now.Date.AddDays(7))
-                        {
-                            until += $" {result.Until:dddd}";
-                        }
-                        else
-                        {
-                            until += $" on {result.Until:MMM d}";
-                        }
-                    }
-                }
-
-                var start = _criteria.StartTime.HasValue ? $" at {_criteria.StartTime: h:mm tt}" : "";
+                var until = result.Until.HasValue ? $"{result.Until.ToSimpleTime()}" : "";
+                var start = _criteria.StartTime.HasValue ? $" at {_criteria.StartTime.ToSimpleTime()}" : "";
 
                 if (result.busy)
                 {

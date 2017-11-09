@@ -30,11 +30,11 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
             {
                 if (this.EndTime.HasValue)
                 {
-                    searchMsg += $" from {this.StartTime:h:mm tt} to {this.EndTime:h:mm tt}";
+                    searchMsg += $" from {this.StartTime.ToSimpleTime()} to {this.EndTime.ToSimpleTime()}";
                 }
                 else
                 {
-                    searchMsg += $" at {this.StartTime:h:mm tt}";
+                    searchMsg += $" at {this.StartTime.ToSimpleTime()}";
                 }
             }
 

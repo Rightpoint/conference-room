@@ -34,7 +34,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
         
         public override string ToString()
         {
-            return $"{this.Room} from {this.StartTime:h:mm tt} to {this.EndTime:h:mm tt}";
+            return $"{this.Room} from {this.StartTime.ToSimpleTime()} to {this.EndTime.ToSimpleTime()}";
         }
 
         public static RoomBookingCriteria ParseCriteria(LuisResult result)

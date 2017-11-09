@@ -41,7 +41,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
                     searchMsg += " with " + string.Join(", ", this.Equipment.Select((i, ix) => (ix == this.Equipment.Count - 1 ? "and " : "") + $"a {i}"));
                 }
             }
-            searchMsg += $" from {this.StartTime:h:mm tt} to {this.EndTime:h:mm tt}";
+            searchMsg += $" from {this.StartTime.ToSimpleTime()} to {this.EndTime.ToSimpleTime()}";
 
             return searchMsg;
         }
