@@ -139,5 +139,17 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
                        string.Join(" ", i.Info.SpeakableName.ToLowerInvariant().Split(' ').Where(ii => ii != "the")) ==
                        string.Join(" ", name.ToLowerInvariant().Split(' ').Where(ii => ii != "the")));
         }
+
+        public static RoomsService.BuildingResult MatchName(this ICollection<RoomsService.BuildingResult> values, string name)
+        {
+            name = _cleanup.Replace(name, "");
+            return values.FirstOrDefault(i => i.Name.ToLowerInvariant() == name.ToLowerInvariant());
+        }
+
+        public static RoomsService.RoomStatusResult MatchFloorName(this ICollection<RoomsService.RoomStatusResult> values, string name)
+        {
+            name = _cleanup.Replace(name, "");
+            return values.FirstOrDefault(i => i.Info.FloorName.ToLowerInvariant() == name.ToLowerInvariant());
+        }
     }
 }

@@ -81,6 +81,50 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             await context.Forward(new CheckRoomDialog(await result, _requestUri), Done, context.Activity, new CancellationToken());
         }
 
+        [LuisIntent("setBuilding")]
+        public async Task SetBuilding(IDialogContext context, LuisResult result)
+        {
+            var buildingName = result.Entities.Where(i => i.Type == "building").Select(i => i.Entity).FirstOrDefault();
+            await context.Forward(new ChooseBuildingDialog(_requestUri, buildingName), SetBuildingCallback, context.Activity, new CancellationToken());
+        }
+
+        private async Task SetBuildingCallback(IDialogContext context, IAwaitable<string> result)
+        {
+            var buildingId = await result;
+            if (!string.IsNullOrEmpty(buildingId))
+            {
+                context.SetBuildingId(buildingId);
+                await context.PostAsync(context.CreateMessage($"Building set.", InputHints.AcceptingInput));
+            }
+            context.Done(string.Empty);
+        }
+
+        [LuisIntent("setFloor")]
+        public async Task SetFloor(IDialogContext context, LuisResult result)
+        {
+            var buildingName = result.Entities.Where(i => i.Type == "floor").Select(i => i.Entity).FirstOrDefault();
+            await context.Forward(new ChooseFloorDialog(_requestUri, buildingName), SetFloorCallback, context.Activity, new CancellationToken());
+        }
+
+        private async Task SetFloorCallback(IDialogContext context, IAwaitable<string> result)
+        {
+            var floorId = await result;
+            if (!string.IsNullOrEmpty(floorId))
+            {
+                context.SetPreferredFloorId(floorId);
+                await context.PostAsync(context.CreateMessage($"Preferred floor set.", InputHints.AcceptingInput));
+            }
+            context.Done(string.Empty);
+        }
+
+        [LuisIntent("clearFloor")]
+        public async Task ClearFloor(IDialogContext context, LuisResult result)
+        {
+            context.SetPreferredFloorId(null);
+            await context.PostAsync(context.CreateMessage($"Preferred floor cleared.", InputHints.AcceptingInput));
+            context.Done(string.Empty);
+        }
+
         private async Task Done(IDialogContext context, IAwaitable<string> result)
         {
             context.Done(string.Empty);
