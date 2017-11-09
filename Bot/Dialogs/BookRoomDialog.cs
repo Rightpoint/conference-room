@@ -8,6 +8,7 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.FormFlow;
 using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
+using RightpointLabs.ConferenceRoom.Bot.Criteria;
 using RightpointLabs.ConferenceRoom.Bot.Services;
 
 namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
@@ -46,10 +47,10 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         private async Task GotBuildings(IDialogContext context, IAwaitable<RoomsService.BuildingResult[]> callback)
         {
-            var building = (await callback).FirstOrDefault(i => i.Name == _criteria.Office.ToString());
+            var building = (await callback).FirstOrDefault(i => i.Name == _criteria.BuildingId.ToString());
             if (null == building)
             {
-                await context.PostAsync(context.CreateMessage($"Can't find building {_criteria.Office}", InputHints.AcceptingInput));
+                await context.PostAsync(context.CreateMessage($"Can't find building {_criteria.BuildingId}", InputHints.AcceptingInput));
                 context.Done(string.Empty);
             }
             else

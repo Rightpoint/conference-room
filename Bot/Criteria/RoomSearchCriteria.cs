@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Bot.Builder.FormFlow;
 using Microsoft.Bot.Builder.Luis.Models;
+using RightpointLabs.ConferenceRoom.Bot.Criteria;
 
-namespace RightpointLabs.ConferenceRoom.Bot
+namespace RightpointLabs.ConferenceRoom.Bot.Criteria
 {
     [Serializable]
     public class RoomSearchCriteria : RoomBaseCriteria
@@ -21,15 +22,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
         [Template(TemplateUsage.EnumSelectMany, "What equipment do you need? {||}", ChoiceStyle = ChoiceStyleOptions.PerLine)]
         public List<EquipmentOptions> Equipment;
         public int? NumberOfPeople;
-
-        public static IForm<RoomSearchCriteria> BuildForm()
-        {
-            return new FormBuilder<RoomSearchCriteria>()
-                .Message("Let's find you a conference room.")
-                .AddRemainingFields()
-                .Build();
-        }
-
+        
         public override string ToString()
         {
             var searchMsg = $"a room for {this.NumberOfPeople} people";
@@ -107,7 +100,6 @@ namespace RightpointLabs.ConferenceRoom.Bot
                 EndTime = end,
                 Equipment = equipment.Select(ParseEquipment).Where(i => i.HasValue).Select(i => i.Value).ToList(),
                 NumberOfPeople = size,
-                Office = RoomSearchCriteria.OfficeOptions.Chicago,
             };
             return criteria;
         }

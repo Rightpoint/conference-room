@@ -2,14 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Bot.Builder.FormFlow;
-using Microsoft.Bot.Builder.FormFlow.Advanced;
 using Microsoft.Bot.Builder.Luis.Models;
 
-namespace RightpointLabs.ConferenceRoom.Bot
+namespace RightpointLabs.ConferenceRoom.Bot.Criteria
 {
     [Serializable]
-    public class RoomStatusCriteria : BaseCriteria
+    public class RoomBookingCriteria : RoomBaseCriteria
     {
+        private string _room;
+
+        public RoomBookingCriteria()
+        {
+        }
+
+        public RoomBookingCriteria(RoomBaseCriteria baseCriteria)
+        {
+            this.StartTime = baseCriteria.StartTime;
+            this.EndTime = baseCriteria.EndTime;
+        }
+
         public string Room
         {
             get { return _room; }
@@ -20,39 +31,13 @@ namespace RightpointLabs.ConferenceRoom.Bot
                     _room = "oasis";
             }
         }
-
-        public RoomBaseCriteria.OfficeOptions? Office = RoomBaseCriteria.OfficeOptions.Chicago;
-        private string _room;
-        public DateTime? StartTime { get; set; }
-        public DateTime? EndTime { get; set; }
-
-        public static IForm<RoomStatusCriteria> BuildForm()
-        {
-            return new FormBuilder<RoomStatusCriteria>()
-                // when prompting, only prompt for room/office, other fields are only optinoal
-                .Field(new FieldReflector<RoomStatusCriteria>(nameof(Room)))
-                .Field(new FieldReflector<RoomStatusCriteria>(nameof(Office)))
-                .Build();
-        }
+        
         public override string ToString()
         {
-            var searchMsg = $"{this.Room}";
-            if (this.StartTime.HasValue)
-            {
-                if (this.EndTime.HasValue)
-                {
-                    searchMsg += $" from {this.StartTime:h:mm tt} to {this.EndTime:h:mm tt}";
-                }
-                else
-                {
-                    searchMsg += $" at {this.StartTime:h:mm tt}";
-                }
-            }
-
-            return searchMsg;
+            return $"{this.Room} from {this.StartTime:h:mm tt} to {this.EndTime:h:mm tt}";
         }
 
-        public static RoomStatusCriteria ParseCriteria(LuisResult result)
+        public static RoomBookingCriteria ParseCriteria(LuisResult result)
         {
             var room = result.Entities
                 .Where(i => i.Type == "room")
@@ -82,29 +67,30 @@ namespace RightpointLabs.ConferenceRoom.Bot
                     ? time[0]
                     : time.Length == 1 && duration.HasValue
                         ? time[0]
-                        : (DateTime?)null;
-            while (start.HasValue && start.Value < DateTime.Now.AddMinutes(-15))
+                        : GetAssumedStartTime(DateTime.Now);
+            while(start < DateTime.Now.AddMinutes(-15))
             {
-                start = start.Value.AddDays(1);
+                start = start.AddDays(1);
             }
 
             var end = timeRange.HasValue
                 ? timeRange.Value.end
                 : time.Length >= 2
                     ? time[1]
-                    : duration.HasValue && start.HasValue
-                        ? start.Value.Add(duration.Value)
-                        : (DateTime?)null;
-            while (end.HasValue && end.Value < DateTime.Now.AddMinutes(-15))
+                    : duration.HasValue
+                        ? start.Add(duration.Value)
+                        : start.Add(TimeSpan.FromMinutes(30));
+            while (end < DateTime.Now.AddMinutes(-15))
             {
-                end = end.Value.AddDays(1);
+                end = end.AddDays(1);
             }
 
-            var criteria = new RoomStatusCriteria()
+            var criteria = new RoomBookingCriteria()
             {
-                Room = room,
                 StartTime = start,
                 EndTime = end,
+                Room = room,
+                BuildingId = RoomSearchCriteria.OfficeOptions.Chicago,
             };
             return criteria;
         }

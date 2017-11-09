@@ -2,26 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Bot.Builder.FormFlow;
+using Microsoft.Bot.Builder.FormFlow.Advanced;
 using Microsoft.Bot.Builder.Luis.Models;
 
-namespace RightpointLabs.ConferenceRoom.Bot
+namespace RightpointLabs.ConferenceRoom.Bot.Criteria
 {
     [Serializable]
-    public class RoomBookingCriteria : RoomBaseCriteria
+    public class RoomStatusCriteria : BaseCriteria
     {
-        private string _room;
-
-        public RoomBookingCriteria()
-        {
-        }
-
-        public RoomBookingCriteria(RoomBaseCriteria baseCriteria)
-        {
-            this.StartTime = baseCriteria.StartTime;
-            this.EndTime = baseCriteria.EndTime;
-            this.Office = baseCriteria.Office;
-        }
-
         public string Room
         {
             get { return _room; }
@@ -33,20 +21,29 @@ namespace RightpointLabs.ConferenceRoom.Bot
             }
         }
 
-        public static IForm<RoomBookingCriteria> BuildForm()
-        {
-            return new FormBuilder<RoomBookingCriteria>()
-                .Message("Let's book a conference room.")
-                .AddRemainingFields()
-                .Build();
-        }
-
+        private string _room;
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
+        
         public override string ToString()
         {
-            return $"{this.Room} from {this.StartTime:h:mm tt} to {this.EndTime:h:mm tt}";
+            var searchMsg = $"{this.Room}";
+            if (this.StartTime.HasValue)
+            {
+                if (this.EndTime.HasValue)
+                {
+                    searchMsg += $" from {this.StartTime:h:mm tt} to {this.EndTime:h:mm tt}";
+                }
+                else
+                {
+                    searchMsg += $" at {this.StartTime:h:mm tt}";
+                }
+            }
+
+            return searchMsg;
         }
 
-        public static RoomBookingCriteria ParseCriteria(LuisResult result)
+        public static RoomStatusCriteria ParseCriteria(LuisResult result)
         {
             var room = result.Entities
                 .Where(i => i.Type == "room")
@@ -76,30 +73,29 @@ namespace RightpointLabs.ConferenceRoom.Bot
                     ? time[0]
                     : time.Length == 1 && duration.HasValue
                         ? time[0]
-                        : GetAssumedStartTime(DateTime.Now);
-            while(start < DateTime.Now.AddMinutes(-15))
+                        : (DateTime?)null;
+            while (start.HasValue && start.Value < DateTime.Now.AddMinutes(-15))
             {
-                start = start.AddDays(1);
+                start = start.Value.AddDays(1);
             }
 
             var end = timeRange.HasValue
                 ? timeRange.Value.end
                 : time.Length >= 2
                     ? time[1]
-                    : duration.HasValue
-                        ? start.Add(duration.Value)
-                        : start.Add(TimeSpan.FromMinutes(30));
-            while (end < DateTime.Now.AddMinutes(-15))
+                    : duration.HasValue && start.HasValue
+                        ? start.Value.Add(duration.Value)
+                        : (DateTime?)null;
+            while (end.HasValue && end.Value < DateTime.Now.AddMinutes(-15))
             {
-                end = end.AddDays(1);
+                end = end.Value.AddDays(1);
             }
 
-            var criteria = new RoomBookingCriteria()
+            var criteria = new RoomStatusCriteria()
             {
+                Room = room,
                 StartTime = start,
                 EndTime = end,
-                Room = room,
-                Office = RoomSearchCriteria.OfficeOptions.Chicago,
             };
             return criteria;
         }
