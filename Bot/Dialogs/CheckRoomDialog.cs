@@ -74,28 +74,38 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                     (null == firstMeeting)
                         ? new { busy = false, room = room, Until = (DateTime?)null }
                         : (firstMeeting.Start > (_criteria.EndTime ?? _criteria.StartTime ?? now) && !firstMeeting.IsStarted)
-                            ? new { busy = false, room = room, Until = (DateTime?)TimeZoneInfo.ConvertTime(firstMeeting.Start, tz)}
+                            ? new { busy = false, room = room, Until = (DateTime?)TimeZoneInfo.ConvertTime(firstMeeting.Start, tz) }
                             : new { busy = true, room = room, Until = (DateTime?)TimeZoneInfo.ConvertTime(GetNextFree(meetings), tz) };
 
                 var until = result.Until.HasValue ? $"{result.Until.ToSimpleTime()}" : "";
                 var start = _criteria.StartTime.HasValue ? $" at {_criteria.StartTime.ToSimpleTime()}" : "";
 
+                var reason = firstMeeting == null ? "" :
+                    !string.IsNullOrEmpty(firstMeeting.Organizer) ?
+                        $" by {firstMeeting.Organizer}" :
+                        !string.IsNullOrEmpty(firstMeeting.Subject) ?
+                            $" for {firstMeeting.Subject}" :
+                            "";
                 if (result.busy)
                 {
                     if (result.Until.HasValue)
                     {
-                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is busy{start} until {until}", InputHints.AcceptingInput));
+                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is busy{start}{reason} until {until}", InputHints.AcceptingInput));
                     }
                     else
                     {
-                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is busy{start}", InputHints.AcceptingInput));
+                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is busy{start}{reason}", InputHints.AcceptingInput));
                     }
                 }
                 else
                 {
                     if (result.Until.HasValue)
                     {
-                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is free{start} until {until}", InputHints.AcceptingInput));
+                        if (!string.IsNullOrEmpty(reason))
+                        {
+                            reason = $" when it's reserved{reason}";
+                        }
+                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is free{start} until {until}{reason}", InputHints.AcceptingInput));
                     }
                     else
                     {

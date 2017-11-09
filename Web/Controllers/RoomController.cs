@@ -192,9 +192,9 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
                 var data = await _conferenceRoomService.GetStaticInfo(room);
 
                 await _conferenceRoomService.ScheduleNewMeeting(room, p.Title, p.StartTime, p.EndTime);
-                var msg = $"Booked {data.DisplayName} from {p.StartTime} to {p.EndTime:h:mm tt}";
+                var msg = $"Booked {data.DisplayName} from {p.StartTime:h:mm tt} to {p.EndTime:h:mm tt}";
                 var now = DateTimeOffset.Now;
-                if (now.Date <= p.StartTime.Date)
+                if (now.Date < p.StartTime.Date)
                 {
                     if (now.Date.AddDays(1) == p.StartTime.Date)
                     {

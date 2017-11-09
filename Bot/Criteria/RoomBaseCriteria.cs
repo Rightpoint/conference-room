@@ -24,6 +24,11 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
                     : time.Length == 1 && duration.HasValue
                         ? time[0]
                         : (DateTime?)null;
+            if (start.HasValue && start >= DateTime.Now.AddSeconds(-10) && start <= DateTime.Now.AddSeconds(10))
+            {
+                // user said "now".. let's adjust a bit
+                start = GetAssumedStartTime(start.Value);
+            }
             while (start.HasValue && start < DateTime.Now.AddMinutes(-15))
             {
                 start = start.Value.AddDays(1);

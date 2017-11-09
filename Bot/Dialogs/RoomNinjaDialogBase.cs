@@ -30,7 +30,6 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             try
             {
                 var msg = await result;
-                context.PostAsync("");
                 await context.PostAsync(context.CreateMessage(msg, InputHints.AcceptingInput));
             }
             catch (ApplicationException ex)

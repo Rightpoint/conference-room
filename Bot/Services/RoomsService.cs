@@ -103,6 +103,9 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
                 public DateTime Start { get; set; }
                 public DateTime End { get; set; }
                 public bool IsStarted { get; set; }
+                public string Organizer { get; set; }
+                public string Subject { get; set; }
+                public string UniqueId { get; set; }
             }
 
             public RoomStatus Status { get; set; }

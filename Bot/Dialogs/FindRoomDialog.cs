@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
@@ -114,51 +116,56 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             }
             else if (_roomResults.Count == 1)
             {
-                PromptDialog.Confirm(context, ConfirmBookOneRoom, $"{_roomResults[0].Info.SpeakableName} is free - would you like to reserve it?");
+                await context.PostAsync(context.CreateMessage($"{_roomResults[0].Info.SpeakableName} is free - would you like to reserve it?", InputHints.ExpectingInput));
+                context.Wait(ConfirmBookOneRoom);
             }
             else
             {
-                PromptDialog.Choice(context,
-                    ConfirmBookOneOfManyRooms,
-                    _roomResults.Select(i => i.Info.SpeakableName),
-                    $"{_roomResults.Count} rooms are available, which do you want?");
+                await PromptForMultipleRooms(context);
             }
         }
 
-        private async Task ConfirmBookOneRoom(IDialogContext context, IAwaitable<bool> awaitable)
+        private async Task PromptForMultipleRooms(IDialogContext context)
+        {
+            var msg = $"{_roomResults.Count} rooms are available, which do you want?  {string.Join(", ", _roomResults.Select(i => i.Info.SpeakableName).Take(5))}.";
+            await context.PostAsync(context.CreateMessage(msg, InputHints.ExpectingInput));
+            context.Wait(ConfirmBookOneOfManyRooms);
+        }
+
+        private static readonly Regex _cleanup = new Regex("[^A-Za-z ]*", RegexOptions.Compiled);
+
+        private async Task ConfirmBookOneRoom(IDialogContext context, IAwaitable<IMessageActivity> awaitable)
         {
             var result = await awaitable;
-            if (result)
+            var answer = _cleanup.Replace(result.Text ?? "", "");
+            if (answer.ToLowerInvariant() == "yes" || answer.ToLowerInvariant() == "ok")
             {
                 await BookIt(context, _roomResults[0].Id, _criteria.StartTime, _criteria.EndTime);
             }
             else
             {
-                await context.PostAsync(context.CreateMessage("OK.", InputHints.AcceptingInput));
+                await context.PostAsync(context.CreateMessage("Not booking room.", InputHints.AcceptingInput));
                 context.Done(string.Empty);
             }
         }
 
-        private async Task ConfirmBookOneOfManyRooms(IDialogContext context, IAwaitable<string> awaitable)
+        private async Task ConfirmBookOneOfManyRooms(IDialogContext context, IAwaitable<IMessageActivity> awaitable)
         {
-            var answer = await awaitable;
+            var result = await awaitable;
+            var answer = _cleanup.Replace(result.Text ?? "", "");
             var room = _roomResults.MatchName(answer);
-            if (room != null)
-            {
-                await BookIt(context, room.Id, _criteria.StartTime, _criteria.EndTime);
-            }
-            else if (answer == "no" || answer == "cancel")
+            if (answer.ToLowerInvariant() == "no" || answer.ToLowerInvariant() == "cancel")
             {
                 await context.PostAsync(context.CreateMessage("OK.", InputHints.AcceptingInput));
                 context.Done(string.Empty);
             }
+            else if (room != null)
+            {
+                await BookIt(context, room.Id, _criteria.StartTime, _criteria.EndTime);
+            }
             else
             {
-                await context.PostAsync(context.CreateMessage($"Sorry, I didn't understand - please answer {string.Join(", ", _roomResults.Take(5).Select(i => i.Info.DisplayName))} or cancel.", InputHints.ExpectingInput));
-                PromptDialog.Choice(context,
-                    ConfirmBookOneOfManyRooms,
-                    _roomResults.Select(i => i.Info.SpeakableName),
-                    $"{_roomResults.Count} rooms are available, which do you want?");
+                await PromptForMultipleRooms(context);
             }
         }
     }

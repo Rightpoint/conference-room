@@ -52,7 +52,13 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         private async Task DoRoomSearch(IDialogContext context, IAwaitable<RoomSearchCriteria> result)
         {
-            await context.Forward(new FindRoomDialog(await result, _requestUri), Done, context.Activity, new CancellationToken());
+            var criteria = await result;
+            if (null == criteria)
+            {
+                context.Done(string.Empty);
+                return;
+            }
+            await context.Forward(new FindRoomDialog(criteria, _requestUri), Done, context.Activity, new CancellationToken());
         }
 
         [LuisIntent("bookRoom")]
@@ -64,7 +70,13 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         private async Task DoBookRoom(IDialogContext context, IAwaitable<RoomBookingCriteria> result)
         {
-            await context.Forward(new BookRoomDialog(await result, _requestUri), Done, context.Activity, new CancellationToken());
+            var criteria = await result;
+            if (null == criteria)
+            {
+                context.Done(string.Empty);
+                return;
+            }
+            await context.Forward(new BookRoomDialog(criteria, _requestUri), Done, context.Activity, new CancellationToken());
         }
 
         [LuisIntent("checkRoom")]
@@ -76,7 +88,13 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         private async Task DoRoomCheck(IDialogContext context, IAwaitable<RoomStatusCriteria> result)
         {
-            await context.Forward(new CheckRoomDialog(await result, _requestUri), Done, context.Activity, new CancellationToken());
+            var criteria = await result;
+            if (null == criteria)
+            {
+                context.Done(string.Empty);
+                return;
+            }
+            await context.Forward(new CheckRoomDialog(criteria, _requestUri), Done, context.Activity, new CancellationToken());
         }
 
         [LuisIntent("setBuilding")]

@@ -37,7 +37,12 @@ namespace RightpointLabs.ConferenceRoom.Bot
             {
                 case "time":
                 case "datetime":
-                    return DateTime.Parse((string)values["value"]);
+                    var value = DateTime.Parse((string)values["value"]);
+                    if (values.TryGetValue("timex", out object timex) && (string) timex == "PRESENT_REF")
+                    {
+                        value = value.ToLocalTime();
+                    }
+                    return value;
                 default:
                     return null;
             }

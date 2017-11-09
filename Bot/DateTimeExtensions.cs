@@ -16,7 +16,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
                 return "";
             var msg = $"{value:h:mm tt}";
             var now = DateTimeOffset.Now;
-            if (now.Date <= value.Value.Date)
+            if (now.Date < value.Value.Date)
             {
                 if (now.Date.AddDays(1) == value.Value.Date)
                 {
@@ -40,7 +40,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
                 return "";
             var msg = $"{value:h:mm tt}";
             var now = DateTime.Now;
-            if (now.Date <= value.Value.Date)
+            if (now.Date < value.Value.Date)
             {
                 if (now.Date.AddDays(1) == value.Value.Date)
                 {

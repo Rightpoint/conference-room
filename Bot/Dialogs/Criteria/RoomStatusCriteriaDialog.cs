@@ -44,7 +44,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria
             _criteria.Room = (await argument).Text;
             if (string.IsNullOrEmpty(_criteria.Room))
             {
-                context.Done(string.Empty);
+                context.Done<RoomStatusCriteria>(null);
                 return;
             }
 

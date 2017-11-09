@@ -62,7 +62,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria
             _criteria.Room = (await argument).Text;
             if (string.IsNullOrEmpty(_criteria.Room))
             {
-                context.Done(string.Empty);
+                context.Done<RoomBookingCriteria>(null);
                 return;
             }
 
@@ -80,7 +80,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria
             var text = (await argument).Text;
             if (string.IsNullOrEmpty(text) || text.ToLowerInvariant() == "cancel" || text.ToLowerInvariant() == "stop")
             {
-                context.Done(string.Empty);
+                context.Done<RoomBookingCriteria>(null);
                 return;
             }
 
@@ -90,8 +90,8 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria
 
             if (!_criteria.StartTime.HasValue)
             {
-                await context.PostAsync(context.CreateMessage($"Sorry, I couldn't understand that start time.", InputHints.AcceptingInput));
-                context.Done(string.Empty);
+                await context.PostAsync(context.CreateMessage($"Sorry, I couldn't understand that start time.", InputHints.IgnoringInput));
+                await PromptForStartTime(context);
                 return;
             }
 
@@ -109,7 +109,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria
             var text = (await argument).Text;
             if (string.IsNullOrEmpty(text) || text.ToLowerInvariant() == "cancel" || text.ToLowerInvariant() == "stop")
             {
-                context.Done(string.Empty);
+                context.Done<RoomBookingCriteria>(null);
                 return;
             }
 
@@ -119,8 +119,8 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria
 
             if (!_criteria.EndTime.HasValue)
             {
-                await context.PostAsync(context.CreateMessage($"Sorry, I couldn't understand that end time or duration.", InputHints.AcceptingInput));
-                context.Done(string.Empty);
+                await context.PostAsync(context.CreateMessage($"Sorry, I couldn't understand that end time or duration.", InputHints.IgnoringInput));
+                await PromptForEndTime(context);
                 return;
             }
 
