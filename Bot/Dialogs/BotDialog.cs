@@ -5,11 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Azure;
 using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Builder.FormFlow;
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
 using RightpointLabs.ConferenceRoom.Bot.Criteria;
+using RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria;
 using RightpointLabs.ConferenceRoom.Bot.Services;
 
 namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
@@ -39,7 +39,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         [LuisIntent("None")]
         public async Task NoneIntent(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync($"Sorry, I don't know what you meant.  You said: {result.Query}"); //
+            await context.PostAsync(context.CreateMessage($"Sorry, I don't know what you meant.  You said: {result.Query}", InputHints.AcceptingInput));
             context.Done(string.Empty);
         }
 
@@ -47,8 +47,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         public async Task FindRoom(IDialogContext context, LuisResult result)
         {
             var criteria = RoomSearchCriteria.ParseCriteria(result);
-            var dialog = new FormDialog<RoomSearchCriteria>(criteria, RoomSearchCriteria.BuildForm, entities: result.Entities);
-            await context.Forward(dialog, DoRoomSearch, context.Activity, new CancellationToken());
+            await context.Forward(new RoomSearchCriteriaDialog(criteria), DoRoomSearch, context.Activity, new CancellationToken());
         }
 
         private async Task DoRoomSearch(IDialogContext context, IAwaitable<RoomSearchCriteria> result)
@@ -60,8 +59,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         public async Task BookRoom(IDialogContext context, LuisResult result)
         {
             var criteria = RoomBookingCriteria.ParseCriteria(result);
-            var dialog = new FormDialog<RoomBookingCriteria>(criteria, RoomBookingCriteria.BuildForm, entities: result.Entities);
-            await context.Forward(dialog, DoBookRoom, context.Activity, new CancellationToken());
+            await context.Forward(new RoomBookingCriteriaDialog(criteria), DoBookRoom, context.Activity, new CancellationToken());
         }
 
         private async Task DoBookRoom(IDialogContext context, IAwaitable<RoomBookingCriteria> result)
@@ -73,8 +71,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         public async Task CheckRoom(IDialogContext context, LuisResult result)
         {
             var criteria = RoomStatusCriteria.ParseCriteria(result);
-            var dialog = new FormDialog<RoomStatusCriteria>(criteria, RoomStatusCriteria.BuildForm, entities: result.Entities);
-            await context.Forward(dialog, DoRoomCheck, context.Activity, new CancellationToken());
+            await context.Forward(new RoomStatusCriteriaDialog(criteria), DoRoomCheck, context.Activity, new CancellationToken());
         }
 
         private async Task DoRoomCheck(IDialogContext context, IAwaitable<RoomStatusCriteria> result)

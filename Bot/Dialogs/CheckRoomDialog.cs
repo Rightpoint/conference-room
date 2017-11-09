@@ -39,24 +39,18 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                 return;
             }
 
+            var buildingId = context.GetBuildingId();
+            if (string.IsNullOrEmpty(buildingId))
+            {
+                await context.PostAsync(context.CreateMessage($"You need to set a building first", InputHints.AcceptingInput));
+                context.Done(string.Empty);
+                return;
+            }
+
             // searching...
             await context.PostAsync(context.CreateMessage($"Checking status of {_criteria}", InputHints.IgnoringInput));
-            
-            await context.Forward(new RoomNinjaGetBuildingsCallDialog(_requestUri), GotBuildings, context.Activity, new CancellationToken());
-        }
 
-        private async Task GotBuildings(IDialogContext context, IAwaitable<RoomsService.BuildingResult[]> callback)
-        {
-            var building = (await callback).FirstOrDefault(i => i.Name == _criteria.Office.ToString());
-            if (null == building)
-            {
-                await context.PostAsync(context.CreateMessage($"Can't find building {_criteria.Office}", InputHints.AcceptingInput));
-                context.Done(string.Empty);
-            }
-            else
-            {
-                await context.Forward(new RoomNinjaGetRoomsStatusForBuildingCallDialog(_requestUri, building.Id), GotRoomStatus, context.Activity, new CancellationToken());
-            }
+            await context.Forward(new RoomNinjaGetRoomsStatusForBuildingCallDialog(_requestUri, buildingId), GotRoomStatus, context.Activity, new CancellationToken());
         }
 
         private async Task GotRoomStatus(IDialogContext context, IAwaitable<RoomsService.RoomStatusResult[]> callback)
@@ -70,16 +64,16 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             }
             else
             {
-                var tz = GetTimezone(_criteria.Office ?? RoomBaseCriteria.OfficeOptions.Chicago);
+                var tz = GetTimezone(context.GetBuildingId());
                 var now = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
 
                 // ok, now we just have rooms that meet the criteria - let's see what's free when asked
-                var meetings = room.Status.NearTermMeetings.Where(i => i.End >= (_criteria.StartTime ?? now)).OrderBy(i => i.Start).ToList();
+                var meetings = room.Status.NearTermMeetings.Where(i => i.End > (_criteria.StartTime ?? now)).OrderBy(i => i.Start).ToList();
                 var firstMeeting = meetings.FirstOrDefault();
                 var result =
                     (null == firstMeeting)
                         ? new { busy = false, room = room, Until = (DateTime?)null }
-                        : (firstMeeting.Start > (_criteria.EndTime ?? now) && !firstMeeting.IsStarted)
+                        : (firstMeeting.Start > (_criteria.EndTime ?? _criteria.StartTime ?? now) && !firstMeeting.IsStarted)
                             ? new { busy = false, room = room, Until = (DateTime?)TimeZoneInfo.ConvertTime(firstMeeting.Start, tz)}
                             : new { busy = true, room = room, Until = (DateTime?)TimeZoneInfo.ConvertTime(GetNextFree(meetings), tz) };
 
@@ -103,26 +97,28 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                     }
                 }
 
+                var start = _criteria.StartTime.HasValue ? $" at {_criteria.StartTime: h:mm tt}" : "";
+
                 if (result.busy)
                 {
                     if (result.Until.HasValue)
                     {
-                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is busy until {until}", InputHints.AcceptingInput));
+                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is busy{start} until {until}", InputHints.AcceptingInput));
                     }
                     else
                     {
-                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is busy", InputHints.AcceptingInput));
+                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is busy{start}", InputHints.AcceptingInput));
                     }
                 }
                 else
                 {
                     if (result.Until.HasValue)
                     {
-                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is free until {until}", InputHints.AcceptingInput));
+                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is free{start} until {until}", InputHints.AcceptingInput));
                     }
                     else
                     {
-                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is free", InputHints.AcceptingInput));
+                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is free{start}", InputHints.AcceptingInput));
                     }
                 }
             }

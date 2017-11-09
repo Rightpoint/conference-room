@@ -90,7 +90,6 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
                 StartTime = start,
                 EndTime = end,
                 Room = room,
-                BuildingId = RoomSearchCriteria.OfficeOptions.Chicago,
             };
             return criteria;
         }

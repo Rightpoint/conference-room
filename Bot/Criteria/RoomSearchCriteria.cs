@@ -51,64 +51,35 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
             var numbers = result.Entities.Where(i => i.Type == "builtin.number")
                 .Select(i => int.Parse((string)i.Resolution["value"])).ToArray();
             var equipment = result.Entities.Where(i => i.Type == "equipment").Select(i => i.Entity).ToArray();
-            var timeRange = result.Entities
-                .Where(i => i.Type == "builtin.datetimeV2.timerange")
-                .SelectMany(i => (List<object>)i.Resolution["values"])
-                .Select(i => ParseTimeRange((IDictionary<string, object>)i))
-                .FirstOrDefault(i => i.HasValue);
-            var time = result.Entities
-                .Where(i => i.Type == "builtin.datetimeV2.time")
-                .SelectMany(i => (List<object>)i.Resolution["values"])
-                .Select(i => ParseTime((IDictionary<string, object>)i))
-                .Where(i => i.HasValue)
-                .Select(i => i.Value)
-                .ToArray();
-            var duration = result.Entities
-                .Where(i => i.Type == "builtin.datetimeV2.duration")
-                .SelectMany(i => (List<object>)i.Resolution["values"])
-                .Select(i => ParseDuration((IDictionary<string, object>)i))
-                .FirstOrDefault(i => i.HasValue);
-
-            var size = numbers.Cast<int?>().FirstOrDefault() ?? 6;
-            var start = timeRange.HasValue
-                ? timeRange.Value.start
-                : time.Length >= 2
-                    ? time[0]
-                    : time.Length == 1 && duration.HasValue
-                        ? time[0]
-                        : GetAssumedStartTime(DateTime.Now);
-            while (start < DateTime.Now.AddMinutes(-15))
-            {
-                start = start.AddDays(1);
-            }
-
-            var end = timeRange.HasValue
-                ? timeRange.Value.end
-                : time.Length >= 2
-                    ? time[1]
-                    : duration.HasValue
-                        ? start.Add(duration.Value)
-                        : start.Add(TimeSpan.FromMinutes(30));
-            while (end < DateTime.Now.AddMinutes(-15))
-            {
-                end = end.AddDays(1);
-            }
-
+            var size = numbers.Cast<int?>().FirstOrDefault();
+           
             var criteria = new RoomSearchCriteria()
             {
-                StartTime = start,
-                EndTime = end,
-                Equipment = equipment.Select(ParseEquipment).Where(i => i.HasValue).Select(i => i.Value).ToList(),
+                Equipment = equipment.Select(ParseOneEquipment).Where(i => i.HasValue).Select(i => i.Value).ToList(),
                 NumberOfPeople = size,
             };
+
+            criteria.LoadTimeCriteria(result);
             return criteria;
         }
 
         private static readonly Regex _cleanup = new Regex("[^A-Za-z ]*", RegexOptions.Compiled);
 
-        protected static RoomSearchCriteria.EquipmentOptions? ParseEquipment(string input)
+        public void ParseEquipment(string input)
         {
-            input = _cleanup.Replace(input, "");
+            input = _cleanup.Replace(input ?? "", "");
+
+            this.Equipment = input.Split(new[] {" and ", ","}, StringSplitOptions.RemoveEmptyEntries).Select(ParseOneEquipment).Where(i => i != null).Select(i => i.Value).ToList();
+            if (!this.Equipment.Any())
+            {
+                this.Equipment = new List<EquipmentOptions>() {EquipmentOptions.None};
+            }
+        }
+
+        private static EquipmentOptions? ParseOneEquipment(string input)
+        {
+            input = _cleanup.Replace(input ?? "", "");
+            input = input.ToLowerInvariant().Trim();
             if (Enum.TryParse(input, out RoomSearchCriteria.EquipmentOptions option))
                 return option;
             switch (input.ToLowerInvariant())

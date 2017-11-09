@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Azure;
 using Microsoft.IdentityModel.Protocols;
+using RightpointLabs.ConferenceRoom.Bot.Criteria;
 
 namespace RightpointLabs.ConferenceRoom.Bot.Services
 {

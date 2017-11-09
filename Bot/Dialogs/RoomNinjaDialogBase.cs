@@ -30,6 +30,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             try
             {
                 var msg = await result;
+                context.PostAsync("");
                 await context.PostAsync(context.CreateMessage(msg, InputHints.AcceptingInput));
             }
             catch (ApplicationException ex)
@@ -39,20 +40,21 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             context.Done(string.Empty);
         }
 
-        protected TimeZoneInfo GetTimezone(RoomSearchCriteria.OfficeOptions office)
+        protected TimeZoneInfo GetTimezone(string buildingId)
         {
-            switch (office)
+            // TODO: load and cache this data from the building list
+            switch (buildingId)
             {
-                case RoomSearchCriteria.OfficeOptions.Atlanta:
-                case RoomSearchCriteria.OfficeOptions.Boston:
-                case RoomSearchCriteria.OfficeOptions.Detroit:
+                case "584f1a18c233813f98ef1513":
+                case "584f1a22c233813f98ef1514":
+                case "584f1a30c233813f98ef1517":
                     return TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-                case RoomSearchCriteria.OfficeOptions.Chicago:
-                case RoomSearchCriteria.OfficeOptions.Dallas:
+                case "584f1a11c233813f98ef1512":
+                case "584f1a26c233813f98ef1515":
                     return TimeZoneInfo.FindSystemTimeZoneById("Central Standard Time");
-                case RoomSearchCriteria.OfficeOptions.Denver:
+                case "584f1a2bc233813f98ef1516":
                     return TimeZoneInfo.FindSystemTimeZoneById("Mountain Standard Time");
-                case RoomSearchCriteria.OfficeOptions.Los_Angeles:
+                case "584f1a35c233813f98ef1518":
                     return TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
             }
             return null;

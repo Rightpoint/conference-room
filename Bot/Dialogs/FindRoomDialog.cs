@@ -39,30 +39,24 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                 return;
             }
 
+            var buildingId = context.GetBuildingId();
+            if (string.IsNullOrEmpty(buildingId))
+            {
+                await context.PostAsync(context.CreateMessage($"You need to set a building first", InputHints.AcceptingInput));
+                context.Done(string.Empty);
+                return;
+            }
+
             // searching...
             await context.PostAsync(context.CreateMessage($"Searching for {_criteria}", InputHints.IgnoringInput));
 
-            await context.Forward(new RoomNinjaGetBuildingsCallDialog(_requestUri), GotBuildings, context.Activity, new CancellationToken());
-        }
-
-        private async Task GotBuildings(IDialogContext context, IAwaitable<RoomsService.BuildingResult[]> callback)
-        {
-            var building = (await callback).FirstOrDefault(i => i.Name == _criteria.BuildingId.ToString());
-            if (null == building)
-            {
-                await context.PostAsync(context.CreateMessage($"Can't find building {_criteria.BuildingId}", InputHints.AcceptingInput));
-                context.Done(string.Empty);
-            }
-            else
-            {
-                await context.Forward(new RoomNinjaGetRoomsStatusForBuildingCallDialog(_requestUri, building.Id), GotRoomStatus, context.Activity, new CancellationToken());
-            }
+            await context.Forward(new RoomNinjaGetRoomsStatusForBuildingCallDialog(_requestUri, buildingId), GotRoomStatus, context.Activity, new CancellationToken());
         }
 
         private async Task GotRoomStatus(IDialogContext context, IAwaitable<RoomsService.RoomStatusResult[]> callback)
         {
             var rooms = await callback;
-            var tz = GetTimezone(_criteria.BuildingId ?? RoomBaseCriteria.OfficeOptions.Chicago);
+            var tz = GetTimezone(context.GetBuildingId());
             var now = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
 
             if (_criteria.NumberOfPeople.HasValue)

@@ -36,6 +36,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
             switch ((string)values["type"])
             {
                 case "time":
+                case "datetime":
                     return DateTime.Parse((string)values["value"]);
                 default:
                     return null;
