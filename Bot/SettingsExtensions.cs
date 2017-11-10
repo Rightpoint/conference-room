@@ -34,5 +34,11 @@ namespace RightpointLabs.ConferenceRoom.Bot
         {
             context.UserData.SetValue(PreferredFloor, null == value ? null : JObject.FromObject(value).ToString());
         }
+
+        public static TimeZoneInfo GetTimezone(this IDialogContext context)
+        {
+            var tzId = context.GetBuilding()?.TimezoneId;
+            return string.IsNullOrEmpty(tzId) ? TimeZoneInfo.Utc : TimeZoneInfo.FindSystemTimeZoneById(tzId);
+        }
     }
 }

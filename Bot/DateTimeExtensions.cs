@@ -33,29 +33,5 @@ namespace RightpointLabs.ConferenceRoom.Bot
             }
             return msg;
         }
-
-        public static string ToSimpleTime(this DateTime? value)
-        {
-            if (null == value)
-                return "";
-            var msg = $"{value:h:mm tt}";
-            var now = DateTime.Now;
-            if (now.Date < value.Value.Date)
-            {
-                if (now.Date.AddDays(1) == value.Value.Date)
-                {
-                    msg += " tomorrow";
-                }
-                else if (now.Date.AddDays(7) > value.Value.Date)
-                {
-                    msg += $" {value:dddd}";
-                }
-                else
-                {
-                    msg += $" {value:MMMM d}";
-                }
-            }
-            return msg;
-        }
     }
 }

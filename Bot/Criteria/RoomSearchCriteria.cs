@@ -46,7 +46,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
             return searchMsg;
         }
 
-        public static RoomSearchCriteria ParseCriteria(LuisResult result)
+        public static RoomSearchCriteria ParseCriteria(LuisResult result, TimeZoneInfo timezone)
         {
             var numbers = result.Entities.Where(i => i.Type == "builtin.number")
                 .Select(i => int.Parse((string)i.Resolution["value"])).ToArray();
@@ -59,7 +59,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
                 NumberOfPeople = size,
             };
 
-            criteria.LoadTimeCriteria(result);
+            criteria.LoadTimeCriteria(result, timezone);
             return criteria;
         }
 

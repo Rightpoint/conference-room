@@ -6,9 +6,9 @@ namespace RightpointLabs.ConferenceRoom.Bot
     [Serializable]
     public class BaseCriteria
     {
-        protected static DateTime GetAssumedStartTime(DateTime time)
+        protected static DateTimeOffset GetAssumedStartTime(DateTimeOffset time)
         {
-            var last15 = new DateTime(time.Year, time.Month, time.Day, time.Hour, (time.Minute / 15) * 15, 0, time.Kind);
+            var last15 = new DateTimeOffset(time.Year, time.Month, time.Day, time.Hour, (time.Minute / 15) * 15, 0, time.Offset);
             if (time.Minute % 15 > 10)
             {
                 // round up
@@ -18,31 +18,38 @@ namespace RightpointLabs.ConferenceRoom.Bot
             return last15;
         }
 
-        protected static (DateTime start, DateTime end)? ParseTimeRange(IDictionary<string, object> values)
+        protected static (DateTimeOffset start, DateTimeOffset end)? ParseTimeRange(IDictionary<string, object> values, TimeZoneInfo timezone)
         {
             switch ((string)values["type"])
             {
                 case "timerange":
-                    var start = DateTime.Parse((string)values["start"]);
-                    var end = DateTime.Parse((string)values["end"]);
+                    var start = DateTime.Parse((string)values["start"]).InTimeZone(timezone);
+                    var end = DateTime.Parse((string)values["end"]).InTimeZone(timezone);
                     return (start, end);
                 default:
                     return null;
             }
         }
 
-        protected static DateTime? ParseTime(IDictionary<string, object> values)
+        protected static DateTimeOffset? ParseTime(IDictionary<string, object> values, TimeZoneInfo timezone)
         {
             switch ((string)values["type"])
             {
                 case "time":
                 case "datetime":
                     var value = DateTime.Parse((string)values["value"]);
-                    if (values.TryGetValue("timex", out object timex) && (string) timex == "PRESENT_REF")
+                    if (values.TryGetValue("timex", out object timex))
                     {
-                        value = value.ToLocalTime();
+                        if (timex is DateTime utcTime)
+                        {
+                            return TimeZoneInfo.ConvertTime(utcTime.InTimeZone(TimeZoneInfo.Utc), timezone);
+                        }
+                        else if(timex is string timexStr && timexStr == "PRESENT_REF")
+                        {
+                            return TimeZoneInfo.ConvertTime(value.InTimeZone(TimeZoneInfo.Utc), timezone);
+                        }
                     }
-                    return value;
+                    return value.InTimeZone(timezone);
                 default:
                     return null;
             }

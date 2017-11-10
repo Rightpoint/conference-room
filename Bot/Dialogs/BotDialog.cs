@@ -47,7 +47,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         [LuisIntent("findRoom")]
         public async Task FindRoom(IDialogContext context, LuisResult result)
         {
-            var criteria = RoomSearchCriteria.ParseCriteria(result);
+            var criteria = RoomSearchCriteria.ParseCriteria(result, context.GetTimezone());
             await context.Forward(new RoomSearchCriteriaDialog(criteria), DoRoomSearch, context.Activity, new CancellationToken());
         }
 
@@ -65,7 +65,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         [LuisIntent("bookRoom")]
         public async Task BookRoom(IDialogContext context, LuisResult result)
         {
-            var criteria = RoomBookingCriteria.ParseCriteria(result);
+            var criteria = RoomBookingCriteria.ParseCriteria(result, context.GetTimezone());
             await context.Forward(new RoomBookingCriteriaDialog(criteria), DoBookRoom, context.Activity, new CancellationToken());
         }
 
@@ -83,7 +83,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         [LuisIntent("checkRoom")]
         public async Task CheckRoom(IDialogContext context, LuisResult result)
         {
-            var criteria = RoomStatusCriteria.ParseCriteria(result);
+            var criteria = RoomStatusCriteria.ParseCriteria(result, context.GetTimezone());
             await context.Forward(new RoomStatusCriteriaDialog(criteria), DoRoomCheck, context.Activity, new CancellationToken());
         }
 

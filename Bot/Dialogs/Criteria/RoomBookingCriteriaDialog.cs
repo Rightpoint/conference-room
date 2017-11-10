@@ -86,7 +86,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria
 
             var svc = GetLuisService();
             var result = await svc.QueryAsync(text, CancellationToken.None);
-            _criteria.LoadTimeCriteria(result);
+            _criteria.LoadTimeCriteria(result, context.GetTimezone());
 
             if (!_criteria.StartTime.HasValue)
             {
@@ -115,7 +115,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria
 
             var svc = GetLuisService();
             var result = await svc.QueryAsync(text, CancellationToken.None);
-            _criteria.LoadEndTimeCriteria(result);
+            _criteria.LoadEndTimeCriteria(result, context.GetTimezone());
 
             if (!_criteria.EndTime.HasValue)
             {

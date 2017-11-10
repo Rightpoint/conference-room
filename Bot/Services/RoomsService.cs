@@ -100,8 +100,8 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
             [Serializable]
             public class MeetingResult
             {
-                public DateTime Start { get; set; }
-                public DateTime End { get; set; }
+                public DateTimeOffset Start { get; set; }
+                public DateTimeOffset End { get; set; }
                 public bool IsStarted { get; set; }
                 public string Organizer { get; set; }
                 public string Subject { get; set; }

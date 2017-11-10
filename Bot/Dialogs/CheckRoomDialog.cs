@@ -72,10 +72,10 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                 var firstMeeting = meetings.FirstOrDefault();
                 var result =
                     (null == firstMeeting)
-                        ? new { busy = false, room = room, Until = (DateTime?)null }
+                        ? new { busy = false, room = room, Until = (DateTimeOffset?)null }
                         : (firstMeeting.Start > (_criteria.EndTime ?? _criteria.StartTime ?? now) && !firstMeeting.IsStarted)
-                            ? new { busy = false, room = room, Until = (DateTime?)TimeZoneInfo.ConvertTime(firstMeeting.Start, tz) }
-                            : new { busy = true, room = room, Until = (DateTime?)TimeZoneInfo.ConvertTime(GetNextFree(meetings), tz) };
+                            ? new { busy = false, room = room, Until = (DateTimeOffset?)TimeZoneInfo.ConvertTime(firstMeeting.Start, tz) }
+                            : new { busy = true, room = room, Until = (DateTimeOffset?)TimeZoneInfo.ConvertTime(GetNextFree(meetings), tz) };
 
                 var until = result.Until.HasValue ? $"{result.Until.ToSimpleTime()}" : "";
                 var start = _criteria.StartTime.HasValue ? $" at {_criteria.StartTime.ToSimpleTime()}" : "";
@@ -88,9 +88,13 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                             "";
                 if (result.busy)
                 {
+                    if (!string.IsNullOrEmpty(reason))
+                    {
+                        reason = $" and is currently used{reason}";
+                    }
                     if (result.Until.HasValue)
                     {
-                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is busy{start}{reason} until {until}", InputHints.AcceptingInput));
+                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is busy{start} until {until}{reason}", InputHints.AcceptingInput));
                     }
                     else
                     {
@@ -116,7 +120,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             context.Done(string.Empty);
         }
 
-        private DateTime GetNextFree(IEnumerable<RoomsService.RoomStatusResult.MeetingResult> meetings)
+        private DateTimeOffset GetNextFree(IEnumerable<RoomsService.RoomStatusResult.MeetingResult> meetings)
         {
             var time = meetings.First().End;
             foreach (var meeting in meetings)

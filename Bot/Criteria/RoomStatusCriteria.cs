@@ -41,7 +41,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
             return searchMsg;
         }
 
-        public static RoomStatusCriteria ParseCriteria(LuisResult result)
+        public static RoomStatusCriteria ParseCriteria(LuisResult result, TimeZoneInfo timezone)
         {
             var room = result.Entities
                 .Where(i => i.Type == "room")
@@ -52,7 +52,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
             {
                 Room = room,
             };
-            criteria.LoadTimeCriteria(result);
+            criteria.LoadTimeCriteria(result, timezone);
             return criteria;
         }
     }

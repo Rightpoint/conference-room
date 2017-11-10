@@ -8,13 +8,13 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
     [Serializable]
     public class RoomBaseCriteria : BaseCriteria
     {
-        public DateTime? StartTime;
-        public DateTime? EndTime;
+        public DateTimeOffset? StartTime;
+        public DateTimeOffset? EndTime;
 
-        public void LoadTimeCriteria(LuisResult result)
+        public void LoadTimeCriteria(LuisResult result, TimeZoneInfo timezone)
         {
-            var timeRange = ParseTimeRange(result);
-            var time = ParseTime(result);
+            var timeRange = ParseTimeRange(result, timezone);
+            var time = ParseTime(result, timezone);
             var duration = ParseDuration(result);
 
             var start = timeRange.HasValue
@@ -23,7 +23,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
                     ? time[0]
                     : time.Length == 1 && duration.HasValue
                         ? time[0]
-                        : (DateTime?)null;
+                        : (DateTimeOffset?)null;
             if (start.HasValue && start >= DateTime.Now.AddSeconds(-10) && start <= DateTime.Now.AddSeconds(10))
             {
                 // user said "now".. let's adjust a bit
@@ -40,7 +40,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
                     ? time[1]
                     : duration.HasValue && start.HasValue
                         ? start.Value.Add(duration.Value)
-                        : (DateTime?)null;
+                        : (DateTimeOffset?)null;
             while (end.HasValue && end < DateTime.Now.AddMinutes(-15))
             {
                 end = end.Value.AddDays(1);
@@ -50,16 +50,16 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
             this.EndTime = end;
         }
 
-        public void LoadEndTimeCriteria(LuisResult result)
+        public void LoadEndTimeCriteria(LuisResult result, TimeZoneInfo timezone)
         {
-            var time = ParseTime(result);
+            var time = ParseTime(result, timezone);
             var duration = ParseDuration(result);
 
             var end = time.Length >= 1
                 ? time[0]
                 : duration.HasValue && this.StartTime.HasValue
                     ? this.StartTime.Value.Add(duration.Value)
-                    : (DateTime?)null;
+                    : (DateTimeOffset?)null;
             while (end.HasValue && end < DateTime.Now.AddMinutes(-15))
             {
                 end = end.Value.AddDays(1);
@@ -77,19 +77,19 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
             return duration;
         }
 
-        private static DateTime[] ParseTime(LuisResult result)
+        private static DateTimeOffset[] ParseTime(LuisResult result, TimeZoneInfo timezone)
         {
             var time = result.Entities
                 .Where(i => i.Type == "builtin.datetimeV2.time" || i.Type == "builtin.datetimeV2.datetime")
                 .Select(x =>
                 {
                     var values = ((List<object>) x.Resolution["values"])
-                        .Select(i => ParseTime((IDictionary<string, object>) i))
+                        .Select(i => ParseTime((IDictionary<string, object>) i, timezone))
                         .Where(i => i.HasValue)
                         .ToArray();
                     if (values.Length > 1 && values.Count(i => i > DateTime.Now) != values.Length)
                     {
-                        values = values.Where(i => i > DateTime.Now).ToArray();
+                        values = values.Where(i => i > DateTimeOffset.Now).ToArray();
                     }
                     return values.FirstOrDefault();
                 })
@@ -99,12 +99,12 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
             return time;
         }
 
-        private static (DateTime start, DateTime end)? ParseTimeRange(LuisResult result)
+        private static (DateTimeOffset start, DateTimeOffset end)? ParseTimeRange(LuisResult result, TimeZoneInfo timezone)
         {
             var timeRange = result.Entities
                 .Where(i => i.Type == "builtin.datetimeV2.timerange")
                 .SelectMany(i => (List<object>)i.Resolution["values"])
-                .Select(i => ParseTimeRange((IDictionary<string, object>)i))
+                .Select(i => ParseTimeRange((IDictionary<string, object>)i, timezone))
                 .FirstOrDefault(i => i.HasValue);
             return timeRange;
         }
