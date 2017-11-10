@@ -39,10 +39,10 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                 return;
             }
 
-            var buildingId = context.GetBuildingId();
+            var buildingId = context.GetBuilding()?.BuildingId;
             if (string.IsNullOrEmpty(buildingId))
             {
-                await context.PostAsync(context.CreateMessage($"You need to set a building first", InputHints.AcceptingInput));
+                await context.PostAsync(context.CreateMessage($"Set your building first with the 'set building' command", InputHints.AcceptingInput));
                 context.Done(string.Empty);
                 return;
             }

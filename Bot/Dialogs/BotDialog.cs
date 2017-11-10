@@ -10,6 +10,7 @@ using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
 using RightpointLabs.ConferenceRoom.Bot.Criteria;
 using RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria;
+using RightpointLabs.ConferenceRoom.Bot.Models;
 using RightpointLabs.ConferenceRoom.Bot.Services;
 
 namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
@@ -104,13 +105,13 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             await context.Forward(new ChooseBuildingDialog(_requestUri, buildingName), SetBuildingCallback, context.Activity, new CancellationToken());
         }
 
-        private async Task SetBuildingCallback(IDialogContext context, IAwaitable<string> result)
+        private async Task SetBuildingCallback(IDialogContext context, IAwaitable<BuildingChoice> result)
         {
-            var buildingId = await result;
-            if (!string.IsNullOrEmpty(buildingId))
+            var building = await result;
+            if (null != building)
             {
-                context.SetBuildingId(buildingId);
-                await context.PostAsync(context.CreateMessage($"Building set to {buildingId}.", InputHints.AcceptingInput));
+                context.SetBuilding(building);
+                await context.PostAsync(context.CreateMessage($"Building set to {building.BuildingName}.", InputHints.AcceptingInput));
             }
             context.Done(string.Empty);
         }
@@ -122,13 +123,13 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             await context.Forward(new ChooseFloorDialog(_requestUri, buildingName), SetFloorCallback, context.Activity, new CancellationToken());
         }
 
-        private async Task SetFloorCallback(IDialogContext context, IAwaitable<string> result)
+        private async Task SetFloorCallback(IDialogContext context, IAwaitable<FloorChoice> result)
         {
-            var floorId = await result;
-            if (!string.IsNullOrEmpty(floorId))
+            var floor = await result;
+            if (null != floor)
             {
-                context.SetPreferredFloorId(floorId);
-                await context.PostAsync(context.CreateMessage($"Preferred floor set to {floorId}.", InputHints.AcceptingInput));
+                context.SetPreferredFloor(floor);
+                await context.PostAsync(context.CreateMessage($"Preferred floor set to {floor.FloorName}.", InputHints.AcceptingInput));
             }
             context.Done(string.Empty);
         }
@@ -136,7 +137,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         [LuisIntent("clearFloor")]
         public async Task ClearFloor(IDialogContext context, LuisResult result)
         {
-            context.SetPreferredFloorId(null);
+            context.SetPreferredFloor(null);
             await context.PostAsync(context.CreateMessage($"Preferred floor cleared.", InputHints.AcceptingInput));
             context.Done(string.Empty);
         }

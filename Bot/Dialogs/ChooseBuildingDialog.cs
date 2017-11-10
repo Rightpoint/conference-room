@@ -6,12 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
+using RightpointLabs.ConferenceRoom.Bot.Models;
 using RightpointLabs.ConferenceRoom.Bot.Services;
 
 namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 {
     [Serializable]
-    public class ChooseBuildingDialog : IDialog<string>
+    public class ChooseBuildingDialog : IDialog<BuildingChoice>
     {
         private Uri _requestUri;
         private string _buildingName;
@@ -45,7 +46,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             _buildingName = (await argument).Text;
             if (null == _buildingName)
             {
-                context.Done(string.Empty);
+                context.Done<BuildingChoice>(null);
                 return;
             }
 
@@ -58,12 +59,37 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             if (null == building)
             {
                 await context.PostAsync(context.CreateMessage($"Can't find building {_buildingName}.", InputHints.AcceptingInput));
-                context.Done(string.Empty);
+                context.Done<BuildingChoice>(null);
             }
             else
             {
-                context.Done(building.Id);
+                context.Done(new BuildingChoice()
+                {
+                    BuildingId = building.Id,
+                    BuildingName = building.Name,
+                    TimezoneId = GetTimezone(building.Id),
+                });
             }
+        }
+
+        private string GetTimezone(string buildingId)
+        {
+            // TODO: load and cache this data from the building list
+            switch (buildingId)
+            {
+                case "584f1a18c233813f98ef1513":
+                case "584f1a22c233813f98ef1514":
+                case "584f1a30c233813f98ef1517":
+                    return "Eastern Standard Time";
+                case "584f1a11c233813f98ef1512":
+                case "584f1a26c233813f98ef1515":
+                    return "Central Standard Time";
+                case "584f1a2bc233813f98ef1516":
+                    return "Mountain Standard Time";
+                case "584f1a35c233813f98ef1518":
+                    return "Pacific Standard Time";
+            }
+            return null;
         }
     }
 }

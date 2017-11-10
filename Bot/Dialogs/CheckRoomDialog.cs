@@ -39,10 +39,10 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                 return;
             }
 
-            var buildingId = context.GetBuildingId();
+            var buildingId = context.GetBuilding()?.BuildingId;
             if (string.IsNullOrEmpty(buildingId))
             {
-                await context.PostAsync(context.CreateMessage($"You need to set a building first", InputHints.AcceptingInput));
+                await context.PostAsync(context.CreateMessage($"Set your building first with the 'set building' command", InputHints.AcceptingInput));
                 context.Done(string.Empty);
                 return;
             }
@@ -64,7 +64,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             }
             else
             {
-                var tz = GetTimezone(context.GetBuildingId());
+                var tz = GetTimezone(context.GetBuilding()?.BuildingId);
                 var now = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, tz);
 
                 // ok, now we just have rooms that meet the criteria - let's see what's free when asked

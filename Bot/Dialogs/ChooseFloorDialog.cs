@@ -6,12 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
+using RightpointLabs.ConferenceRoom.Bot.Models;
 using RightpointLabs.ConferenceRoom.Bot.Services;
 
 namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 {
     [Serializable]
-    public class ChooseFloorDialog : IDialog<string>
+    public class ChooseFloorDialog : IDialog<FloorChoice>
     {
         private Uri _requestUri;
         private string _floorName;
@@ -30,11 +31,11 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         public async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
-            var buildingId = context.GetBuildingId();
+            var buildingId = context.GetBuilding()?.BuildingId;
             if (string.IsNullOrEmpty(buildingId))
             {
-                await context.PostAsync(context.CreateMessage($"Set your building first", InputHints.AcceptingInput));
-                context.Done(string.Empty);
+                await context.PostAsync(context.CreateMessage($"Set your building first with the 'set building' command", InputHints.AcceptingInput));
+                context.Done<FloorChoice>(null);
                 return;
             }
 
@@ -50,18 +51,18 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         public async Task GetFloorName(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
-            var buildingId = context.GetBuildingId();
+            var buildingId = context.GetBuilding()?.BuildingId;
             if (string.IsNullOrEmpty(buildingId))
             {
-                await context.PostAsync(context.CreateMessage($"Set your building first", InputHints.AcceptingInput));
-                context.Done(string.Empty);
+                await context.PostAsync(context.CreateMessage($"Set your building first with the 'set building' command", InputHints.AcceptingInput));
+                context.Done<FloorChoice>(null);
                 return;
             }
 
             _floorName = (await argument).Text;
             if (null == _floorName)
             {
-                context.Done(string.Empty);
+                context.Done<FloorChoice>(null);
                 return;
             }
 
@@ -74,11 +75,16 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             if (null == roomOnFloor)
             {
                 await context.PostAsync(context.CreateMessage($"Can't find floor {_floorName}.", InputHints.AcceptingInput));
-                context.Done(string.Empty);
+                context.Done<FloorChoice>(null);
             }
             else
             {
-                context.Done(roomOnFloor.Info.FloorId);
+                context.Done(new FloorChoice()
+                {
+                    Floor = roomOnFloor.Info.Floor,
+                    FloorId = roomOnFloor.Info.FloorId,
+                    FloorName = roomOnFloor.Info.FloorName,
+                });
             }
         }
     }
