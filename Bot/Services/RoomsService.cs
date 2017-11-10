@@ -120,7 +120,10 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
                 public string DisplayName { get; set; }
                 public string SpeakableName { get; set; }
                 public string FloorName { get; set; }
+                public string FloorId { get; set; }
+                public string Floor { get; set; }
                 public string BuildingName { get; set; }
+                public string BuildingId { get; set; }
                 public int Size { get; set; }
                 public List<RoomSearchCriteria.EquipmentOptions> Equipment { get; set; }
             }

@@ -110,7 +110,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             if (!string.IsNullOrEmpty(buildingId))
             {
                 context.SetBuildingId(buildingId);
-                await context.PostAsync(context.CreateMessage($"Building set.", InputHints.AcceptingInput));
+                await context.PostAsync(context.CreateMessage($"Building set to {buildingId}.", InputHints.AcceptingInput));
             }
             context.Done(string.Empty);
         }
@@ -128,7 +128,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             if (!string.IsNullOrEmpty(floorId))
             {
                 context.SetPreferredFloorId(floorId);
-                await context.PostAsync(context.CreateMessage($"Preferred floor set.", InputHints.AcceptingInput));
+                await context.PostAsync(context.CreateMessage($"Preferred floor set to {floorId}.", InputHints.AcceptingInput));
             }
             context.Done(string.Empty);
         }

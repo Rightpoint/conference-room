@@ -70,15 +70,15 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         private async Task GotRooms(IDialogContext context, IAwaitable<RoomsService.RoomStatusResult[]> callback)
         {
-            var floor = (await callback).MatchFloorName(_floorName);
-            if (null == floor)
+            var roomOnFloor = (await callback).MatchFloorName(_floorName);
+            if (null == roomOnFloor)
             {
                 await context.PostAsync(context.CreateMessage($"Can't find floor {_floorName}.", InputHints.AcceptingInput));
                 context.Done(string.Empty);
             }
             else
             {
-                context.Done(floor.Id);
+                context.Done(roomOnFloor.Info.FloorId);
             }
         }
     }

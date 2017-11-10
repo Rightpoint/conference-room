@@ -85,10 +85,12 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                 }
             }
 
+            var preferredFloorId = context.GetPreferredFloorId();
+
             // ok, now we just have rooms that meet the criteria - let's see what's free when asked
             _roomResults = rooms.Select(r =>
             {
-                var meetings = r.Status.NearTermMeetings.Where(i => i.End >= _criteria.StartTime).OrderBy(i => i.Start).ToList();
+                var meetings = r.Status.NearTermMeetings.Where(i => i.End > _criteria.StartTime).OrderBy(i => i.Start).ToList();
                 var firstMeeting = meetings.FirstOrDefault();
                 if (null == firstMeeting)
                 {
@@ -105,7 +107,8 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             })
                 .Where(i => !i.busy)
                 .Select(i => i.room)
-                .OrderBy(i => i.Info.Size)
+                .OrderBy(i => i.Info.FloorId == preferredFloorId ? 0 : 1)
+                .ThenBy(i => i.Info.Size)
                 .ThenBy(i => i.Info.Equipment?.Count)
                 .ToList();
 
