@@ -10,5 +10,7 @@ namespace RightpointLabs.ConferenceRoom.Domain.Models
         public Meeting NextMeeting { get; set; }
         public Meeting PreviousMeeting { get; set; }
         public Meeting[] NearTermMeetings { get; set; }
+        public int? warnDelay { get; set; }
+        public int? cancelDelay { get; set; }
     }
 }

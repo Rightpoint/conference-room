@@ -26,10 +26,16 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             _contextService = contextService;
         }
 
-        [Route("all")]
-        public async Task<object> GetAll()
+        public class BuildingResult
         {
-            return (await _buildingRepository.GetAllAsync(_contextService.CurrentOrganization?.Id)).Select(_ => new { _.Id, _.Name });
+            public string Id { get; set; }
+            public string Name { get; set; }
+        }
+
+        [Route("all")]
+        public async Task<BuildingResult[]> GetAll()
+        {
+            return (await _buildingRepository.GetAllAsync(_contextService.CurrentOrganization?.Id)).Select(_ => new BuildingResult {Id = _.Id, Name = _.Name}).ToArray();
         }
     }
 }

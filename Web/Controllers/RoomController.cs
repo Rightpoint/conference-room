@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Description;
 using log4net;
 using Newtonsoft.Json.Linq;
 using RightpointLabs.ConferenceRoom.Domain;
@@ -45,7 +46,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <param name="roomId">The room address returned from <see cref="RoomListController.GetRooms"/></param>
         /// <returns></returns>
         [Route("{roomId}/info")]
-        public async Task<object> GetInfo(string roomId)
+        public async Task<RoomInfo> GetInfo(string roomId)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
             await AssertRoomIsFromOrg(room);
@@ -59,19 +60,16 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         /// <param name="roomId">The room address returned from <see cref="RoomListController.GetRooms"/></param>
         /// <returns></returns>
         [Route("{roomId}/status")]
-        public async Task<object> GetStatus(string roomId)
+        public async Task<RoomStatusInfo> GetStatus(string roomId)
         {
             var room = _roomRepository.GetRoomInfo(roomId);
             await AssertRoomIsFromOrg(room);
             var data = await _conferenceRoomService.GetStatus(room);
 
-            var retVal = JObject.FromObject(data);
-            var warnDelay = _contextService.CurrentDevice?.WarnNonStartedMeetingDelay ?? _contextService.CurrentOrganization?.WarnNonStartedMeetingDelay ?? 5 * 60;
-            var cancelDelay = _contextService.CurrentDevice?.AutoCancelNonStartedMeetingDelay ?? _contextService.CurrentOrganization?.AutoCancelNonStartedMeetingDelay ?? 7 * 60;
-            retVal["warnDelay"] = warnDelay;
-            retVal["cancelDelay"] = cancelDelay;
+            data.warnDelay = _contextService.CurrentDevice?.WarnNonStartedMeetingDelay ?? _contextService.CurrentOrganization?.WarnNonStartedMeetingDelay ?? 5 * 60;
+            data.cancelDelay = _contextService.CurrentDevice?.AutoCancelNonStartedMeetingDelay ?? _contextService.CurrentOrganization?.AutoCancelNonStartedMeetingDelay ?? 7 * 60;
 
-            return retVal;
+            return data;
         }
 
         private async Task AssertRoomIsFromOrg(RoomMetadataEntity room)
@@ -202,7 +200,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
                         msg += $" {p.StartTime:MMMM d}";
                     }
                 }
-                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(msg)};
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(msg) };
             }
             catch (ApplicationException ex)
             {
@@ -240,7 +238,20 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             await _conferenceRoomService.MessageMeeting(room, uniqueId);
         }
 
+        public class BuildingRoomResult
+        {
+            public string Address { get; set; }
+            public string Id { get; set; }
+            public RoomInfo Info { get; set; }
+        }
+
+        public class BuildingRoomStatusResult : BuildingRoomResult
+        {
+            public RoomStatusInfo Status { get; set; }
+        }
+
         [Route("all/{buildingId}")]
+        [ResponseType(typeof(BuildingRoomResult[]))]
         public async Task<object> GetAll(string buildingId)
         {
             var building = _buildingRepository.Get(buildingId ?? _contextService.CurrentDevice?.BuildingId);
@@ -254,11 +265,12 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             // ok, we have the filtered rooms list, now we need to get the status and smash it together with the room data
             return
                 roomInfos
-                    .Select(i => new { Address = i.Key, i.Value.Item2.Id, Info = i.Value.Item1 })
-                    .ToList();
+                    .Select(i => new BuildingRoomResult { Address = i.Key, Id = i.Value.Item2.Id, Info = i.Value.Item1 })
+                    .ToArray();
         }
-        
+
         [Route("all/status/{buildingId}")]
+        [ResponseType(typeof(BuildingRoomResult[]))]
         public async Task<object> GetAllStatus(string buildingId)
         {
             var building = _buildingRepository.Get(buildingId ?? _contextService.CurrentDevice?.BuildingId);
@@ -271,11 +283,11 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             __log.DebugFormat("Got room info");
 
             // ok, we have the filtered rooms list, now we need to get the status and smash it together with the room data
-            var statuses = 
+            var statuses =
                 roomInfos.Select(i =>
                     {
                         var status = _conferenceRoomService.GetStatus(i.Value.Item2, true);
-                        return new {Address = i.Key, i.Value.Item2.Id, Info = i.Value.Item1, Status = status};
+                        return new { Address = i.Key, i.Value.Item2.Id, Info = i.Value.Item1, Status = status };
                     })
                     .ToList();
             try
@@ -287,7 +299,13 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
                 // don't care about the errors/cancellations - we just want the tasks to complete
             }
 
-            var data = statuses.Where(i => !i.Status.IsFaulted && !i.Status.IsCanceled && i.Status.IsCompleted).Select(i => new {i.Address, i.Id, i.Info, Status = i.Status.Result}).ToList();
+            var data = statuses.Where(i => !i.Status.IsFaulted && !i.Status.IsCanceled && i.Status.IsCompleted).Select(i => new BuildingRoomStatusResult
+            {
+                Address = i.Address,
+                Id = i.Id,
+                Info = i.Info,
+                Status = i.Status.Result
+            }).ToList();
             return data;
         }
 

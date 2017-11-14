@@ -17,7 +17,8 @@ namespace RightpointLabs.ConferenceRoom.Web
                 .EnableSwagger(c =>
                     {
                         c.SingleApiVersion("v1", "RightpointLabs.ConferenceRoom.Web");
-                    });
+                    })
+                .EnableSwaggerUi(c => { });
         }
     }
 }
