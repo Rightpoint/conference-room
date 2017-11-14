@@ -5,6 +5,8 @@ using Newtonsoft.Json;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Host;
@@ -13,21 +15,31 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using RightpointLabs.BotLib.Dialogs;
 using RightpointLabs.ConferenceRoom.Bot.Dialogs;
+using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
 namespace RightpointLabs.ConferenceRoom.Bot
 {
     public static class Messages
     {
+        private static string appInsightsKey = TelemetryConfiguration.Active.InstrumentationKey =
+            Environment.GetEnvironmentVariable(
+                "APPINSIGHTS_INSTRUMENTATIONKEY", EnvironmentVariableTarget.Process);
+
         public static TraceWriter CurrentLog { get; private set; }
 
+        public static TelemetryClient TelemetryClient { get; } = new TelemetryClient() {InstrumentationKey = appInsightsKey};
+
         [FunctionName("messages")]
-        public static async Task<object> Run([HttpTrigger(AuthorizationLevel.Anonymous, "POST")]HttpRequestMessage req, TraceWriter log)
+        public static async Task<object> Run([HttpTrigger(AuthorizationLevel.Anonymous, "POST")]HttpRequestMessage req, ExecutionContext context, TraceWriter log)
         {
             CurrentLog = log; // not sure if we get a private runtime for each request or not....
             log.Info($"Webhook was triggered!");
 
+            TelemetryClient.Context.Operation.Id = context.InvocationId.ToString();
+            TelemetryClient.Context.Operation.Name = "cs-http";
+
             // Initialize the azure bot
-            using(new AzureFunctionsResolveAssembly())
+            using (new AzureFunctionsResolveAssembly())
             using (BotService.Initialize())
             {
                 // Deserialize the incoming activity

@@ -105,6 +105,12 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             {
                 Messages.CurrentLog.Info(message);
             }
+
+            protected override void TokenRequestComplete(TimeSpan duration, Exception ex)
+            {
+                var now = DateTimeOffset.Now;
+                Messages.TelemetryClient.TrackDependency("Http", "RequestToken", now.Subtract(duration), duration, null == ex);
+            }
         }
 
         [Serializable]

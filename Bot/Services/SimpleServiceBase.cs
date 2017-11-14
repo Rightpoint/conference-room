@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -40,9 +41,12 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
                 }
             }
 
-            using (var s = await _client.GetStreamAsync(new Uri(Url, url).AbsoluteUri))
+            var sw = Stopwatch.StartNew();
+            using (var res = await _client.GetAsync(new Uri(Url, url).AbsoluteUri))
             {
-                using (var tr = new StreamReader(s))
+                RequestComplete(res, sw.Elapsed);
+                res.EnsureSuccessStatusCode();
+                using (var tr = new StreamReader(await res.Content.ReadAsStreamAsync()))
                 {
                     using (var jr = new JsonTextReader(tr))
                     {
@@ -51,7 +55,6 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
                 }
             }
         }
-
 
         protected async Task<string> Post(string url, HttpContent content)
         {
@@ -72,8 +75,10 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
                 }
             }
 
+            var sw = Stopwatch.StartNew();
             using (var r = await _client.PostAsync(new Uri(Url, url).AbsoluteUri, content))
             {
+                RequestComplete(r, sw.Elapsed);
                 var responseString = await r.Content.ReadAsStringAsync();
                 if (string.IsNullOrEmpty(responseString))
                 {
@@ -100,6 +105,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
 
         protected virtual void AddAuthentication(HttpClient c)
         {
+            c.DefaultRequestHeaders.Add("x-ms-request-id", Messages.TelemetryClient.Context.Operation.Id);
         }
 
         protected virtual string GetUserKey()
@@ -119,6 +125,19 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
                 _client.Dispose();
                 _client = null;
             }
+        }
+        private void RequestComplete(HttpResponseMessage res, TimeSpan duration)
+        {
+            var now = DateTimeOffset.Now;
+            Messages.TelemetryClient.TrackDependency(
+                "Http",
+                $"{res.RequestMessage.RequestUri.Host}:{res.RequestMessage.RequestUri.Port}",
+                $"{res.RequestMessage.Method} {res.RequestMessage.RequestUri.AbsolutePath}",
+                res.RequestMessage.RequestUri.ToString(), 
+                now.Subtract(duration), 
+                duration, 
+                $"{(int)res.StatusCode}",
+                res.IsSuccessStatusCode);
         }
     }
 }

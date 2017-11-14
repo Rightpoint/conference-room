@@ -3,6 +3,7 @@
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
   <ItemGroup>    
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.4.0" />    
     <PackageReference Include="Microsoft.Bot.Builder.Azure" Version="3.2.3" />    
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.13.9" />    
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.6" />    
@@ -12,6 +13,9 @@
     <ProjectReference Include="..\RightpointLabs.BotLib\RightpointLabs.BotLib.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.ApplicationInsights">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.2.4.0\lib\net46\Microsoft.ApplicationInsights.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory">
       <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.3.13.9\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.dll</HintPath>
