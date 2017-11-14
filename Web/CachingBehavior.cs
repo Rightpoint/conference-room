@@ -1,7 +1,9 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using log4net;
@@ -14,10 +16,13 @@ namespace RightpointLabs.ConferenceRoom.Web
         private static ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private ConcurrentDictionary<string, ConcurrentDictionary<string, CachedObject>> _cache = new ConcurrentDictionary<string, ConcurrentDictionary<string, CachedObject>>();
 
+        private static readonly bool UnwrapTasks = true;
+
         private class CachedObject
         {
             public DateTime CacheTime { get; set; }
             public object Object { get; set; }
+            public object UnwrappedTask { get; set; }
             public Exception Exception { get; set; }
 
             public CachedObject(DateTime cacheTime, object o, Exception exception)
@@ -49,7 +54,19 @@ namespace RightpointLabs.ConferenceRoom.Web
                             {
                                 log.Debug($"Cache miss on {key2}");
                                 var r = getNext()(input, getNext);
-                                return new CachedObject(DateTime.UtcNow, r?.ReturnValue, r?.Exception);
+                                var ret = new CachedObject(DateTime.UtcNow, r?.ReturnValue, r?.Exception);
+                                if (UnwrapTasks)
+                                {
+                                    if (ret.Object is Task && method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+                                    {
+                                        ((Task) ret.Object).ContinueWith(t =>
+                                        {
+                                            var tr = _taskResult.GetOrAdd(method.ReturnType.GetGenericArguments()[0], GetTaskResult);
+                                            ret.UnwrappedTask = tr(t);
+                                        });
+                                    }
+                                }
+                                return ret;
                             });
                             if (result.CacheTime.AddMinutes(5) < DateTime.UtcNow)
                             {
@@ -59,7 +76,9 @@ namespace RightpointLabs.ConferenceRoom.Web
                             {
                                 return result.Exception != null
                                     ? input.CreateExceptionMethodReturn(result.Exception)
-                                    : input.CreateMethodReturn(result.Object);
+                                    : UnwrapTasks && result.UnwrappedTask != null && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>)
+                                        ? input.CreateMethodReturn(_taskFromResult.GetOrAdd(method.ReturnType.GetGenericArguments()[0], CreateTaskFromResult)(result.UnwrappedTask))
+                                        : input.CreateMethodReturn(result.Object);
                             }
                         }
                     }
@@ -76,6 +95,25 @@ namespace RightpointLabs.ConferenceRoom.Web
             
             log.Debug($"Not caching call to {input.MethodBase}");
             return getNext()(input, getNext);
+        }
+
+        private ConcurrentDictionary<Type, Func<Task,object>> _taskResult = new ConcurrentDictionary<Type, Func<Task, object>>();
+        public Func<Task, object> GetTaskResult(Type type)
+        {
+            var _ = Expression.Parameter(typeof(Task), "_");
+            var taskType = typeof(Task<>).MakeGenericType(type);
+            var result = taskType.GetProperty("Result");
+            var body = Expression.Convert(Expression.Property(Expression.Convert(_, taskType), result), typeof(object));
+            return (Func<Task, object>)Expression.Lambda(body, _).Compile();
+        }
+
+        private ConcurrentDictionary<Type, Func<object, object>> _taskFromResult = new ConcurrentDictionary<Type, Func<object, object>>();
+        public Func<object, object> CreateTaskFromResult(Type type)
+        {
+            var _ = Expression.Parameter(typeof(object), "_");
+            var fromResult = typeof(Task).GetMethod("FromResult").MakeGenericMethod(type);
+            var body = Expression.Convert(Expression.Call(fromResult, Expression.Convert(_, type)), typeof(object));
+            return (Func<object, object>)Expression.Lambda(body, _).Compile();
         }
 
         public IEnumerable<Type> GetRequiredInterfaces()
