@@ -13,5 +13,6 @@ namespace RightpointLabs.ConferenceRoom.Domain.Repositories
         void Update(FloorEntity value);
         Task<FloorEntity> GetAsync(string floorId);
         Task<IEnumerable<FloorEntity>> GetAllByOrganizationAsync(string organizationId);
+        Task<IEnumerable<FloorEntity>> GetAllByBuildingAsync(string buildingId);
     }
 }

@@ -517,12 +517,17 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
         public async Task<Dictionary<string, Tuple<RoomInfo, IRoom>>> GetInfoForRoomsInBuilding(string buildingId)
         {
             // repo data
-            var building = _buildingRepository.Get(buildingId);
-            var floors = _floorRepository.GetAllByBuilding(buildingId).ToDictionary(_ => _.Id);
-            var roomMetadatas = _roomRepository.GetRoomInfosForBuilding(buildingId).ToDictionary(_ => _.RoomAddress);
+            var roomMetadatasTask = _roomRepository.GetRoomInfosForBuildingAsync(buildingId);
+            var buildingTask = _buildingRepository.GetAsync(buildingId);
+            var floorsTask = _floorRepository.GetAllByBuildingAsync(buildingId);
+
+            var roomMetadatas = (await roomMetadatasTask).ToDictionary(_ => _.RoomAddress);
 
             // get these started in parallel while we load data from the repositories
             var roomTasks = roomMetadatas.ToDictionary(i => i.Key, i => GetRoomName(i.Key)).ToList();
+
+            var building = await buildingTask;
+            var floors = (await floorsTask).ToDictionary(_ => _.Id);
 
             __log.DebugFormat("Started room load calls");
 

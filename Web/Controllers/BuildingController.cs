@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web.Http;
 using log4net;
 using RightpointLabs.ConferenceRoom.Domain.Repositories;
@@ -26,9 +27,9 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         }
 
         [Route("all")]
-        public object GetAll()
+        public async Task<object> GetAll()
         {
-            return _buildingRepository.GetAll(_contextService.CurrentOrganization?.Id).Select(_ => new { _.Id, _.Name });
+            return (await _buildingRepository.GetAllAsync(_contextService.CurrentOrganization?.Id)).Select(_ => new { _.Id, _.Name });
         }
     }
 }

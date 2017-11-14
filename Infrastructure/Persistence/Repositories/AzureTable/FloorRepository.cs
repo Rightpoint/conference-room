@@ -39,6 +39,11 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.
             return _table.ExecuteQuery(new TableQuery<DynamicTableEntity>().Where(FilterConditionAllByBuilding(buildingId))).Select(FromTableEntity);
         }
 
+        public async Task<IEnumerable<FloorEntity>> GetAllByBuildingAsync(string buildingId)
+        {
+            return (await _table.ExecuteQueryAsync(new TableQuery<DynamicTableEntity>().Where(FilterConditionAllByBuilding(buildingId)))).Select(FromTableEntity);
+        }
+
         public string FilterConditionAllByBuilding(string buildingId)
         {
             return TableQuery.GenerateFilterCondition("BuildingId", QueryComparisons.Equal, buildingId);
