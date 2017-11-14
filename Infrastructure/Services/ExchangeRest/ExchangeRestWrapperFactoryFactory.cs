@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -11,24 +12,59 @@ using RightpointLabs.ConferenceRoom.Domain.Models.Entities;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 {
+    public class ExchangeRestWrapperFactoryCache
+    {
+        public readonly ConcurrentDictionary<string, (string, DateTimeOffset)> Cache = new ConcurrentDictionary<string, (string, DateTimeOffset)>();
+    }
+
     public class ExchangeRestWrapperFactoryFactory
     {
+        private readonly ExchangeRestWrapperFactoryCache _cache;
+
+        public ExchangeRestWrapperFactoryFactory(ExchangeRestWrapperFactoryCache cache)
+        {
+            _cache = cache;
+        }
+
         public ExchangeRestWrapperFactory GetFactory(OrganizationEntity org, string clientId, string clientSecret, string username, string password, string defaultUser)
         {
-            return new UserExchangeRestWrapperFactory(clientId, clientSecret, username, password, defaultUser);
+            return new UserExchangeRestWrapperFactory(_cache, clientId, clientSecret, username, password, defaultUser);
         }
 
         public ExchangeRestWrapperFactory GetFactory(OrganizationEntity org, string tenantId, string clientId, string clientCertificate, string defaultUser)
         {
-            return new AppOnlyExchangeRestWrapperFactory(tenantId, clientId, clientCertificate, defaultUser);
+            return new AppOnlyExchangeRestWrapperFactory(_cache, tenantId, clientId, clientCertificate, defaultUser);
         }
 
         public abstract class ExchangeRestWrapperFactory
         {
+            private readonly ExchangeRestWrapperFactoryCache _cache;
+
+            protected ExchangeRestWrapperFactory(ExchangeRestWrapperFactoryCache cache)
+            {
+                _cache = cache;
+            }
+
             public static readonly string OutlookResource = "https://outlook.office.com";
             public static readonly string GraphResource = "https://graph.microsoft.com";
 
-            protected abstract Task<string> GetAccessTokenFor(string resource);
+            protected abstract Task<(string, DateTimeOffset)> CreateAccessTokenFor(string resource);
+            protected abstract string BaseKey { get; }
+
+            protected async Task<string> GetAccessTokenFor(string resource)
+            {
+                var key = $"{BaseKey}-{resource}";
+                if (_cache.Cache.TryGetValue(key, out var value))
+                {
+                    if (DateTimeOffset.Now.AddSeconds(30) <= value.Item2)
+                    {
+                        return value.Item1;
+                    }
+                }
+                value = await CreateAccessTokenFor(resource);
+                _cache.Cache.AddOrUpdate(key, value, (_, __) => value);
+                return value.Item1;
+            }
 
             protected string _defaultUser;
 
@@ -74,7 +110,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             private readonly string _clientCertificate;
             public static readonly string Authority = "https://login.windows.net/";
 
-            public AppOnlyExchangeRestWrapperFactory(string tenantId, string clientId, string clientCertificate, string defaultUser)
+            public AppOnlyExchangeRestWrapperFactory(ExchangeRestWrapperFactoryCache cache, string tenantId, string clientId, string clientCertificate, string defaultUser)
+                : base(cache)
             {
                 _tenantId = tenantId;
                 _clientId = clientId;
@@ -89,14 +126,16 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 client.DefaultRequestHeaders.Add("return-client-request-id", "true");
             }
 
-            protected override async Task<string> GetAccessTokenFor(string resource)
+            protected override string BaseKey => $"{_tenantId}-{_clientId}";
+
+            protected override async Task<(string, DateTimeOffset)> CreateAccessTokenFor(string resource)
             {
                 var cert = new X509Certificate2();
                 cert.Import(Convert.FromBase64String(_clientCertificate), "", X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
 
                 var c = new AuthenticationContext(Authority + _tenantId);
                 var r = await c.AcquireTokenAsync(resource, new ClientAssertionCertificate(_clientId, cert));
-                return r.AccessToken;
+                return (r.AccessToken, r.ExpiresOn);
             }
         }
 
@@ -108,7 +147,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             private readonly string _password;
             public static readonly string Authority = "https://login.windows.net/common/oauth2/token";
 
-            public UserExchangeRestWrapperFactory(string clientId, string clientSecret, string username, string password, string defaultUser)
+            public UserExchangeRestWrapperFactory(ExchangeRestWrapperFactoryCache cache, string clientId, string clientSecret, string username, string password, string defaultUser) 
+                : base(cache)
             {
                 _clientId = clientId;
                 _clientSecret = clientSecret;
@@ -117,7 +157,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                 _defaultUser = defaultUser;
             }
 
-            protected override async Task<string> GetAccessTokenFor(string resource)
+            protected override string BaseKey => $"{_clientId}-{_username}";
+
+            protected override async Task<(string, DateTimeOffset)> CreateAccessTokenFor(string resource)
             {
                 // todo: support token lifetime, refresh tokens, etc.
                 var vals = new List<KeyValuePair<string, string>>
@@ -137,9 +179,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
                     var hrm = await hc.PostAsync(Authority, content).ConfigureAwait(false);
                     hrm.EnsureSuccessStatusCode();
                     var response = JObject.Parse(await hrm.Content.ReadAsStringAsync()).ToObject<LoginResponse>();
-                    var at = response.access_token;
 
-                    return at;
+                    return (response.access_token, DateTimeOffset.Now.AddSeconds(response.expires_in));
                 }
             }
 

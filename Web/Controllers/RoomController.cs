@@ -39,13 +39,6 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             _buildingRepository = buildingRepository;
         }
 
-
-        [Route("all")]
-        public async Task<object> GetAll()
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
         /// Gets the info for a single room.
         /// </summary>

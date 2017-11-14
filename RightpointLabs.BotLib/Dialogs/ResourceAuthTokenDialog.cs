@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
@@ -54,13 +55,16 @@ namespace RightpointLabs.BotLib.Dialogs
             var authenticationContext = new AuthenticationContext(ConfigurationManager.AppSettings["Authority"]);
 
             AuthenticationResult newToken;
+            var sw = Stopwatch.StartNew();
             try
             {
                 Log($"RATD: redeeming for token");
                 newToken = await authenticationContext.AcquireTokenAsync(_resource, clientCredential, userAssertion);
+                TokenRequestComplete(sw.Elapsed, null);
             }
             catch (Exception ex)
             {
+                TokenRequestComplete(sw.Elapsed, ex);
                 if (ex.Message.Contains("AADSTS65001"))
                 {
                     // consent required
@@ -93,6 +97,10 @@ namespace RightpointLabs.BotLib.Dialogs
         protected abstract AppAuthTokenDialog CreateAppAuthTokenDialog(bool ignoreCache, bool requireConsent);
 
         protected virtual void Log(string message)
+        {
+        }
+
+        protected virtual void TokenRequestComplete(TimeSpan duration, Exception ex)
         {
         }
     }
