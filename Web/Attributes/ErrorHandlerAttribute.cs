@@ -71,7 +71,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Attributes
         /// </summary>
         /// <param name="ex"></param>
         /// <returns></returns>
-        private bool IsAccessDeniedException(Exception ex)
+        public static bool IsAccessDeniedException(Exception ex)
         {
             if (ex is AccessDeniedException || ex is SecurityTokenValidationException)
             {

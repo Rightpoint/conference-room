@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Web;
 using System.Web.Http;
+using System.Web.Http.Dispatcher;
 using System.Web.Mvc;
 using log4net;
 using Microsoft.AspNet.SignalR;
@@ -27,6 +28,7 @@ using Unity.WebApi;
 
 using AzureTable = RightpointLabs.ConferenceRoom.Infrastructure.Persistence.Repositories.AzureTable;
 using Microsoft.Practices.Unity.InterceptionExtension;
+using System.Web.Http.ExceptionHandling;
 
 namespace RightpointLabs.ConferenceRoom.Web
 {
@@ -112,6 +114,8 @@ namespace RightpointLabs.ConferenceRoom.Web
 
             container.RegisterType<IExchangeServiceManager, ExchangeServiceManager>(new ContainerControlledLifetimeManager());
             container.RegisterInstance(new MeetingCacheReloaderFactory(new UnityIOCContainer(container, false)));
+
+            container.RegisterType<IExceptionHandler, SimpleExceptionHandler>(new ContainerControlledLifetimeManager());
 
             if (false)
             {

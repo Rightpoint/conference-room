@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using RightpointLabs.ConferenceRoom.Domain.Models;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
@@ -49,6 +50,14 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             }
             catch (Exception ex)
             {
+                if(ex is SecurityTokenException stex)
+                {
+                    if (stex.Message.StartsWith("IDX10223"))
+                    {
+                        // lifetime expired
+                        throw new AccessDeniedException(ex.Message, ex);
+                    }
+                }
                 if (throwOnError)
                 {
                     throw;
