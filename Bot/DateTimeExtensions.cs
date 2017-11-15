@@ -14,15 +14,20 @@ namespace RightpointLabs.ConferenceRoom.Bot
         {
             if (null == value)
                 return "";
+            return value.Value.ToSimpleTime();
+        }
+
+        public static string ToSimpleTime(this DateTimeOffset value)
+        {
             var msg = $"{value:h:mm tt}";
             var now = DateTimeOffset.Now;
-            if (now.Date < value.Value.Date)
+            if (now.Date < value.Date)
             {
-                if (now.Date.AddDays(1) == value.Value.Date)
+                if (now.Date.AddDays(1) == value.Date)
                 {
                     msg += " tomorrow";
                 }
-                else if (now.Date.AddDays(7) > value.Value.Date)
+                else if (now.Date.AddDays(7) > value.Date)
                 {
                     msg += $" {value:dddd}";
                 }

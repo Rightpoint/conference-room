@@ -86,6 +86,10 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                         !string.IsNullOrEmpty(firstMeeting.Subject) ?
                             $" for {firstMeeting.Subject}" :
                             "";
+                if (!string.IsNullOrEmpty(reason) && null != firstMeeting && result.Until != firstMeeting.End)
+                {
+                    reason = $"{reason} until {firstMeeting.End.ToSimpleTime()}";
+                }
                 if (result.busy)
                 {
                     if (!string.IsNullOrEmpty(reason))
