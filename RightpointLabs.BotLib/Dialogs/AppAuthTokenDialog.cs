@@ -49,7 +49,7 @@ namespace RightpointLabs.BotLib.Dialogs
             context.Done(accessToken);
         }
 
-        protected string CacheKey => $"AuthToken_{this.GetType().Name}";
+        public string CacheKey => $"AuthToken_{this.GetType().Name}";
 
         protected abstract LoginDialog CreateLoginDialog(bool requireConsent);
 

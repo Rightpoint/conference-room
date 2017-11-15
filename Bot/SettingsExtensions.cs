@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using Newtonsoft.Json.Linq;
+using RightpointLabs.ConferenceRoom.Bot.Dialogs;
 using RightpointLabs.ConferenceRoom.Bot.Models;
+using RightpointLabs.ConferenceRoom.Bot.Services;
 
 namespace RightpointLabs.ConferenceRoom.Bot
 {
@@ -45,6 +47,20 @@ namespace RightpointLabs.ConferenceRoom.Bot
         {
             var level = value == "low" ? Models.SecurityLevel.Low : Models.SecurityLevel.High;
             context.UserData.SetValue(SecurityLevel, (int)level);
+            if (level == Models.SecurityLevel.Low)
+            {
+                // clear out cached settings that could be used for high-security
+                var toClear = new[]
+                {
+                    new RoomNinjaCustomTokenDialog(context, null, null, false, false).CacheKey,
+                    new RoomNinjaCustomTokenDialog.CustomResourceAuthTokenDialog(null, RoomsService.Resource, false, false).CacheKey,
+                    new RoomNinjaCustomTokenDialog.CustomAppAuthTokenDialog(null, false, false).CacheKey,
+                };
+                foreach (var key in toClear)
+                {
+                    context.UserData.RemoveValue(key);
+                }
+            }
         }
 
         public static TimeZoneInfo GetTimezone(this IDialogContext context)

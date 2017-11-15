@@ -23,7 +23,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         public RoomNinjaCustomTokenDialog(IDialogContext context, Uri requestUri, string resource, bool ignoreCache, bool requireConsent)
         {
             _securityLevel = context.GetSecurityLevel();
-            _requestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
+            _requestUri = requestUri;
             _resource = resource;
             _ignoreCache = ignoreCache;
             _requireConsent = requireConsent;
@@ -84,7 +84,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             context.Done(accessToken);
         }
 
-        protected string CacheKey => $"AuthToken_{this.GetType().Name}_{_securityLevel}";
+        public string CacheKey => $"AuthToken_{this.GetType().Name}_{_securityLevel}";
 
         protected ResourceAuthTokenDialog CreateResourceAuthTokenDialog()
         {
@@ -103,7 +103,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
             public CustomResourceAuthTokenDialog(Uri requestUri, string resource, bool ignoreCache, bool requireConsent) : base(resource, ignoreCache, requireConsent)
             {
-                _requestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
+                _requestUri = requestUri;
             }
 
             protected override AppAuthTokenDialog CreateAppAuthTokenDialog(bool ignoreCache, bool requireConsent)
@@ -130,7 +130,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
             public CustomAppAuthTokenDialog(Uri requestUri, bool ignoreCache, bool requireConsent) : base(ignoreCache, requireConsent)
             {
-                _requestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
+                _requestUri = requestUri;
             }
 
             protected override LoginDialog CreateLoginDialog(bool requireConsent)

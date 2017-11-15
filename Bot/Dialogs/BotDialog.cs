@@ -37,6 +37,12 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             return base.MessageReceived(context, item);
         }
 
+        protected override Task DispatchToIntentHandler(IDialogContext context, IAwaitable<IMessageActivity> item, IntentRecommendation bestIntent, LuisResult result)
+        {
+            Messages.CurrentLog.Info($"Intent: {bestIntent.Intent}, Entities: {string.Join(", ", result.Entities.Select(i => i.Type ?? i.Role))}");
+            return base.DispatchToIntentHandler(context, item, bestIntent, result);
+        }
+
         [LuisIntent("None")]
         public async Task NoneIntent(IDialogContext context, LuisResult result)
         {

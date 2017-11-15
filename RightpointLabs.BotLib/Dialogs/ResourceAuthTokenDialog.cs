@@ -92,7 +92,7 @@ namespace RightpointLabs.BotLib.Dialogs
             context.Done(newToken.AccessToken);
         }
 
-        protected string CacheKey => $"AuthToken_{this.GetType().Name}_{_resource}";
+        public string CacheKey => $"AuthToken_{this.GetType().Name}_{_resource}";
 
         protected abstract AppAuthTokenDialog CreateAppAuthTokenDialog(bool ignoreCache, bool requireConsent);
 
