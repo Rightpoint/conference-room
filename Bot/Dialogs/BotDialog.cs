@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Azure;
@@ -57,8 +58,13 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             await ProcessSecurityLevelChange(context, securityLevel);
         }
 
+        private static readonly Regex _cleanup = new Regex("[^A-Za-z ]*", RegexOptions.Compiled);
         private async Task ProcessSecurityLevelChange(IDialogContext context, string securityLevel)
         {
+            if (!string.IsNullOrEmpty(securityLevel))
+            {
+                securityLevel = _cleanup.Replace(securityLevel, "");
+            }
             if (string.IsNullOrEmpty(securityLevel) || (securityLevel != "high" && securityLevel != "low"))
             {
                 await context.PostAsync(context.CreateMessage($"This bot supports two security modes.  Use high when you're always in control.  Use low when used in public (ie. via Cortana Invoke).  What security level would you like - high or low?", InputHints.ExpectingInput));
