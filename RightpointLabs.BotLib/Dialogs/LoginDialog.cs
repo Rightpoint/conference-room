@@ -97,6 +97,7 @@ namespace RightpointLabs.BotLib.Dialogs
                 {
                     Log($"LD: got token, no key needed");
                     await context.PostAsync("Got your token, no security key is required");
+                    SaveSettings(context, _authResult);
                     context.Done(result.AccessToken);
                 }
                 else
@@ -131,20 +132,25 @@ namespace RightpointLabs.BotLib.Dialogs
             {
                 Log($"LD: security key matches");
                 await context.PostAsync("Security key matches");
-                if (string.IsNullOrEmpty(_authResult.Upn))
-                {
-                    context.UserData.RemoveValue(nameof(LoginState.LastUpn));
-                }
-                else
-                {
-                    context.UserData.SetValue(nameof(LoginState.LastUpn), _authResult.Upn);
-                }
+                SaveSettings(context, _authResult);
                 context.Done(_authResult.AccessToken);
             }
             else
             {
                 await context.PostAsync("Sorry, I didn't understand you.  Enter your security key, or 'cancel' to abort, or 'retry' to get a new authentication link.");
                 context.Wait(ReceiveSecurityKeyAsync);
+            }
+        }
+
+        protected virtual void SaveSettings(IDialogContext context, SimpleAuthenticationResultModel authResult)
+        {
+            if (string.IsNullOrEmpty(authResult.Upn))
+            {
+                context.UserData.RemoveValue(nameof(LoginState.LastUpn));
+            }
+            else
+            {
+                context.UserData.SetValue(nameof(LoginState.LastUpn), authResult.Upn);
             }
         }
 

@@ -18,6 +18,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
         private static readonly string Building = nameof(Building);
         private static readonly string PreferredFloor = nameof(PreferredFloor);
         private static readonly string SecurityLevel = nameof(SecurityLevel);
+        private static readonly string Name = nameof(Name);
 
         public static BuildingChoice GetBuilding(this IDialogContext context)
         {
@@ -63,6 +64,16 @@ namespace RightpointLabs.ConferenceRoom.Bot
                 }
             }
             context.UserData.SetValue(SecurityLevel, (int)level);
+        }
+
+        public static string GetName(this IDialogContext context)
+        {
+            return context.UserData.TryGetValue(Name, out string value) ? value : null;
+        }
+
+        public static void SetName(this IDialogContext context, string value)
+        {
+            context.UserData.SetValue(Name, value);
         }
 
         public static TimeZoneInfo GetTimezone(this IDialogContext context)

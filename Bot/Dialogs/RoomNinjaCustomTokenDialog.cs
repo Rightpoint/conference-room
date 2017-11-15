@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
+using RightpointLabs.BotLib;
 using RightpointLabs.BotLib.Dialogs;
 using RightpointLabs.ConferenceRoom.Bot.Models;
 using RightpointLabs.ConferenceRoom.Bot.Services;
@@ -157,6 +158,19 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             protected override string GetRedirectUri()
             {
                 return new Uri(_requestUri, "/api/Authorize").AbsoluteUri;
+            }
+
+            protected override void SaveSettings(IDialogContext context, SimpleAuthenticationResultModel authResult)
+            {
+                base.SaveSettings(context, authResult);
+                if (string.IsNullOrEmpty(authResult.GivenName) || string.IsNullOrEmpty(authResult.FamilyName))
+                {
+                    context.SetName(null);
+                }
+                else
+                {
+                    context.SetName($"{authResult.GivenName} {authResult.FamilyName}");
+                }
             }
 
             protected override void Log(string message)

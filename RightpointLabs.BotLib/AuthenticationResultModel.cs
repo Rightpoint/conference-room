@@ -10,6 +10,8 @@ namespace RightpointLabs.BotLib
         public string Error { get; set; }
         public string ErrorDescription { get; set; }
         public string Upn { get; set; }
+        public string GivenName { get; set; }
+        public string FamilyName { get; set; }
 
         public AuthenticationResultModel(IActivity innerActivity) : base(innerActivity)
         {
@@ -24,6 +26,8 @@ namespace RightpointLabs.BotLib
                 Error = this.Error,
                 ErrorDescription = this.ErrorDescription,
                 Upn = this.Upn,
+                GivenName = this.GivenName,
+                FamilyName = this.FamilyName,
             };
         }
     }
@@ -36,6 +40,8 @@ namespace RightpointLabs.BotLib
         public string Error { get; set; }
         public string ErrorDescription { get; set; }
         public string Upn { get; set; }
+        public string GivenName { get; set; }
+        public string FamilyName { get; set; }
     }
 
     public class BaseActivity : IActivity

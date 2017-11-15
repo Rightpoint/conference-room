@@ -58,6 +58,8 @@ namespace RightpointLabs.ConferenceRoom.Bot
                 {
                     AccessToken = authResult.IdToken,
                     Upn = upn,
+                    GivenName = authResult?.UserInfo?.GivenName,
+                    FamilyName = authResult?.UserInfo?.FamilyName,
                 };
 
                 if (upn == cookie.State.GetMessage().From.Id || upn == cookie.LastUpn)
