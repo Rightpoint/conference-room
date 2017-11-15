@@ -183,6 +183,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         private async Task Done(IDialogContext context, IAwaitable<string> result)
         {
+            await result;
             context.Done(string.Empty);
         }
     }

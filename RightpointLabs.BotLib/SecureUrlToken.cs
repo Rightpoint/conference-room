@@ -39,7 +39,7 @@ namespace RightpointLabs.BotLib
 
             using (var memoryStream = new MemoryStream())
             {
-                using (var gzipStream = new GZipStream(memoryStream, CompressionMode.Compress))
+                using (var gzipStream = new GZipStream(memoryStream, CompressionMode.Compress, true))
                 {
                     using (var bsonWriter = new BsonWriter(gzipStream))
                         JsonSerializer.CreateDefault().Serialize(bsonWriter, item);
