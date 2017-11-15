@@ -69,7 +69,7 @@ namespace RightpointLabs.BotLib.Dialogs
             {
                 p["prompt"] = "consent";
             }
-            p["state"] = SecureUrlToken.Encode(new ResumptionCookie(activity));
+            p["state"] = SecureUrlToken.Encode(new LoginState() { State = new ResumptionCookie(activity), LastUpn = context.UserData.TryGetValue(nameof(LoginState.LastUpn), out string value) ? value : null });
 
             return new Uri(authority + "/oauth2/authorize?" + string.Join("&", p.Select(i => $"{HttpUtility.UrlEncode(i.Key)}={HttpUtility.UrlEncode(i.Value)}")));
         }
@@ -131,6 +131,14 @@ namespace RightpointLabs.BotLib.Dialogs
             {
                 Log($"LD: security key matches");
                 await context.PostAsync("Security key matches");
+                if (string.IsNullOrEmpty(_authResult.Upn))
+                {
+                    context.UserData.RemoveValue(nameof(LoginState.LastUpn));
+                }
+                else
+                {
+                    context.UserData.SetValue(nameof(LoginState.LastUpn), _authResult.Upn);
+                }
                 context.Done(_authResult.AccessToken);
             }
             else

@@ -33,10 +33,10 @@ namespace RightpointLabs.ConferenceRoom.Bot
                 // Deserialize the incoming activity
                 var formData = await req.Content.ReadAsFormDataAsync();
 
-                var cookie = SecureUrlToken.Decode<ResumptionCookie>(formData["state"]);
+                var cookie = SecureUrlToken.Decode<LoginState>(formData["state"]);
                 if (!string.IsNullOrEmpty(formData["error"]))
                 {
-                    await Conversation.ResumeAsync(cookie, new AuthenticationResultModel(cookie.GetMessage()) { Error = formData["error"], ErrorDescription = formData["error_description"] });
+                    await Conversation.ResumeAsync(cookie.State, new AuthenticationResultModel(cookie.State.GetMessage()) { Error = formData["error"], ErrorDescription = formData["error_description"] });
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
                         Content = new StringContent("<html><head><script type='text/javascript'>window.close();</script></head><body>An error occurred during authentication.  You can close this browser window</body></html>", Encoding.UTF8, "text/html")
@@ -54,14 +54,15 @@ namespace RightpointLabs.ConferenceRoom.Bot
 
                 var upn = authResult?.UserInfo?.DisplayableId;
 
-                var result = new AuthenticationResultModel(cookie.GetMessage())
+                var result = new AuthenticationResultModel(cookie.State.GetMessage())
                 {
-                    AccessToken = authResult.IdToken
+                    AccessToken = authResult.IdToken,
+                    Upn = upn,
                 };
 
-                if (upn == cookie.GetMessage().From.Id)
+                if (upn == cookie.State.GetMessage().From.Id || upn == cookie.LastUpn)
                 {
-                    await Conversation.ResumeAsync(cookie, result);
+                    await Conversation.ResumeAsync(cookie.State, result);
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
                         Content = new StringContent("<html><head><script type='text/javascript'>window.close();</script></head><body>You can close this browser window</body></html>", Encoding.UTF8, "text/html")
@@ -71,10 +72,10 @@ namespace RightpointLabs.ConferenceRoom.Bot
                 {
                     var rnd = new Random();
                     result.SecurityKey = string.Join("", Enumerable.Range(0, 6).Select(i => rnd.Next(10).ToString()));
-                    await Conversation.ResumeAsync(cookie, result);
+                    await Conversation.ResumeAsync(cookie.State, result);
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
-                        Content = new StringContent($"<html><head></head><body><!--We can't auto-auth you because {upn} != {cookie.GetMessage().From.Id}. -->Please copy and paste this key into the conversation with the bot: {result.SecurityKey}.</body></html>", Encoding.UTF8, "text/html")
+                        Content = new StringContent($"<html><head></head><body><!--We can't auto-auth you because {upn} != {cookie.State.GetMessage().From.Id}. -->Please copy and paste this key into the conversation with the bot: {result.SecurityKey}.</body></html>", Encoding.UTF8, "text/html")
                     };
                 }
             }

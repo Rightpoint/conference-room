@@ -9,6 +9,7 @@ namespace RightpointLabs.BotLib
         public string SecurityKey { get; set; }
         public string Error { get; set; }
         public string ErrorDescription { get; set; }
+        public string Upn { get; set; }
 
         public AuthenticationResultModel(IActivity innerActivity) : base(innerActivity)
         {
@@ -22,6 +23,7 @@ namespace RightpointLabs.BotLib
                 SecurityKey = this.SecurityKey,
                 Error = this.Error,
                 ErrorDescription = this.ErrorDescription,
+                Upn = this.Upn,
             };
         }
     }
@@ -33,6 +35,7 @@ namespace RightpointLabs.BotLib
         public string SecurityKey { get; set; }
         public string Error { get; set; }
         public string ErrorDescription { get; set; }
+        public string Upn { get; set; }
     }
 
     public class BaseActivity : IActivity
