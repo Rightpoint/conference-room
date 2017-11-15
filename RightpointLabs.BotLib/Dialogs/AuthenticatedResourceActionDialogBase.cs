@@ -25,7 +25,7 @@ namespace RightpointLabs.BotLib.Dialogs
 
         public async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
-            await context.Forward(CreateResourceAuthTokenDialog(Resource, false, false), ResumeProcess, context.Activity, new CancellationToken());
+            await context.Forward(CreateResourceAuthTokenDialog(context, Resource, false, false), ResumeProcess, context.Activity, new CancellationToken());
         }
         
         public async Task ResumeProcess(IDialogContext context, IAwaitable<string> accessTokenAwaitable)
@@ -51,7 +51,7 @@ namespace RightpointLabs.BotLib.Dialogs
                     {
                         Log($"ARAD: expired token - HRE");
                         await context.PostAsync("Looks like your resource token is expired - need a new one....");
-                        await context.Forward(CreateResourceAuthTokenDialog(Resource, true, false), ResumeProcess, context.Activity, new CancellationToken());
+                        await context.Forward(CreateResourceAuthTokenDialog(context, Resource, true, false), ResumeProcess, context.Activity, new CancellationToken());
                         return;
                     }
                     throw;
@@ -62,7 +62,7 @@ namespace RightpointLabs.BotLib.Dialogs
                     {
                         Log($"ARAD: expired token - WE");
                         await context.PostAsync("Looks like your resource token is expired - need a new one....");
-                        await context.Forward(CreateResourceAuthTokenDialog(Resource, true, false), ResumeProcess, context.Activity, new CancellationToken());
+                        await context.Forward(CreateResourceAuthTokenDialog(context, Resource, true, false), ResumeProcess, context.Activity, new CancellationToken());
                         return;
                     }
                     throw;
@@ -74,7 +74,7 @@ namespace RightpointLabs.BotLib.Dialogs
 
         protected virtual T ErrorDoneObject => string.Empty as T;
 
-        protected abstract IDialog<string> CreateResourceAuthTokenDialog(string resource, bool ignoreCache, bool requireConsent);
+        protected abstract IDialog<string> CreateResourceAuthTokenDialog(IDialogContext context, string resource, bool ignoreCache, bool requireConsent);
 
         protected virtual void Log(string message)
         {

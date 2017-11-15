@@ -31,9 +31,9 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         protected abstract Task<T> DoWork(IDialogContext context, RoomsService accessToken);
 
-        protected override IDialog<string> CreateResourceAuthTokenDialog(string resource, bool ignoreCache, bool requireConsent)
+        protected override IDialog<string> CreateResourceAuthTokenDialog(IDialogContext context, string resource, bool ignoreCache, bool requireConsent)
         {
-            return new RoomNinjaCustomTokenDialog(_requestUri, resource, ignoreCache, requireConsent);
+            return new RoomNinjaCustomTokenDialog(context, _requestUri, resource, ignoreCache, requireConsent);
         }
 
         protected override void Log(string message)

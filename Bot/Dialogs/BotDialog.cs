@@ -44,6 +44,39 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             context.Done(string.Empty);
         }
 
+        [LuisIntent("setSecurity")]
+        public async Task SetSecurity(IDialogContext context, LuisResult result)
+        {
+            var securityLevel = result.Entities.FirstOrDefault(i => i.Type == "securityLevel")?.Entity?.ToLowerInvariant();
+            await ProcessSecurityLevelChange(context, securityLevel);
+        }
+
+        private async Task ProcessSecurityLevelChange(IDialogContext context, string securityLevel)
+        {
+            if (string.IsNullOrEmpty(securityLevel) || (securityLevel != "high" && securityLevel != "low"))
+            {
+                await context.PostAsync(context.CreateMessage($"This bot supports two security modes.  Use high when you're always in control.  Use low when used in public (ie. via Cortana Invoke).  What security level would you like - high or low?", InputHints.ExpectingInput));
+                context.Wait(SetSecurityValue);
+            }
+            else
+            {
+                await context.PostAsync(context.CreateMessage($"Security set to {securityLevel}.", InputHints.AcceptingInput));
+                context.SetSecurityLevel(securityLevel);
+                context.Done(string.Empty);
+            }
+        }
+
+        public async Task SetSecurityValue(IDialogContext context, IAwaitable<IMessageActivity> awaitable)
+        {
+            var text = (await awaitable)?.Text?.ToLowerInvariant();
+            if (text == "cancel" || text == "reset")
+            {
+                context.Done(string.Empty);
+                return;
+            }
+            await ProcessSecurityLevelChange(context, text);
+        }
+
         [LuisIntent("findRoom")]
         public async Task FindRoom(IDialogContext context, LuisResult result)
         {

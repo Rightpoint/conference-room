@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using RightpointLabs.BotLib.Dialogs;
+using RightpointLabs.ConferenceRoom.Bot.Models;
 using RightpointLabs.ConferenceRoom.Bot.Services;
 
 namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
@@ -13,13 +14,15 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
     [Serializable]
     public class RoomNinjaCustomTokenDialog : IDialog<string>
     {
+        private readonly SecurityLevel _securityLevel;
         private readonly Uri _requestUri;
         private readonly string _resource;
         private readonly bool _ignoreCache;
         private readonly bool _requireConsent;
 
-        public RoomNinjaCustomTokenDialog(Uri requestUri, string resource, bool ignoreCache, bool requireConsent)
+        public RoomNinjaCustomTokenDialog(IDialogContext context, Uri requestUri, string resource, bool ignoreCache, bool requireConsent)
         {
+            _securityLevel = context.GetSecurityLevel();
             _requestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
             _resource = resource;
             _ignoreCache = ignoreCache;
@@ -52,29 +55,36 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
             if (!string.IsNullOrEmpty(accessToken))
             {
-                Log($"RNCTD: using {accessToken} to get long-term access token");
-
-                try
+                if (_securityLevel == SecurityLevel.Low)
                 {
-                    using (var c = new HttpClient())
+                    Log($"RNCTD: using {accessToken} to get long-term access token");
+
+                    try
                     {
-                        c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-                        var r = await c.PostAsync(new Uri(RoomsService.BaseUrl, "/api/tokens/getLongTerm"), new StringContent(""));
-                        accessToken = await r.Content.ReadAsStringAsync();
+                        using (var c = new HttpClient())
+                        {
+                            c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                            var r = await c.PostAsync(new Uri(RoomsService.BaseUrl, "/api/tokens/getLongTerm"), new StringContent(""));
+                            accessToken = await r.Content.ReadAsStringAsync();
+                        }
                     }
-                }
-                catch
-                {
-                    throw;
-                }
+                    catch
+                    {
+                        throw;
+                    }
 
-                Log($"RNCTD: saving long-term token {accessToken}");
+                    Log($"RNCTD: saving long-term token {accessToken}");
+                }
+                else
+                {
+                    Log($"RNCTD: using short-term token {accessToken}");
+                }
                 context.UserData.SetValue(CacheKey, accessToken);
             }
             context.Done(accessToken);
         }
 
-        protected string CacheKey => $"AuthToken_{this.GetType().Name}";
+        protected string CacheKey => $"AuthToken_{this.GetType().Name}_{_securityLevel}";
 
         protected ResourceAuthTokenDialog CreateResourceAuthTokenDialog()
         {
