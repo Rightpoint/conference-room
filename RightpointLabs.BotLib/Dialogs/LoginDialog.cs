@@ -97,7 +97,7 @@ namespace RightpointLabs.BotLib.Dialogs
                 {
                     Log($"LD: got token, no key needed");
                     await context.PostAsync("Got your token, no security key is required");
-                    SaveSettings(context, _authResult);
+                    SaveSettings(context, result.ToSimpleAuthenticationResultModel());
                     context.Done(result.AccessToken);
                 }
                 else
