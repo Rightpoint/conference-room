@@ -86,15 +86,26 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                         !string.IsNullOrEmpty(firstMeeting.Subject) ?
                             $" for {firstMeeting.Subject}" :
                             "";
-                if (!string.IsNullOrEmpty(reason) && null != firstMeeting && result.Until != firstMeeting.End)
+                if (!string.IsNullOrEmpty(reason) && null != firstMeeting && _criteria.StartTime.HasValue)
                 {
-                    reason = $"{reason} until {firstMeeting.End.ToSimpleTime()}";
+                    reason = $"{reason} from {TimeZoneInfo.ConvertTime(firstMeeting.Start, tz):h:mm tt}";
+                }
+                if (!string.IsNullOrEmpty(reason) && null != firstMeeting && (result.Until != firstMeeting.End || _criteria.StartTime.HasValue))
+                {
+                    reason = $"{reason} until {TimeZoneInfo.ConvertTime(firstMeeting.End, tz).ToSimpleTime()}";
                 }
                 if (result.busy)
                 {
                     if (!string.IsNullOrEmpty(reason))
                     {
-                        reason = $" and is currently used{reason}";
+                        if (_criteria.StartTime.HasValue)
+                        {
+                            reason = $" and will be used{reason}";
+                        }
+                        else
+                        {
+                            reason = $" and is currently used{reason}";
+                        }
                     }
                     if (result.Until.HasValue)
                     {
