@@ -51,6 +51,23 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             context.Done(string.Empty);
         }
 
+        [LuisIntent("info")]
+        public async Task InfoIntent(IDialogContext context, LuisResult result)
+        {
+            await context.PostAsync(context.CreateMessage($"This is a bot from Rightpoint Labs Beta to help you find and book conference rooms.  Try 'check garage' or 'find a room at noon'", InputHints.AcceptingInput));
+            context.Done(string.Empty);
+        }
+
+        [LuisIntent("help")]
+        public async Task HelpIntent(IDialogContext context, LuisResult result)
+        {
+            await context.PostAsync(context.CreateMessage(
+                $"This is a Rightpoint Labs Beta app and not supported by the helpdesk.  Submit bugs via https://github.com/RightpointLabs/conference-room/issues or bug Rupp (jrupp@rightpoint.com) if it's broken.",
+                $"This is a Rightpoint Labs Beta app and not supported by the helpdesk.  Bug Rupp if it's broken.",
+                InputHints.AcceptingInput));
+            context.Done(string.Empty);
+        }
+
         [LuisIntent("setSecurity")]
         public async Task SetSecurity(IDialogContext context, LuisResult result)
         {
