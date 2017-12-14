@@ -76,7 +76,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
                                     {
                                         reply.Text += $" {newMember.Name}";
                                     }
-                                    reply.Text += "!";
+                                    reply.Text += ", this is a bot from Rightpoint Labs Beta - say 'info' for more.";
                                     await client.Conversations.ReplyToActivityAsync(reply);
                                 }
                             }
