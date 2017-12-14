@@ -1,0 +1,86 @@
+{
+  "$schema": "https://statics.teams.microsoft.com/sdk/v1.0/manifest/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.0",
+  "version": "1.0",
+  "id": "xxxxxxxxxxxx",
+  "packageName": "com.rightpoint.labs.rprooms-bot-fast",
+  "developer": {
+    "name": "Rightpoint Labs",
+    "websiteUrl": "http://rprooms-bot-fast.azurewebsites.net/",
+    "privacyUrl": "http://rprooms-bot-fast.azurewebsites.netnet/privacy",
+    "termsOfUseUrl": "http://rprooms-bot-fast.azurewebsites.net/termsofuse"
+  },
+  "name": {
+    "short": "rprooms",
+    "full": "RP Room Ninja"
+  },
+  "description": {
+    "short": "Find conference rooms",
+    "full": "Check on, find, and book conference rooms"
+  },
+  "icons": {
+    "outline": "rprooms-outline.png",
+    "color": "rprooms-color.png"
+  },
+  "accentColor": "#ff6a00",
+  "bots": [
+    {
+      "botId": "xxxxxxxxxxxx",
+      "isNotificationOnly": false,
+      "scopes": [
+	"team",
+        "personal"
+      ],
+      "commandLists": [{
+          "scopes": [ "team", "personal" ],
+          "commands": [
+		  {
+			  "title": "set building",
+			  "description": "change building"
+		  },
+		  {
+			  "title": "set floor",
+			  "description": "change floor"
+		  },
+		  {
+			  "title": "clear floor",
+			  "description": "clear selected floor"
+		  },
+		  {
+			  "title": "info",
+			  "description": "get info about this bot"
+		  },
+		  {
+			  "title": "help",
+			  "description": "get help about this bot"
+		  },
+		  {
+			  "title": "find",
+			  "description": "find a room"
+		  },
+		  {
+			  "title": "check",
+			  "description": "check a room's status"
+		  },
+		  {
+			  "title": "book",
+			  "description": "book a room"
+		  },
+		  {
+			  "title": "set security",
+			  "description": "change security level"
+		  }
+	  ]
+        }
+      ]
+    }
+  ],
+  "permissions": [
+    "identity",
+    "messageTeamMembers"
+  ],
+  "validDomains": [
+    "rprooms-bot-fast.azurewebsites.net",
+    "*.rprooms-bot-fast.azurewebsites.net"
+  ]
+}
