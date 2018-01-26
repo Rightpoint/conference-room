@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using Newtonsoft.Json;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
@@ -59,7 +60,14 @@ namespace RightpointLabs.ConferenceRoom.Bot
                     switch (activity.GetActivityType())
                     {
                         case ActivityTypes.Message:
-                            log.Info($"Processing message: '{activity.AsMessageActivity().Text}' from {activity.From.Id}/{activity.From.Name} on {activity.ChannelId}");
+                            var text = activity.AsMessageActivity().Text;
+                            log.Info($"Processing message: '{text}' from {activity.From.Id}/{activity.From.Name} on {activity.ChannelId}");
+                            if (text.Contains("</at>") && activity.ChannelId == "msteams")
+                            {
+                                // ignore the mention of us in the reply
+                                activity.AsMessageActivity().Text = new Regex("<at>.*</at>").Replace(text, "").Trim();
+                                log.Info($"Revised: processing message: '{text}' from {activity.From.Id}/{activity.From.Name} on {activity.ChannelId}");
+                            }
                             await Conversation.SendAsync(activity, () => new ExceptionHandlerDialog<object>(new BotDialog(req.RequestUri), true));
                             break;
                         case ActivityTypes.ConversationUpdate:
