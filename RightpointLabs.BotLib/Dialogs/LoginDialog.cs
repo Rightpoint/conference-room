@@ -44,7 +44,7 @@ namespace RightpointLabs.BotLib.Dialogs
                 Title = "Authentication Required"
             };
             var signinCard =
-                (activity.ChannelId == "msteams" || activity.ChannelId == "cortana") ? 
+                (activity.ChannelId == "msteams" || activity.ChannelId == "cortana" || activity.ChannelId == "skypeforbusiness") ? 
                 new ThumbnailCard("Please login to this bot", null, null, null, new List<CardAction>() { signinButton }).ToAttachment() : 
                 new SigninCard("Please login to this bot", new List<CardAction>() { signinButton }).ToAttachment();
             replyToConversation.Attachments = new List<Attachment>() { signinCard };
