@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using log4net;
-using Plivo.API;
+using Plivo;
 using RightpointLabs.ConferenceRoom.Domain.Services;
 
 namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
@@ -24,26 +25,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         public void Send(string[] numbers, string message)
         {
-            var api = new RestAPI(_authId, _authToken);
-            var resp = api.send_message(new Dictionary<string, string>()
-            {
-                {"src", _fromNumber},
-                {"dst", string.Join("<", numbers) },
-                {"text", message}
-            });
-            if (resp.ErrorException != null)
-            {
-                throw new Exception("Error sending SMS", resp.ErrorException);
-            }
-            if (!string.IsNullOrEmpty(resp.ErrorMessage))
-            {
-                throw new Exception("Error sending SMS: " + resp.ErrorMessage);
-            }
-            if (null == resp.Data)
-            {
-                throw new Exception("Error sending SMS: no message response recieved");
-            }
-            log.DebugFormat("{0} - {1}: {2}", resp.Data.api_id, resp.Data.message, string.Join(", ", resp.Data.message_uuid));
+            var api = new PlivoApi(_authId, _authToken);
+            var resp = api.Message.Create(_fromNumber, numbers.ToList(), message);
+            log.DebugFormat("{0} - {1}: {2}", resp.ApiId, resp.Message, string.Join(", ", resp.MessageUuid));
         }
     }
 }
