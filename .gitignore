@@ -209,3 +209,5 @@ FakesAssemblies/
 /Functions/host.json
 /StatusMonitor/control.txt
 /StatusMonitor/devicekey
+/Bot/TeamsPackage/TeamsPackage.zip
+/Bot/TeamsPackage/manifest.json
