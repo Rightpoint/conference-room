@@ -36,7 +36,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
                 var cookie = SecureUrlToken.Decode<LoginState>(formData["state"]);
                 if (!string.IsNullOrEmpty(formData["error"]))
                 {
-                    await Conversation.ResumeAsync(cookie.State, new AuthenticationResultModel(cookie.State.GetMessage()) { Error = formData["error"], ErrorDescription = formData["error_description"] });
+                    await Conversation.ResumeAsync(cookie.State, new AuthenticationResultModel(cookie.State.GetPostToUserMessage()) { Error = formData["error"], ErrorDescription = formData["error_description"] });
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
                         Content = new StringContent("<html><head><script type='text/javascript'>window.close();</script></head><body>An error occurred during authentication.  You can close this browser window</body></html>", Encoding.UTF8, "text/html")
@@ -54,7 +54,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
 
                 var upn = authResult?.UserInfo?.DisplayableId;
 
-                var result = new AuthenticationResultModel(cookie.State.GetMessage())
+                var result = new AuthenticationResultModel(cookie.State.GetPostToUserMessage())
                 {
                     AccessToken = authResult.IdToken,
                     Upn = upn,
@@ -62,7 +62,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
                     FamilyName = authResult?.UserInfo?.FamilyName,
                 };
 
-                if (upn == cookie.State.GetMessage().From.Id || upn == cookie.LastUpn)
+                if (upn == cookie.State.User.Id || upn == cookie.LastUpn)
                 {
                     await Conversation.ResumeAsync(cookie.State, result);
                     return new HttpResponseMessage(HttpStatusCode.OK)
@@ -77,7 +77,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
                     await Conversation.ResumeAsync(cookie.State, result);
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
-                        Content = new StringContent($"<html><head></head><body><!--We can't auto-auth you because {upn} != {cookie.State.GetMessage().From.Id}. -->Please copy and paste this key into the conversation with the bot: {result.SecurityKey}.</body></html>", Encoding.UTF8, "text/html")
+                        Content = new StringContent($"<html><head></head><body><!--We can't auto-auth you because {upn} != {cookie.State.User.Id}. -->Please copy and paste this key into the conversation with the bot: {result.SecurityKey}.</body></html>", Encoding.UTF8, "text/html")
                     };
                 }
             }

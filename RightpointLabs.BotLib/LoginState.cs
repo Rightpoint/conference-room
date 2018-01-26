@@ -1,10 +1,10 @@
-﻿using Microsoft.Bot.Builder.Dialogs;
+﻿using Microsoft.Bot.Connector;
 
 namespace RightpointLabs.BotLib
 {
     public class LoginState
     {
-        public ResumptionCookie State { get; set; }
+        public ConversationReference State { get; set; }
         public string LastUpn { get; set; }
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.Bot.Builder.ConnectorEx;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 
@@ -69,7 +70,7 @@ namespace RightpointLabs.BotLib.Dialogs
             {
                 p["prompt"] = "consent";
             }
-            p["state"] = SecureUrlToken.Encode(new LoginState() { State = new ResumptionCookie(activity), LastUpn = context.UserData.TryGetValue(nameof(LoginState.LastUpn), out string value) ? value : null });
+            p["state"] = SecureUrlToken.Encode(new LoginState() { State = activity.ToConversationReference(), LastUpn = context.UserData.TryGetValue(nameof(LoginState.LastUpn), out string value) ? value : null });
 
             return new Uri(authority + "/oauth2/authorize?" + string.Join("&", p.Select(i => $"{HttpUtility.UrlEncode(i.Key)}={HttpUtility.UrlEncode(i.Value)}")));
         }

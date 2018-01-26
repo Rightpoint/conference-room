@@ -22,8 +22,8 @@ namespace RightpointLabs.ConferenceRoom.Bot
     public static class Messages
     {
         private static string appInsightsKey = TelemetryConfiguration.Active.InstrumentationKey =
-            Environment.GetEnvironmentVariable(
-                "APPINSIGHTS_INSTRUMENTATIONKEY", EnvironmentVariableTarget.Process);
+            Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY", EnvironmentVariableTarget.Process) ??
+            Environment.GetEnvironmentVariable("BotDevAppInsightsKey", EnvironmentVariableTarget.Process);
 
         public static TraceWriter CurrentLog { get; private set; }
 
