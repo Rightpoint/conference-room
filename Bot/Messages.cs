@@ -66,7 +66,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
                             {
                                 // ignore the mention of us in the reply
                                 activity.AsMessageActivity().Text = new Regex("<at>.*</at>").Replace(text, "").Trim();
-                                log.Info($"Revised: processing message: '{text}' from {activity.From.Id}/{activity.From.Name} on {activity.ChannelId}");
+                                log.Info($"Revised: processing message: '{activity.AsMessageActivity().Text}' from {activity.From.Id}/{activity.From.Name} on {activity.ChannelId}");
                             }
                             await Conversation.SendAsync(activity, () => new ExceptionHandlerDialog<object>(new BotDialog(req.RequestUri), true));
                             break;
