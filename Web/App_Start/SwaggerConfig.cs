@@ -16,9 +16,16 @@ namespace RightpointLabs.ConferenceRoom.Web
             GlobalConfiguration.Configuration
                 .EnableSwagger(c =>
                     {
-                        c.SingleApiVersion("v1", "RightpointLabs.ConferenceRoom.Web");
+                        c.SingleApiVersion("v2", "RightpointLabs.ConferenceRoom.Web");
+                        c.ApiKey("token")
+                            .Description("Bearer token here")
+                            .Name("Authorization")
+                            .In("header");
                     })
-                .EnableSwaggerUi(c => { });
+                .EnableSwaggerUi(c =>
+                {
+                    c.EnableApiKeySupport("Authorization", "header");
+                });
         }
     }
 }
