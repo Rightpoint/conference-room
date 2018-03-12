@@ -139,6 +139,13 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
         {
             var room = _roomRepository.GetRoomInfo(roomId);
             await AssertRoomIsFromOrg(room);
+
+            var cancelDelay = _contextService.CurrentDevice?.AutoCancelNonStartedMeetingDelay ?? _contextService.CurrentOrganization?.AutoCancelNonStartedMeetingDelay ?? 7 * 60;
+            if (cancelDelay <= 0)
+            {
+                throw new Exception("Cancel not allowed");
+            }
+
             await _conferenceRoomService.AbandonMeeting(room, uniqueId);
         }
 
