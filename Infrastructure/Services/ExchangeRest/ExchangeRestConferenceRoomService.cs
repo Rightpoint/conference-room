@@ -469,7 +469,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
             var item = await _exchange.CreateEvent(room.RoomAddress, new CalendarEntry
             {
-                Attendees = new Attendee[0],
+                Attendees = new [] { new Attendee() { EmailAddress = new EmailAddress() { Address = _contextService.UserId } } },
                 Start = new DateTimeReference() { DateTime = startTime.ToUniversalTime().ToString("o"), TimeZone = "UTC" },
                 End = new DateTimeReference() { DateTime = endTime.ToUniversalTime().ToString("o"), TimeZone = "UTC" },
                 Subject = title ?? $"Scheduled via conference room management system by {_contextService.UserId}",
