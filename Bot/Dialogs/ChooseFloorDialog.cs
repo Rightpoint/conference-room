@@ -31,7 +31,13 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         public async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
-            var buildingId = context.GetBuilding()?.BuildingId;
+            await context.Forward(new GetBuildingDialog(_requestUri), GotBuilding, context.Activity, new CancellationToken());
+        }
+
+        public async Task GotBuilding(IDialogContext context, IAwaitable<BuildingChoice> argument)
+        {
+            var building = await argument;
+            var buildingId = building?.BuildingId;
             if (string.IsNullOrEmpty(buildingId))
             {
                 await context.PostAsync(context.CreateMessage($"Set your building first with the 'set building' command", InputHints.AcceptingInput));

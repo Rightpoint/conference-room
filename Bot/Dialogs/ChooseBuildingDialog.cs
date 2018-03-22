@@ -63,12 +63,16 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             }
             else
             {
-                context.Done(new BuildingChoice()
+                var choice = new BuildingChoice()
                 {
                     BuildingId = building.Id,
                     BuildingName = building.Name,
                     TimezoneId = GetTimezone(building.Id),
-                });
+                };
+                context.SetBuilding(choice);
+
+                await context.PostAsync(context.CreateMessage($"Building set to {choice.BuildingName}.", InputHints.AcceptingInput));
+                context.Done(choice);
             }
         }
 
