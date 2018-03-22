@@ -48,7 +48,12 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
 
         public static RoomSearchCriteria ParseCriteria(LuisResult result, TimeZoneInfo timezone)
         {
-            var numbers = result.Entities.Where(i => i.Type == "builtin.number")
+            // when looking for a number, don't count numbers that are part of another recommendation (ie. "40 minutes" is a duration, not a number of people)
+            bool isSubstring(EntityRecommendation entity)
+            {
+                return result.Entities.Any(r => r != entity && r.StartIndex <= entity.StartIndex && entity.EndIndex <= r.EndIndex);
+            }
+            var numbers = result.Entities.Where(i => i.Type == "builtin.number").Where(i => !isSubstring(i))
                 .Select(i => int.Parse((string)i.Resolution["value"])).ToArray();
             var equipment = result.Entities.Where(i => i.Type == "equipment").Select(i => i.Entity).ToArray();
             var size = numbers.Cast<int?>().FirstOrDefault();
