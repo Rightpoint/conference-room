@@ -189,7 +189,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             {
                 var data = await _conferenceRoomService.GetStaticInfo(room);
 
-                await _conferenceRoomService.ScheduleNewMeeting(room, p.Title, p.StartTime, p.EndTime);
+                await _conferenceRoomService.ScheduleNewMeeting(room, p.Title, p.StartTime, p.EndTime, p.InviteMe);
                 var msg = $"Booked {data.DisplayName} from {p.StartTime:h:mm tt} to {p.EndTime:h:mm tt}";
                 var now = DateTimeOffset.Now;
                 if (now.Date < p.StartTime.Date)
@@ -220,6 +220,7 @@ namespace RightpointLabs.ConferenceRoom.Web.Controllers
             public string Title { get; set; }
             public DateTimeOffset StartTime { get; set; }
             public DateTimeOffset EndTime { get; set; }
+            public bool InviteMe { get; set; }
         }
 
         /// <summary>

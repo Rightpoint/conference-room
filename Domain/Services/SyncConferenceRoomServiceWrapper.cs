@@ -79,7 +79,7 @@ namespace RightpointLabs.ConferenceRoom.Domain.Services
             return Task.Run(() => _service.GetInfoForRoomsInBuilding(buildingId));
         }
 
-        public Task ScheduleNewMeeting(IRoom room, string title, DateTimeOffset startTime, DateTimeOffset endTime)
+        public Task ScheduleNewMeeting(IRoom room, string title, DateTimeOffset startTime, DateTimeOffset endTime, bool inviteMe)
         {
             throw new NotImplementedException();
         }

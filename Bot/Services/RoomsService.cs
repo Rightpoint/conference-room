@@ -67,10 +67,11 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
             return room;
         }
 
-        public async Task<string> ScheduleMeeting(string roomId, DateTimeOffset startTime, DateTimeOffset endTime)
+        public async Task<string> ScheduleMeeting(string roomId, bool inviteMe, DateTimeOffset startTime, DateTimeOffset endTime)
         {
             return await Post($"api/room/{roomId}/meeting/scheduleNew", new FormUrlEncodedContent(new Dictionary<string, string>()
             {
+                {"inviteMe", inviteMe.ToString() },
                 {"startTime", $"{startTime:O}" },
                 {"endTime", $"{endTime:O}" },
             }));

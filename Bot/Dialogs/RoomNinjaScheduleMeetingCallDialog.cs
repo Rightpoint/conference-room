@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
+using RightpointLabs.ConferenceRoom.Bot.Models;
 using RightpointLabs.ConferenceRoom.Bot.Services;
 
 namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
@@ -24,7 +25,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         protected override async Task<string> DoWork(IDialogContext context, RoomsService api)
         {
-            return await api.ScheduleMeeting(_roomId, _startTime, _endTime);
+            return await api.ScheduleMeeting(_roomId, context.GetSecurityLevel() == SecurityLevel.High, _startTime, _endTime);
         }
     }
 }

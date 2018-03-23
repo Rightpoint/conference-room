@@ -446,7 +446,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
             await BroadcastUpdate(room);
         }
 
-        public async Task ScheduleNewMeeting(IRoom room, string title, DateTimeOffset startTime, DateTimeOffset endTime)
+        public async Task ScheduleNewMeeting(IRoom room, string title, DateTimeOffset startTime, DateTimeOffset endTime, bool inviteMe)
         {
             if (string.IsNullOrEmpty(_contextService.UserId))
             {
@@ -469,7 +469,7 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services.ExchangeRest
 
             var item = await _exchange.CreateEvent(room.RoomAddress, new CalendarEntry
             {
-                Attendees = new [] { new Attendee() { EmailAddress = new EmailAddress() { Address = _contextService.UserId } } },
+                Attendees = inviteMe ? new [] { new Attendee() { EmailAddress = new EmailAddress() { Address = _contextService.UserId } } } : new Attendee[0],
                 Start = new DateTimeReference() { DateTime = startTime.ToUniversalTime().ToString("o"), TimeZone = "UTC" },
                 End = new DateTimeReference() { DateTime = endTime.ToUniversalTime().ToString("o"), TimeZone = "UTC" },
                 Subject = title ?? $"Scheduled via conference room management system by {_contextService.UserId}",
