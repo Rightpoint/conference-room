@@ -24,64 +24,74 @@ namespace RightpointLabs.ConferenceRoom.Bot
         [FunctionName("Authorize")]
         public static async Task<object> Run([HttpTrigger(AuthorizationLevel.Anonymous, "POST")]HttpRequestMessage req, TraceWriter log)
         {
-            log.Info($"Webhook was triggered!");
+            Messages.TelemetryClient.Context.Operation.Id = Guid.NewGuid().ToString();
+            Messages.TelemetryClient.Context.Operation.Name = "cs-http";
 
-            // Initialize the azure bot
-            using (new AzureFunctionsResolveAssembly())
-            using (BotService.Initialize())
+            try
             {
-                // Deserialize the incoming activity
-                var formData = await req.Content.ReadAsFormDataAsync();
+                log.Info($"Webhook was triggered!");
 
-                var cookie = SecureUrlToken.Decode<LoginState>(formData["state"]);
-                if (!string.IsNullOrEmpty(formData["error"]))
+                // Initialize the azure bot
+                using (new AzureFunctionsResolveAssembly())
+                using (BotService.Initialize())
                 {
-                    await Conversation.ResumeAsync(cookie.State, new AuthenticationResultModel(cookie.State.GetPostToUserMessage()) { Error = formData["error"], ErrorDescription = formData["error_description"] });
-                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    // Deserialize the incoming activity
+                    var formData = await req.Content.ReadAsFormDataAsync();
+
+                    var cookie = SecureUrlToken.Decode<LoginState>(formData["state"]);
+                    if (!string.IsNullOrEmpty(formData["error"]))
                     {
-                        Content = new StringContent("<html><head><script type='text/javascript'>window.close();</script></head><body>An error occurred during authentication.  You can close this browser window</body></html>", Encoding.UTF8, "text/html")
-                    };
-                }
+                        await Conversation.ResumeAsync(cookie.State, new AuthenticationResultModel(cookie.State.GetPostToUserMessage()) { Error = formData["error"], ErrorDescription = formData["error_description"] });
+                        return new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = new StringContent("<html><head><script type='text/javascript'>window.close();</script></head><body>An error occurred during authentication.  You can close this browser window</body></html>", Encoding.UTF8, "text/html")
+                        };
+                    }
 
-                // Get access token
-                var authContext = new AuthenticationContext(ConfigurationManager.AppSettings["Authority"]);
-                var authResult = await authContext.AcquireTokenByAuthorizationCodeAsync(
-                    formData["code"],
-                    new Uri(req.RequestUri.GetLeftPart(UriPartial.Path)),
-                    new ClientCredential(
-                        ConfigurationManager.AppSettings["ClientId"],
-                        ConfigurationManager.AppSettings["ClientSecret"]));
+                    // Get access token
+                    var authContext = new AuthenticationContext(ConfigurationManager.AppSettings["Authority"]);
+                    var authResult = await authContext.AcquireTokenByAuthorizationCodeAsync(
+                        formData["code"],
+                        new Uri(req.RequestUri.GetLeftPart(UriPartial.Path)),
+                        new ClientCredential(
+                            ConfigurationManager.AppSettings["ClientId"],
+                            ConfigurationManager.AppSettings["ClientSecret"]));
 
-                var upn = authResult?.UserInfo?.DisplayableId;
+                    var upn = authResult?.UserInfo?.DisplayableId;
 
-                var result = new AuthenticationResultModel(cookie.State.GetPostToUserMessage())
-                {
-                    AccessToken = authResult.IdToken,
-                    Upn = upn,
-                    GivenName = authResult?.UserInfo?.GivenName,
-                    FamilyName = authResult?.UserInfo?.FamilyName,
-                };
-
-                if (upn == cookie.State.User.Id || upn == cookie.LastUpn)
-                {
-                    await Conversation.ResumeAsync(cookie.State, result);
-                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    var result = new AuthenticationResultModel(cookie.State.GetPostToUserMessage())
                     {
-                        Content = new StringContent("<html><head><script type='text/javascript'>window.close();</script></head><body>You can close this browser window</body></html>", Encoding.UTF8, "text/html")
+                        AccessToken = authResult.IdToken,
+                        Upn = upn,
+                        GivenName = authResult?.UserInfo?.GivenName,
+                        FamilyName = authResult?.UserInfo?.FamilyName,
                     };
-                }
-                else
-                {
-                    var rnd = new Random();
-                    result.SecurityKey = string.Join("", Enumerable.Range(0, 6).Select(i => rnd.Next(10).ToString()));
-                    await Conversation.ResumeAsync(cookie.State, result);
-                    return new HttpResponseMessage(HttpStatusCode.OK)
+
+                    if (upn == cookie.State.User.Id || upn == cookie.LastUpn)
                     {
-                        Content = new StringContent($"<html><head></head><body><!--We can't auto-auth you because {upn} != {cookie.State.User.Id}. -->Please copy and paste this key into the conversation with the bot: {result.SecurityKey}.</body></html>", Encoding.UTF8, "text/html")
-                    };
+                        await Conversation.ResumeAsync(cookie.State, result);
+                        return new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = new StringContent("<html><head><script type='text/javascript'>window.close();</script></head><body>You can close this browser window</body></html>", Encoding.UTF8, "text/html")
+                        };
+                    }
+                    else
+                    {
+                        var rnd = new Random();
+                        result.SecurityKey = string.Join("", Enumerable.Range(0, 6).Select(i => rnd.Next(10).ToString()));
+                        await Conversation.ResumeAsync(cookie.State, result);
+                        return new HttpResponseMessage(HttpStatusCode.OK)
+                        {
+                            Content = new StringContent($"<html><head></head><body><!--We can't auto-auth you because {upn} != {cookie.State.User.Id}. -->Please copy and paste this key into the conversation with the bot: {result.SecurityKey}.</body></html>", Encoding.UTF8, "text/html")
+                        };
+                    }
                 }
             }
-
+            catch (Exception ex)
+            {
+                Messages.TelemetryClient.TrackException(ex);
+                throw;
+            }
         }
     }
 }
