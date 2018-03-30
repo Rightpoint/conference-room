@@ -118,6 +118,10 @@ namespace RightpointLabs.ConferenceRoom.Functions.Implementation
                                 var reqH = new HttpRequestMessage(HttpMethod.Post, uri) { Content = content };
                                 using (var r = await client.SendAsync(reqH))
                                 {
+                                    if (r.StatusCode != System.Net.HttpStatusCode.OK)
+                                    {
+                                        log.Warning($"Unable to create new sub for {roomAddress}: {r.StatusCode}");
+                                    }
                                     r.EnsureSuccessStatusCode();
                                     var rObj = JObject.Parse(await r.Content.ReadAsStringAsync());
                                     subId = (string)rObj["Id"];
