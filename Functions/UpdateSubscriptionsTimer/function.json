@@ -1,17 +1,12 @@
 {
   "scriptFile": "..\\bin\\RightpointLabs.ConferenceRoom.Functions.dll",
-  "entryPoint": "RightpointLabs.ConferenceRoom.Functions.Implementation.UpdateSubscriptions.RunHttp",
+  "entryPoint": "RightpointLabs.ConferenceRoom.Functions.Implementation.UpdateSubscriptions.RunTimer",
   "bindings": [
     {
-      "authLevel": "admin",
-      "name": "req",
-      "type": "httpTrigger",
+      "schedule": "10 10 */6 * * *",
+      "name": "timer",
+      "type": "timerTrigger",
       "direction": "in"
-    },
-    {
-      "name": "res",
-      "type": "http",
-      "direction": "out"
     },
     {
       "name": "rooms",

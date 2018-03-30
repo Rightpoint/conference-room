@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.ApplicationInsights;
+using Microsoft.Azure.WebJobs;
 
 namespace RightpointLabs.ConferenceRoom.Functions.Implementation
 {
@@ -26,12 +27,41 @@ namespace RightpointLabs.ConferenceRoom.Functions.Implementation
 
         public static readonly string WebHookUri = ConfigurationManager.AppSettings["WebHookUri"];
 
-        public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceWriter log, IQueryable<DynamicTableEntity> rooms, CloudTable roomsTable, IQueryable<DynamicTableEntity> serviceConfig)
+        public static async Task<HttpResponseMessage> RunHttp(HttpRequestMessage req, TraceWriter log, IQueryable<DynamicTableEntity> rooms, CloudTable roomsTable, IQueryable<DynamicTableEntity> serviceConfig)
         {
             try
             {
                 log.Info($"C# HTTP trigger function processed a request. RequestUri={req.RequestUri}");
 
+                await Run(log, rooms, roomsTable, serviceConfig);
+                return req.CreateResponse(HttpStatusCode.OK, "");
+            }
+            catch (Exception ex)
+            {
+                TelemetryClient.TrackException(ex);
+                throw;
+            }
+        }
+
+        public static async Task RunTimer(TimerInfo timer, TraceWriter log, IQueryable<DynamicTableEntity> rooms, CloudTable roomsTable, IQueryable<DynamicTableEntity> serviceConfig)
+        {
+            try
+            {
+                log.Info($"C# timer trigger function processed a request. IsPastDue={timer.IsPastDue}");
+
+                await Run(log, rooms, roomsTable, serviceConfig);
+            }
+            catch (Exception ex)
+            {
+                TelemetryClient.TrackException(ex);
+                throw;
+            }
+        }
+
+        public static async Task Run(TraceWriter log, IQueryable<DynamicTableEntity> rooms, CloudTable roomsTable, IQueryable<DynamicTableEntity> serviceConfig)
+        {
+            try
+            {
                 var allRooms = rooms.ToList().GroupBy(i => i.PartitionKey).ToDictionary(i => i.Key, i => i.ToList());
                 foreach (var org in allRooms)
                 {
@@ -135,8 +165,6 @@ namespace RightpointLabs.ConferenceRoom.Functions.Implementation
                     })).ToArray();
                     await Task.WhenAll(tasks);
                 }
-
-                return req.CreateResponse(HttpStatusCode.OK, "");
             }
             catch (Exception ex)
             {
