@@ -90,8 +90,10 @@ namespace RightpointLabs.ConferenceRoom.Web
                     ConfigurationManager.AppSettings["TokenIssuer"],
                     ConfigurationManager.AppSettings["TokenAudience"],
                     ConfigurationManager.AppSettings["TokenKey"],
-                    c.Resolve<OpenIdConnectConfigurationService>())));
-            container.RegisterType<OpenIdConnectConfigurationService>(new ContainerControlledLifetimeManager());
+                    c.Resolve<OpenIdV1ConnectConfigurationService>(),
+                    c.Resolve<OpenIdV2ConnectConfigurationService>())));
+            container.RegisterType<OpenIdV1ConnectConfigurationService>(new ContainerControlledLifetimeManager());
+            container.RegisterType<OpenIdV2ConnectConfigurationService>(new ContainerControlledLifetimeManager());
 
             container.RegisterType<CloudTableClient>(new ContainerControlledLifetimeManager(), new InjectionFactory(c =>
                 CloudStorageAccount.Parse(ConfigurationManager.ConnectionStrings["AzureStorage"]?.ConnectionString).CreateCloudTableClient()

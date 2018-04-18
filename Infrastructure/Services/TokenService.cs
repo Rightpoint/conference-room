@@ -13,7 +13,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
     {
         private readonly string _issuer;
         private readonly string _audience;
-        private readonly OpenIdConnectConfigurationService _configurationService;
+        private readonly OpenIdV1ConnectConfigurationService _configurationServiceV1;
+        private readonly OpenIdV2ConnectConfigurationService _configurationServiceV2;
         private readonly SecurityKey _signingKey;
 
         private static readonly string ClaimKeyDeviceId = "deviceid";
@@ -22,11 +23,12 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private static readonly string ClaimKeyStyle = "style";
         private static readonly string AzureAdClaimKeyUserId = "upn";
 
-        public TokenService(string issuer, string audience, string signingKey, OpenIdConnectConfigurationService configurationService)
+        public TokenService(string issuer, string audience, string signingKey, OpenIdV1ConnectConfigurationService configurationServiceV1, OpenIdV2ConnectConfigurationService configurationServiceV2)
         {
             _issuer = issuer;
             _audience = audience;
-            _configurationService = configurationService;
+            _configurationServiceV1 = configurationServiceV1;
+            _configurationServiceV2 = configurationServiceV2;
             var rsa = new RSACryptoServiceProvider();
             rsa.ImportCspBlob(Convert.FromBase64String(signingKey));
             _signingKey = new RsaSecurityKey(rsa);;
@@ -35,7 +37,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         public JwtSecurityToken ValidateToken(string rawToken)
         {
             return TryValidateToken(rawToken, GetLocalTokenValidationParameters(), false) ??
-                   TryValidateToken(rawToken, GetAzureADTokenValidationParameters(), true);
+                   TryValidateToken(rawToken, GetAzureADV1TokenValidationParameters(), false) ??
+                   TryValidateToken(rawToken, GetAzureADV2TokenValidationParameters(), true);
         }
 
         private JwtSecurityToken TryValidateToken(string rawToken, TokenValidationParameters parameters, bool throwOnError)
@@ -76,9 +79,20 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             };
         }
 
-        private TokenValidationParameters GetAzureADTokenValidationParameters()
+        private TokenValidationParameters GetAzureADV1TokenValidationParameters()
         {
-            var config = _configurationService.GetConfig();
+            var config = _configurationServiceV1.GetConfig();
+            return new TokenValidationParameters()
+            {
+                ValidIssuer = config.Issuer,
+                IssuerSigningTokens = config.SigningTokens,
+                ValidateAudience = false,
+            };
+        }
+
+        private TokenValidationParameters GetAzureADV2TokenValidationParameters()
+        {
+            var config = _configurationServiceV2.GetConfig();
             return new TokenValidationParameters()
             {
                 ValidIssuer = config.Issuer,
