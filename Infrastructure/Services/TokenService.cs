@@ -22,6 +22,8 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
         private static readonly string ClaimKeyUserId = "userid";
         private static readonly string ClaimKeyStyle = "style";
         private static readonly string AzureAdClaimKeyUserId = "upn";
+        private static readonly string AzureAdClaimKeyEmail = "email";
+        private static readonly string AzureAdClaimKeyPreferredUsername = "preferred_username";
 
         public TokenService(string issuer, string audience, string signingKey, OpenIdV1ConnectConfigurationService configurationServiceV1, OpenIdV2ConnectConfigurationService configurationServiceV2)
         {
@@ -123,7 +125,10 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
 
         public string GetUserId(JwtSecurityToken token)
         {
-            return GetClaimValueByType(token, ClaimKeyUserId) ?? GetClaimValueByType(token, AzureAdClaimKeyUserId);
+            return GetClaimValueByType(token, ClaimKeyUserId) ??
+                   GetClaimValueByType(token, AzureAdClaimKeyUserId) ??
+                   GetClaimValueByType(token, AzureAdClaimKeyEmail) ??
+                   GetClaimValueByType(token, AzureAdClaimKeyPreferredUsername);
         }
 
         public string GetOrganizationId(JwtSecurityToken token)
