@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Bot.Builder.Luis.Models;
+using RightpointLabs.BotLib.Extensions;
+using RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria;
 
 namespace RightpointLabs.ConferenceRoom.Bot.Criteria
 {
@@ -13,9 +15,9 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
 
         public void LoadTimeCriteria(LuisResult result, TimeZoneInfo timezone)
         {
-            var timeRange = ParseTimeRange(result, timezone);
-            var time = ParseTime(result, timezone);
-            var duration = ParseDuration(result);
+            var timeRange = result.ParseTimeRange(timezone);
+            var time = result.ParseTime(timezone);
+            var duration = result.ParseDuration();
 
             var start = timeRange.HasValue
                 ? timeRange.Value.start
@@ -52,8 +54,8 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
 
         public void LoadEndTimeCriteria(LuisResult result, TimeZoneInfo timezone)
         {
-            var time = ParseTime(result, timezone);
-            var duration = ParseDuration(result);
+            var time = result.ParseTime(timezone);
+            var duration = result.ParseDuration();
 
             var end = time.Length >= 1
                 ? time[0]
@@ -66,47 +68,6 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
             }
 
             this.EndTime = end;
-        }
-        private static TimeSpan? ParseDuration(LuisResult result)
-        {
-            var duration = result.Entities
-                .Where(i => i.Type == "builtin.datetimeV2.duration")
-                .SelectMany(i => (List<object>) i.Resolution["values"])
-                .Select(i => ParseDuration((IDictionary<string, object>) i))
-                .FirstOrDefault(i => i.HasValue);
-            return duration;
-        }
-
-        private static DateTimeOffset[] ParseTime(LuisResult result, TimeZoneInfo timezone)
-        {
-            var time = result.Entities
-                .Where(i => i.Type == "builtin.datetimeV2.time" || i.Type == "builtin.datetimeV2.datetime")
-                .Select(x =>
-                {
-                    var values = ((List<object>) x.Resolution["values"])
-                        .Select(i => ParseTime((IDictionary<string, object>) i, timezone))
-                        .Where(i => i.HasValue)
-                        .ToArray();
-                    if (values.Length > 1 && values.Count(i => i > DateTime.Now) != values.Length)
-                    {
-                        values = values.Where(i => i > DateTimeOffset.Now).ToArray();
-                    }
-                    return values.FirstOrDefault();
-                })
-                .Where(i => i.HasValue)
-                .Select(i => i.Value)
-                .ToArray();
-            return time;
-        }
-
-        private static (DateTimeOffset start, DateTimeOffset end)? ParseTimeRange(LuisResult result, TimeZoneInfo timezone)
-        {
-            var timeRange = result.Entities
-                .Where(i => i.Type == "builtin.datetimeV2.timerange")
-                .SelectMany(i => (List<object>)i.Resolution["values"])
-                .Select(i => ParseTimeRange((IDictionary<string, object>)i, timezone))
-                .FirstOrDefault(i => i.HasValue);
-            return timeRange;
         }
     }
 }

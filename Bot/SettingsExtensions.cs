@@ -50,13 +50,15 @@ namespace RightpointLabs.ConferenceRoom.Bot
             var level = value == "low" ? Models.SecurityLevel.Low : Models.SecurityLevel.High;
             if (level == Models.SecurityLevel.Low)
             {
+                // TODO: re-test that this is working now - may need to remove more or less stuff here with the new refreh token approach
+                throw new NotImplementedException();
                 // clear out cached settings that could be used for high-security
                 var toClear = new[]
                 {
                     new RoomNinjaCustomTokenDialog(context, null, null, false, false).CacheKey,
                     new RoomNinjaCustomTokenDialog.CustomResourceAuthTokenDialog(null, RoomsService.Resource, false, false).CacheKey,
                     new RoomNinjaCustomTokenDialog.CustomAppAuthTokenDialog(null, false, false).CacheKey,
-                    nameof(LoginState.LastUpn),
+                    nameof(UserTokenCache), 
                 };
                 foreach (var key in toClear)
                 {

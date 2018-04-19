@@ -160,9 +160,9 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                 return new Uri(_requestUri, "/api/Authorize").AbsoluteUri;
             }
 
-            protected override void SaveSettings(IDialogContext context, SimpleAuthenticationResultModel authResult)
+            protected override async Task SaveSettings(IDialogContext context, SimpleAuthenticationResultModel authResult)
             {
-                base.SaveSettings(context, authResult);
+                await base.SaveSettings(context, authResult);
                 if (string.IsNullOrEmpty(authResult.GivenName) || string.IsNullOrEmpty(authResult.FamilyName))
                 {
                     context.SetName(null);
@@ -171,6 +171,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                 {
                     context.SetName($"{authResult.GivenName} {authResult.FamilyName}");
                 }
+                await this.PreAuthForResources(context, authResult, RoomsService.Resource);
             }
 
             protected override void Log(string message)
