@@ -38,9 +38,19 @@ namespace RightpointLabs.ConferenceRoom.Bot
                 return assembly;
             }
 
+            // try using a version we already have loaded
+            var assemblyName = new AssemblyName(arguments.Name);
+            assembly = AppDomain.CurrentDomain.GetAssemblies()
+                .FirstOrDefault(a => a.GetName().Name == assemblyName.Name);
+
+            if (assembly != null)
+            {
+                _log.Info($"Redirecting {assemblyName.FullName} to {assembly.FullName}");
+                return assembly;
+            }
+
             // try to load assembly from file
             var assemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var assemblyName = new AssemblyName(arguments.Name);
             var assemblyFileName = assemblyName.Name + ".dll";
             string assemblyPath;
 
@@ -62,7 +72,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
 
             if (!isResources)
             {
-                _log.Warning($"Cannot find library for {assemblyName.FullName} at {assemblyPath} - other files: {string.Join(", ", Directory.GetFiles(assemblyDirectory))}");
+                _log.Warning($"Cannot find library for {assemblyName.FullName} at {assemblyPath} - other files: {string.Join(", ", Directory.GetFiles(assemblyDirectory))}, already loaded: {string.Join(", ", AppDomain.CurrentDomain.GetAssemblies().Select(i => i.FullName))}");
             }
 
             return null;
