@@ -39,6 +39,9 @@ namespace RightpointLabs.ConferenceRoom.Bot
             TelemetryClient.Context.Operation.Id = context.InvocationId.ToString();
             TelemetryClient.Context.Operation.Name = "cs-http";
 
+            // force assembly to load early with the right version number
+            var x = typeof(Conversation);
+
             try
             {
                 // Initialize the azure bot
