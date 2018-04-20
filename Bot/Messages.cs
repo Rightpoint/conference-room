@@ -101,7 +101,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
                     case ActivityTypes.ConversationUpdate:
                         var client = new ConnectorClient(new Uri(activity.ServiceUrl));
                         IConversationUpdateActivity update = activity;
-                        if (update.MembersAdded.Any())
+                        if (update.MembersAdded?.Any() ?? false)
                         {
                             var reply = activity.CreateReply();
                             var newMembers = update.MembersAdded?.Where(t => t.Id != activity.Recipient.Id);
