@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs.Host;
 
 namespace RightpointLabs.ConferenceRoom.Bot
 {
@@ -13,8 +15,11 @@ namespace RightpointLabs.ConferenceRoom.Bot
     /// </summary>
     public class AzureFunctionsResolveAssembly : IDisposable
     {
-        public AzureFunctionsResolveAssembly()
+        private readonly TraceWriter _log;
+
+        public AzureFunctionsResolveAssembly(Microsoft.Azure.WebJobs.Host.TraceWriter log)
         {
+            _log = log;
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
         }
 
@@ -39,7 +44,8 @@ namespace RightpointLabs.ConferenceRoom.Bot
             var assemblyFileName = assemblyName.Name + ".dll";
             string assemblyPath;
 
-            if (assemblyName.Name.EndsWith(".resources"))
+            var isResources = assemblyName.Name.EndsWith(".resources");
+            if (isResources)
             {
                 var resourceDirectory = Path.Combine(assemblyDirectory, assemblyName.CultureName);
                 assemblyPath = Path.Combine(resourceDirectory, assemblyFileName);
@@ -52,6 +58,11 @@ namespace RightpointLabs.ConferenceRoom.Bot
             if (File.Exists(assemblyPath))
             {
                 return Assembly.LoadFrom(assemblyPath);
+            }
+
+            if (!isResources)
+            {
+                _log.Warning($"Cannot find library for {assemblyName.FullName} at {assemblyPath} from {new StackTrace(true)}");
             }
 
             return null;

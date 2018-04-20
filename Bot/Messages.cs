@@ -45,7 +45,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
             try
             {
                 // Initialize the azure bot
-                using (new AzureFunctionsResolveAssembly())
+                using (new AzureFunctionsResolveAssembly(log))
                 using (BotService.Initialize())
                 {
                     return await RunBody(req, context, log);
