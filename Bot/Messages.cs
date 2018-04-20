@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using Newtonsoft.Json;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,7 +41,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
             TelemetryClient.Context.Operation.Name = "cs-http";
 
             // force assembly to load early with the right version number
-            var x = typeof(Conversation);
+            ForceLoad(typeof(Conversation));
 
             try
             {
@@ -56,6 +57,12 @@ namespace RightpointLabs.ConferenceRoom.Bot
                 TelemetryClient.TrackException(ex);
                 throw;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        private static void ForceLoad(Type type)
+        {
+            
         }
 
         // this is split into a second method so that the assemblies it references (like Microsoft.Bot.Connector) don't load until *after* the AzureFunctionsResolveAssembly hook (above) is in place.
