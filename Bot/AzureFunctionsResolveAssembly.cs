@@ -62,7 +62,7 @@ namespace RightpointLabs.ConferenceRoom.Bot
 
             if (!isResources)
             {
-                _log.Warning($"Cannot find library for {assemblyName.FullName} at {assemblyPath} from {new StackTrace(true)}");
+                _log.Warning($"Cannot find library for {assemblyName.FullName} at {assemblyPath} - other files: {string.Join(", ", Directory.GetFiles(assemblyDirectory))}");
             }
 
             return null;
