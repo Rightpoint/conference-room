@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Bot.Builder.FormFlow;
 using Microsoft.Bot.Builder.FormFlow.Advanced;
 using Microsoft.Bot.Builder.Luis.Models;
+using RightpointLabs.ConferenceRoom.Bot.Extensions;
 
 namespace RightpointLabs.ConferenceRoom.Bot.Criteria
 {

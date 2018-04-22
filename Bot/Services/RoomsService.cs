@@ -15,7 +15,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
     {
         protected override Uri Url => BaseUrl;
 
-        public static Uri BaseUrl => new Uri(Utils.GetAppSetting("RoomNinjaApiUrl"));
+        public static Uri BaseUrl => new Uri(ConfigurationManager.AppSettings["RoomNinjaApiUrl"]);
 
         public static readonly string Resource = "https://rightpoint.com/553d35d5-1fd5-4763-8356-a62cc4d350e3";
 

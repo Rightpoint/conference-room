@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -8,6 +9,7 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Connector;
 using RightpointLabs.ConferenceRoom.Bot.Criteria;
+using RightpointLabs.ConferenceRoom.Bot.Extensions;
 
 namespace RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria
 {
@@ -161,7 +163,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria
 
         private ILuisService GetLuisService()
         {
-            return new LuisService(new LuisModelAttribute(Utils.GetAppSetting("LuisAppId"), Utils.GetAppSetting("LuisAPIKey")));
+            return new LuisService(new LuisModelAttribute(ConfigurationManager.AppSettings["LuisAppId"], ConfigurationManager.AppSettings["LuisAPIKey"]));
         }
     }
 }

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <appSettings>
+    <add key="MicrosoftAppId" value=""/>
+    <add key="MicrosoftAppPassword" value=""/>
+    <add key="LuisAPIKey" value=""/>
+    <add key="LuisAppId" value=""/>
+    <add key="EncryptionKey" value=""/>
+    <add key="Authority" value=""/>
+    <add key="ClientId" value=""/>
+    <add key="ClientSecret" value=""/>
+    <add key="RoomNinjaApiUrl" value=""/>
+    <add key="APPINSIGHTS_INSTRUMENTATIONKEY" value=""/>
+    <add key="BOT_WEB_SECRET" value=""/>
+  </appSettings>
+  <runtime>
+    <gcServer enabled="true"/>
+  </runtime>
+</configuration>

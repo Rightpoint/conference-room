@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -38,7 +39,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         protected override void Log(string message)
         {
-            Messages.CurrentLog.Info(message);
+            Trace.WriteLine(message);
         }
 
     }

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -11,6 +13,7 @@ using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
 using RightpointLabs.ConferenceRoom.Bot.Criteria;
 using RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria;
+using RightpointLabs.ConferenceRoom.Bot.Extensions;
 using RightpointLabs.ConferenceRoom.Bot.Models;
 using RightpointLabs.ConferenceRoom.Bot.Services;
 
@@ -23,7 +26,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         private List<RoomsService.RoomStatusResult> _roomResults;
         private RoomSearchCriteria _criteria;
 
-        public BotDialog(Uri requestUri) : base(new LuisService(new LuisModelAttribute(Utils.GetAppSetting("LuisAppId"), Utils.GetAppSetting("LuisAPIKey"))))
+        public BotDialog(Uri requestUri) : base(new LuisService(new LuisModelAttribute(ConfigurationManager.AppSettings["LuisAppId"], ConfigurationManager.AppSettings["LuisAPIKey"])))
         {
             _requestUri = requestUri;
         }
@@ -40,7 +43,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         protected override Task DispatchToIntentHandler(IDialogContext context, IAwaitable<IMessageActivity> item, IntentRecommendation bestIntent, LuisResult result)
         {
-            Messages.CurrentLog.Info($"Intent: {bestIntent.Intent}, Entities: {string.Join(", ", result.Entities.Select(i => i.Type ?? i.Role))}");
+            Trace.WriteLine($"Intent: {bestIntent.Intent}, Entities: {string.Join(", ", result.Entities.Select(i => i.Type ?? i.Role))}");
             return base.DispatchToIntentHandler(context, item, bestIntent, result);
         }
 

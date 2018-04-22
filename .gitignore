@@ -211,3 +211,8 @@ FakesAssemblies/
 /StatusMonitor/devicekey
 /Bot/TeamsPackage/TeamsPackage.zip
 /Bot/TeamsPackage/manifest.json
+
+app.config
+appsettings.Development.json
+*.swp
+*~

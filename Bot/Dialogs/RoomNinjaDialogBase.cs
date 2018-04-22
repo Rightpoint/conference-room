@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
+using RightpointLabs.ConferenceRoom.Bot.Extensions;
 
 namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 {

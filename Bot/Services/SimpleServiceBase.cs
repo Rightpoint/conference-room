@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RightpointLabs.ConferenceRoom.Bot.Controllers;
 
 namespace RightpointLabs.ConferenceRoom.Bot.Services
 {
@@ -105,7 +106,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
 
         protected virtual void AddAuthentication(HttpClient c)
         {
-            c.DefaultRequestHeaders.Add("x-ms-request-id", Messages.TelemetryClient.Context.Operation.Id);
+            c.DefaultRequestHeaders.Add("x-ms-request-id", MessagesController.TelemetryClient.Context.Operation.Id);
         }
 
         protected virtual string GetUserKey()
@@ -129,7 +130,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
         private void RequestComplete(HttpResponseMessage res, TimeSpan duration)
         {
             var now = DateTimeOffset.Now;
-            Messages.TelemetryClient.TrackDependency(
+            MessagesController.TelemetryClient.TrackDependency(
                 "Http",
                 $"{res.RequestMessage.RequestUri.Host}:{res.RequestMessage.RequestUri.Port}",
                 $"{res.RequestMessage.Method} {res.RequestMessage.RequestUri.AbsolutePath}",

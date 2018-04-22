@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Connector;
 
-namespace RightpointLabs.ConferenceRoom.Bot
+namespace RightpointLabs.ConferenceRoom.Bot.Extensions
 {
     public static class DateTimeExtensions
     {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -7,6 +8,8 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using RightpointLabs.BotLib;
 using RightpointLabs.BotLib.Dialogs;
+using RightpointLabs.ConferenceRoom.Bot.Controllers;
+using RightpointLabs.ConferenceRoom.Bot.Extensions;
 using RightpointLabs.ConferenceRoom.Bot.Models;
 using RightpointLabs.ConferenceRoom.Bot.Services;
 
@@ -94,7 +97,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         protected void Log(string message)
         {
-            Messages.CurrentLog.Info(message);
+            Trace.WriteLine(message);
         }
 
         [Serializable]
@@ -114,13 +117,13 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
             protected override void Log(string message)
             {
-                Messages.CurrentLog.Info(message);
+                Trace.WriteLine(message);
             }
 
             protected override void TokenRequestComplete(TimeSpan duration, Exception ex)
             {
                 var now = DateTimeOffset.Now;
-                Messages.TelemetryClient.TrackDependency("Http", "RequestToken", now.Subtract(duration), duration, null == ex);
+                MessagesController.TelemetryClient.TrackDependency("Http", "RequestToken", now.Subtract(duration), duration, null == ex);
             }
         }
 
@@ -141,7 +144,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
             protected override void Log(string message)
             {
-                Messages.CurrentLog.Info(message);
+                Trace.WriteLine(message);
             }
         }
 
@@ -176,7 +179,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
             protected override void Log(string message)
             {
-                Messages.CurrentLog.Info(message);
+                Trace.WriteLine(message);
             }
         }
     }

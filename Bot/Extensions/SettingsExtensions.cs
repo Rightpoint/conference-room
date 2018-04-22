@@ -1,17 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Connector;
 using Newtonsoft.Json.Linq;
 using RightpointLabs.BotLib;
 using RightpointLabs.ConferenceRoom.Bot.Dialogs;
 using RightpointLabs.ConferenceRoom.Bot.Models;
 using RightpointLabs.ConferenceRoom.Bot.Services;
 
-namespace RightpointLabs.ConferenceRoom.Bot
+namespace RightpointLabs.ConferenceRoom.Bot.Extensions
 {
     public static class SettingsExtensions
     {
