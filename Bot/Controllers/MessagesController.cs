@@ -35,6 +35,13 @@ namespace RightpointLabs.ConferenceRoom.Bot.Controllers
 
         public static TelemetryClient TelemetryClient { get; } = new TelemetryClient() {InstrumentationKey = appInsightsKey};
 
+        [HttpOptions]
+        public async Task<object> Options()
+        {
+            // allow bot framework to be pointed to us by responding to an OPTIONS call
+            return Ok();
+        }
+
         [HttpPost]
         public async Task<object> Post([FromBody]Activity activity)
         {
