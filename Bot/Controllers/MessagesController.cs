@@ -16,6 +16,7 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
+using RightpointLabs.BotLib;
 using RightpointLabs.BotLib.Dialogs;
 using RightpointLabs.ConferenceRoom.Bot.Dialogs;
 using RightpointLabs.ConferenceRoom.Bot.Extensions;
@@ -29,8 +30,8 @@ namespace RightpointLabs.ConferenceRoom.Bot.Controllers
         private static string appInsightsKey = TelemetryConfiguration.Active.InstrumentationKey =
             Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY", EnvironmentVariableTarget.Process) ??
             Environment.GetEnvironmentVariable("BotDevAppInsightsKey", EnvironmentVariableTarget.Process) ??
-            ConfigurationManager.AppSettings["APPINSIGHTS_INSTRUMENTATIONKEY"] ??
-            ConfigurationManager.AppSettings["BotDevAppInsightsKey"];
+            Config.GetAppSetting("APPINSIGHTS_INSTRUMENTATIONKEY") ??
+            Config.GetAppSetting("BotDevAppInsightsKey");
 
         public static TelemetryClient TelemetryClient { get; } = new TelemetryClient() {InstrumentationKey = appInsightsKey};
 

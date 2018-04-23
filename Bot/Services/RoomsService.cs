@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Azure;
 using Microsoft.IdentityModel.Protocols;
+using RightpointLabs.BotLib;
 using RightpointLabs.ConferenceRoom.Bot.Criteria;
 
 namespace RightpointLabs.ConferenceRoom.Bot.Services
@@ -15,7 +16,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
     {
         protected override Uri Url => BaseUrl;
 
-        public static Uri BaseUrl => new Uri(ConfigurationManager.AppSettings["RoomNinjaApiUrl"]);
+        public static Uri BaseUrl => new Uri(Config.GetAppSetting("RoomNinjaApiUrl"));
 
         public static readonly string Resource = "https://rightpoint.com/553d35d5-1fd5-4763-8356-a62cc4d350e3";
 

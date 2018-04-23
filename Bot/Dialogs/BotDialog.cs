@@ -11,6 +11,7 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
+using RightpointLabs.BotLib;
 using RightpointLabs.ConferenceRoom.Bot.Criteria;
 using RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria;
 using RightpointLabs.ConferenceRoom.Bot.Extensions;
@@ -26,7 +27,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         private List<RoomsService.RoomStatusResult> _roomResults;
         private RoomSearchCriteria _criteria;
 
-        public BotDialog(Uri requestUri) : base(new LuisService(new LuisModelAttribute(ConfigurationManager.AppSettings["LuisAppId"], ConfigurationManager.AppSettings["LuisAPIKey"])))
+        public BotDialog(Uri requestUri) : base(new LuisService(new LuisModelAttribute(Config.GetAppSetting("LuisAppId"), Config.GetAppSetting("LuisAPIKey"))))
         {
             _requestUri = requestUri;
         }

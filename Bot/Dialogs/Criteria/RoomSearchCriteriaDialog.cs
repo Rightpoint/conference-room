@@ -8,6 +8,7 @@ using Microsoft.Bot.Builder.Azure;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Connector;
+using RightpointLabs.BotLib;
 using RightpointLabs.ConferenceRoom.Bot.Criteria;
 using RightpointLabs.ConferenceRoom.Bot.Extensions;
 
@@ -163,7 +164,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs.Criteria
 
         private ILuisService GetLuisService()
         {
-            return new LuisService(new LuisModelAttribute(ConfigurationManager.AppSettings["LuisAppId"], ConfigurationManager.AppSettings["LuisAPIKey"]));
+            return new LuisService(new LuisModelAttribute(Config.GetAppSetting("LuisAppId"), Config.GetAppSetting("LuisAPIKey")));
         }
     }
 }
