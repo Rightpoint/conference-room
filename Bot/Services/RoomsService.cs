@@ -18,7 +18,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
 
         public static Uri BaseUrl => new Uri(Config.GetAppSetting("RoomNinjaApiUrl"));
 
-        public static readonly string Resource = "https://rightpoint.com/553d35d5-1fd5-4763-8356-a62cc4d350e3";
+        public static readonly string Resource = Config.GetAppSetting("RoomNinjaResource") ?? "https://rooms.rightpoint.com/";
 
         public RoomsService(string accessToken) : base(accessToken)
         {
