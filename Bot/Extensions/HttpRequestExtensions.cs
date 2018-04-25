@@ -17,7 +17,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Extensions
             {
                 Scheme = req.Scheme,
                 Host = req.Host.Host,
-                Port = req.Host.Port.GetValueOrDefault(80),
+                Port = req.Host.Port.GetValueOrDefault(-1),
                 Path = req.Path.ToString(),
                 Query = req.QueryString.ToString()
             }.Uri;
