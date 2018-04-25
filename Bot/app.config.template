@@ -1,6 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <configuration>
   <appSettings>
+    <!-- these values need to be missing when deployed, but use them locally -->
+    <!--
     <add key="MicrosoftAppId" value=""/>
     <add key="MicrosoftAppPassword" value=""/>
     <add key="LuisAPIKey" value=""/>
@@ -12,6 +14,9 @@
     <add key="RoomNinjaApiUrl" value=""/>
     <add key="APPINSIGHTS_INSTRUMENTATIONKEY" value=""/>
     <add key="BOT_WEB_URL" value=""/>
+    <add key="AzureWebJobsStorage" value=""/>
+    <add key="UseTableStorageForConversationState" value=""/>
+    -->
   </appSettings>
   <runtime>
     <gcServer enabled="true"/>
