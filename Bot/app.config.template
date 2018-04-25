@@ -11,7 +11,7 @@
     <add key="ClientSecret" value=""/>
     <add key="RoomNinjaApiUrl" value=""/>
     <add key="APPINSIGHTS_INSTRUMENTATIONKEY" value=""/>
-    <add key="BOT_WEB_SECRET" value=""/>
+    <add key="BOT_WEB_URL" value=""/>
   </appSettings>
   <runtime>
     <gcServer enabled="true"/>
