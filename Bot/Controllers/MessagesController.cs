@@ -84,7 +84,10 @@ namespace RightpointLabs.ConferenceRoom.Bot.Controllers
                                 await Conversation.SendAsync(activity, () => new ExceptionHandlerDialog<object>(new BotDialog(Request.GetRequestUri()), true));
                                 break;
                             case ActivityTypes.ConversationUpdate:
-                                var client = new ConnectorClient(new Uri(activity.ServiceUrl));
+                                var client = new ConnectorClient(new Uri(activity.ServiceUrl), new MicrosoftAppCredentials(
+                                    Config.GetAppSetting("MicrosoftAppId"),
+                                    Config.GetAppSetting("MicrosoftAppPassword")
+                                ));
                                 IConversationUpdateActivity update = activity;
                                 if (update.MembersAdded?.Any() ?? false)
                                 {
