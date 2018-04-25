@@ -98,6 +98,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         protected void Log(string message)
         {
             Trace.WriteLine(message);
+            MessagesController.TelemetryClient.TrackTrace(message);
         }
 
         [Serializable]
@@ -118,6 +119,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             protected override void Log(string message)
             {
                 Trace.WriteLine(message);
+                MessagesController.TelemetryClient.TrackTrace(message);
             }
 
             protected override void TokenRequestComplete(TimeSpan duration, Exception ex)
@@ -145,6 +147,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             protected override void Log(string message)
             {
                 Trace.WriteLine(message);
+                MessagesController.TelemetryClient.TrackTrace(message);
             }
         }
 
@@ -180,6 +183,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             protected override void Log(string message)
             {
                 Trace.WriteLine(message);
+                MessagesController.TelemetryClient.TrackTrace(message);
             }
         }
     }
