@@ -32,9 +32,9 @@ namespace RightpointLabs.ConferenceRoom.Infrastructure.Services
             // let's make sure it's not too stale....
             lock (cached)
             {
-                if (cached.Created.Add(ageLimit) < now)
+                if (cached.Created.Add(ageLimit) < now || cached.Value.IsFaulted || cached.Value.IsCanceled)
                 {
-                    // too old
+                    // too old, failed, or cancelled
                     cached.Created = now;
                     cached.Value = loader();
                 }
