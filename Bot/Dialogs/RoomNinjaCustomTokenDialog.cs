@@ -78,12 +78,12 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                     }
 
                     Log($"RNCTD: saving long-term token {accessToken}");
+                    context.UserData.SetValue(CacheKey, accessToken);
                 }
                 else
                 {
                     Log($"RNCTD: using short-term token {accessToken}");
                 }
-                context.UserData.SetValue(CacheKey, accessToken);
             }
             context.Done(accessToken);
         }

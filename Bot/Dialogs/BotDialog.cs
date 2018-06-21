@@ -174,11 +174,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         private async Task SetBuildingCallback(IDialogContext context, IAwaitable<BuildingChoice> result)
         {
             var building = await result;
-            if (null != building)
-            {
-                context.SetBuilding(building);
-                await context.PostAsync(context.CreateMessage($"Building set to {building.BuildingName}.", InputHints.AcceptingInput));
-            }
+            // dialog will tell the user the building is set
             context.Done(string.Empty);
         }
 
