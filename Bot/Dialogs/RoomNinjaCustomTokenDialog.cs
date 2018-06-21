@@ -82,7 +82,8 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                 }
                 else
                 {
-                    Log($"RNCTD: using short-term token {accessToken}");
+                    Log($"RNCTD: clearing any cached one and using short-term token {accessToken}");
+                    context.UserData.SetValue(CacheKey, ""); // clear the token in the cache if there is one - we don't want to try using it
                 }
             }
             context.Done(accessToken);
