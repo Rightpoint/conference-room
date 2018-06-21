@@ -22,6 +22,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
     {
         private RoomSearchCriteria _criteria;
         private List<RoomsService.RoomStatusResult> _roomResults;
+        private List<RoomsService.RoomStatusResult> _allRooms;
 
         public FindRoomDialog(RoomSearchCriteria criteria, Uri requestUri)
         {
@@ -96,6 +97,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             var preferredFloorId = context.GetPreferredFloor()?.FloorId;
 
             // ok, now we just have rooms that meet the criteria - let's see what's free when asked
+            _allRooms = rooms.ToList();
             _roomResults = rooms.Select(r =>
             {
                 var meetings = r.Status.NearTermMeetings.Where(i => i.End > _criteria.StartTime).OrderBy(i => i.Start).ToList();
@@ -143,7 +145,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             context.Wait(ConfirmBookOneOfManyRooms);
         }
 
-        private static readonly Regex _cleanup = new Regex("[^A-Za-z ]*", RegexOptions.Compiled);
+        private static readonly Regex _cleanup = new Regex("[^A-Za-z0-9 ]*", RegexOptions.Compiled);
 
         private async Task ConfirmBookOneRoom(IDialogContext context, IAwaitable<IMessageActivity> awaitable)
         {
@@ -176,6 +178,14 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
             }
             else
             {
+                var anyRoom = _allRooms.MatchName(answer);
+                if (null == anyRoom)
+                {
+                    await context.PostAsync(context.CreateMessage($"Sorry, I didn't understand '{answer}'", InputHints.IgnoringInput));
+                } else
+                {
+                    await context.PostAsync(context.CreateMessage($"Sorry, '{anyRoom.Info.SpeakableName}' isn't an option", InputHints.IgnoringInput));
+                }
                 await PromptForMultipleRooms(context);
             }
         }
