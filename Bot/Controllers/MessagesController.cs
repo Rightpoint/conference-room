@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Autofac;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +17,7 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RightpointLabs.BotLib;
 using RightpointLabs.BotLib.Dialogs;
 using RightpointLabs.ConferenceRoom.Bot.Dialogs;
@@ -50,6 +52,17 @@ namespace RightpointLabs.ConferenceRoom.Bot.Controllers
                 // Initialize the azure bot
                 using (BotService.Initialize())
                 {
+                    // BotBuilder insists on getting from the default config - this overrides it
+                    Conversation.UpdateContainer(b =>
+                    {
+                        b.RegisterInstance(new MicrosoftAppCredentials(
+                            Config.GetAppSetting("MicrosoftAppId"),
+                            Config.GetAppSetting("MicrosoftAppPassword")
+                        ));
+                    });
+                    // use this to check what the registered value is
+                    // ((MicrosoftAppCredentials)(Conversation.Container.ComponentRegistry.TryGetRegistration(new Autofac.Core.TypedService(typeof(MicrosoftAppCredentials)), out var xxx) ? Conversation.Container.ResolveComponent(xxx, new Autofac.Core.Parameter[0]) : null)).MicrosoftAppId
+
                     // Deserialize the incoming activity
                     //string jsonContent = await req.Content.ReadAsStringAsync();
                     //var activity = JsonConvert.DeserializeObject<Activity>(jsonContent);
@@ -74,13 +87,45 @@ namespace RightpointLabs.ConferenceRoom.Bot.Controllers
                         {
                             case ActivityTypes.Message:
                                 var text = activity.AsMessageActivity().Text;
-                                Trace.WriteLine($"Processing message: '{text}' from {activity.From.Id}/{activity.From.Name} on {activity.ChannelId}");
+                                Trace.WriteLine($"Recieved message: '{text}' from {activity.From.Id}/{activity.From.Name} on {activity.ChannelId}/{activity.Conversation.IsGroup.GetValueOrDefault()}");
+                                Trace.WriteLine($"  ChannelData: {(activity.ChannelData as JObject)}");
+                                Trace.WriteLine($"  Conversation: {activity.Conversation.ConversationType}, id: {activity.Conversation.Id}, name: {activity.Conversation.Name}, role: {activity.Conversation.Role}, properties: {activity.Conversation.Properties}");
+                                Trace.WriteLine($"  From: {activity.From.Id}/{activity.From.Name}, role: {activity.From.Role}, properties: {activity.From.Properties}");
+                                Trace.WriteLine($"  Recipient: {activity.Recipient.Id}/{activity.Recipient.Name}, role: {activity.Recipient.Role}, properties: {activity.Recipient.Properties}");
                                 if (text.Contains("</at>") && activity.ChannelId == "msteams")
                                 {
                                     // ignore the mention of us in the reply
                                     activity.AsMessageActivity().Text = new Regex("<at>.*</at>").Replace(text, "").Trim();
-                                    Trace.WriteLine($"Revised: processing message: '{activity.AsMessageActivity().Text}' from {activity.From.Id}/{activity.From.Name} on {activity.ChannelId}");
                                 }
+
+                                if (activity.ChannelId == "slack")
+                                {
+                                    var mentions = activity.Entities.Where(i => i.Type == "mention").Select(i =>
+                                        i.Properties.ToAnonymousObject(new
+                                        {
+                                            mentioned = new {id = "", name = ""},
+                                            text = ""
+                                        }))
+                                        .ToList();
+
+                                    // ignore any group messages that don't mention us
+                                    if (activity.Conversation.IsGroup.GetValueOrDefault() &&
+                                        !mentions.Any(i => i.mentioned.name == activity.Recipient.Name))
+                                    {
+                                        break;
+                                    }
+
+                                    // filter out any mentions - we don't really care about them...
+                                    foreach (var mention in mentions)
+                                    {
+                                        if (!string.IsNullOrEmpty(mention.text))
+                                        {
+                                            text = text.Replace(mention.text, "");
+                                        }
+                                    }
+                                }
+
+                                Trace.WriteLine($"Processing message: '{text}' from {activity.From.Id}/{activity.From.Name} on {activity.ChannelId}/{activity.Conversation.IsGroup.GetValueOrDefault()}");
                                 await Conversation.SendAsync(activity, () => new ExceptionHandlerDialog<object>(new BotDialog(Request.GetRequestUri()), true));
                                 break;
                             case ActivityTypes.ConversationUpdate:
