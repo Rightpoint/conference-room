@@ -146,7 +146,9 @@ namespace RightpointLabs.ConferenceRoom.Bot.Services
             return values.FirstOrDefault(i => i.Info.SpeakableName.ToLowerInvariant() == name.ToLowerInvariant()) ??
                    values.FirstOrDefault(i =>
                        string.Join(" ", i.Info.SpeakableName.ToLowerInvariant().Split(' ').Where(ii => ii != "the")) ==
-                       string.Join(" ", name.ToLowerInvariant().Split(' ').Where(ii => ii != "the")));
+                       string.Join(" ", name.ToLowerInvariant().Split(' ').Where(ii => ii != "the"))) ??
+                   values.FirstOrDefault(i => i.Address.Split('@')[0].ToLowerInvariant() == name.ToLowerInvariant())
+                ;
         }
 
         public static RoomsService.BuildingResult MatchName(this ICollection<RoomsService.BuildingResult> values, string name)
