@@ -102,6 +102,8 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                 {
                     reason = $"{reason} until {TimeZoneInfo.ConvertTime(firstMeeting.End, tz).ToSimpleTime()}";
                 }
+
+                var displayName = room?.Info?.SpeakableName ?? _criteria.Room;
                 if (result.busy)
                 {
                     if (!string.IsNullOrEmpty(reason))
@@ -117,11 +119,11 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                     }
                     if (result.Until.HasValue)
                     {
-                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is busy{start} until {until}{reason}", InputHints.AcceptingInput));
+                        await context.PostAsync(context.CreateMessage($"{displayName} is busy{start} until {until}{reason}", InputHints.AcceptingInput));
                     }
                     else
                     {
-                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is busy{start}{reason}", InputHints.AcceptingInput));
+                        await context.PostAsync(context.CreateMessage($"{displayName} is busy{start}{reason}", InputHints.AcceptingInput));
                     }
                 }
                 else
@@ -132,11 +134,11 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                         {
                             reason = $" when it's reserved{reason}";
                         }
-                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is free{start} until {until}{reason}", InputHints.AcceptingInput));
+                        await context.PostAsync(context.CreateMessage($"{displayName} is free{start} until {until}{reason}", InputHints.AcceptingInput));
                     }
                     else
                     {
-                        await context.PostAsync(context.CreateMessage($"{_criteria.Room} is free{start}", InputHints.AcceptingInput));
+                        await context.PostAsync(context.CreateMessage($"{displayName} is free{start}", InputHints.AcceptingInput));
                     }
                 }
             }
