@@ -23,10 +23,15 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
         [Template(TemplateUsage.EnumSelectMany, "What equipment do you need? {||}", ChoiceStyle = ChoiceStyleOptions.PerLine)]
         public List<EquipmentOptions> Equipment;
         public int? NumberOfPeople;
+        public string Building;
         
         public override string ToString()
         {
             var searchMsg = $"a room for {this.NumberOfPeople} people";
+            if (!string.IsNullOrEmpty(this.Building))
+            {
+                searchMsg += $" in {this.Building}";
+            }
             if (this.Equipment.Any())
             {
                 if (this.Equipment.Count == 1)
@@ -58,11 +63,13 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
                 .Select(i => int.Parse((string)i.Resolution["value"])).ToArray();
             var equipment = result.Entities.Where(i => i.Type == "equipment").Select(i => i.Entity).ToArray();
             var size = numbers.Cast<int?>().FirstOrDefault();
-           
+            var building = result.Entities.Where(i => i.Type == "building").Select(i => i.Entity).FirstOrDefault();
+
             var criteria = new RoomSearchCriteria()
             {
                 Equipment = equipment.Select(ParseOneEquipment).Where(i => i.HasValue).Select(i => i.Value).ToList(),
                 NumberOfPeople = size,
+                Building = building,
             };
 
             criteria.LoadTimeCriteria(result, timezone);
@@ -93,6 +100,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
                 case "tv":
                 case "screen":
                 case "projector":
+                case "monitor":
                     return RoomSearchCriteria.EquipmentOptions.Display;
                 case "telephone":
                 case "phone":

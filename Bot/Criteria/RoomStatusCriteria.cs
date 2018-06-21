@@ -22,11 +22,17 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
             }
         }
 
+        public string Building { get; set; }
+
         private string _room;
         
         public override string ToString()
         {
             var searchMsg = $"{this.Room}";
+            if (!string.IsNullOrEmpty(this.Building))
+            {
+                searchMsg += $" in {this.Building}";
+            }
             if (this.StartTime.HasValue)
             {
                 if (this.EndTime.HasValue)
@@ -48,10 +54,15 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
                 .Where(i => i.Type == "room")
                 .Select(i => i.Entity ?? (string)i.Resolution["value"])
                 .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+            var building = result.Entities
+                .Where(i => i.Type == "building")
+                .Select(i => i.Entity ?? (string)i.Resolution["value"])
+                .FirstOrDefault(i => !string.IsNullOrEmpty(i));
 
             var criteria = new RoomStatusCriteria()
             {
                 Room = room,
+                Building = building,
             };
             criteria.LoadTimeCriteria(result, timezone);
             return criteria;

@@ -32,10 +32,18 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
                     _room = "oasis";
             }
         }
-        
+
+        public string Building { get; set; }
+
         public override string ToString()
         {
-            return $"{this.Room} from {this.StartTime.ToSimpleTime()} to {this.EndTime.ToSimpleTime()}";
+            var desc = this.Room;
+            if (!string.IsNullOrEmpty(this.Building))
+            {
+                desc += $" {this.Building}";
+            }
+            desc += $" from {this.StartTime.ToSimpleTime()} to {this.EndTime.ToSimpleTime()}";
+            return desc;
         }
 
         public static RoomBookingCriteria ParseCriteria(LuisResult result, TimeZoneInfo timezone)
@@ -44,13 +52,19 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
                 .Where(i => i.Type == "room")
                 .Select(i => i.Entity ?? (string)i.Resolution["value"])
                 .FirstOrDefault(i => !string.IsNullOrEmpty(i));
+            var building = result.Entities
+                .Where(i => i.Type == "building")
+                .Select(i => i.Entity ?? (string)i.Resolution["value"])
+                .FirstOrDefault(i => !string.IsNullOrEmpty(i));
 
             var criteria = new RoomBookingCriteria()
             {
                 Room = room,
+                Building = building,
             };
             criteria.LoadTimeCriteria(result, timezone);
             return criteria;
         }
+
     }
 }

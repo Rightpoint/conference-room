@@ -41,7 +41,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
                 return;
             }
 
-            await context.Forward(new GetBuildingDialog(_requestUri), GotBuilding, context.Activity, new CancellationToken());
+            await context.Forward(new GetBuildingFallbackToDefaultDialog(_requestUri, _criteria.Building), GotBuilding, context.Activity, new CancellationToken());
         }
 
         public async Task GotBuilding(IDialogContext context, IAwaitable<BuildingChoice> argument)

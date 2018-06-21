@@ -9,11 +9,11 @@ using RightpointLabs.ConferenceRoom.Bot.Models;
 namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 {
     [Serializable]
-    public class GetBuildingDialog : IDialog<BuildingChoice>
+    public class GetDefaultBuildingDialog : IDialog<BuildingChoice>
     {
         private Uri _requestUri;
 
-        public GetBuildingDialog(Uri requestUri)
+        public GetDefaultBuildingDialog(Uri requestUri)
         {
             _requestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
         }
@@ -39,6 +39,9 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
         public async Task GotBuilding(IDialogContext context, IAwaitable<BuildingChoice> argument)
         {
             var building = await argument;
+            context.SetBuilding(building);
+
+            await context.PostAsync(context.CreateMessage($"Building set to {building.BuildingName}.", InputHints.AcceptingInput));
             context.Done(building);
         }
     }

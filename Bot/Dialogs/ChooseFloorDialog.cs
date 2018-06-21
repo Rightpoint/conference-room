@@ -32,7 +32,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
         public async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
-            await context.Forward(new GetBuildingDialog(_requestUri), GotBuilding, context.Activity, new CancellationToken());
+            await context.Forward(new GetDefaultBuildingDialog(_requestUri), GotBuilding, context.Activity, new CancellationToken());
         }
 
         public async Task GotBuilding(IDialogContext context, IAwaitable<BuildingChoice> argument)
