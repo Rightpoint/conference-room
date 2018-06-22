@@ -61,6 +61,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Dialogs
 
             // searching...
             await context.PostAsync(context.CreateMessage($"Searching for {_criteria}", InputHints.IgnoringInput));
+            await context.SendTyping();
 
             await context.Forward(new RoomNinjaGetRoomsStatusForBuildingCallDialog(_requestUri, buildingId), GotRoomStatus, context.Activity, new CancellationToken());
         }
