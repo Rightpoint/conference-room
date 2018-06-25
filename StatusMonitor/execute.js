@@ -124,8 +124,10 @@ module.exports = function execute(config, led) {
                 tlmCount: 2,
                 tlmPeriod: 10
             };
-            console.log('Starting bluetooth advertisement');
-            beacon.advertiseUid(config.bluetooth.namespace, deviceToken.deviceid, btOptions);
+            var deviceid = deviceToken.deviceid || "";
+            var uid = deviceid.substring(deviceid.length-12);
+            console.log('Starting bluetooth advertisement for ' + config.bluetooth.namespace + ' - ' + uid);
+            beacon.advertiseUid(config.bluetooth.namespace, uid, btOptions);
         }
 
         function getStatus() {
