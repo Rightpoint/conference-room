@@ -95,7 +95,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Controllers
                                 if (text.Contains("</at>") && activity.ChannelId == "msteams")
                                 {
                                     // ignore the mention of us in the reply
-                                    activity.AsMessageActivity().Text = new Regex("<at>.*</at>").Replace(text, "").Trim();
+                                    text = new Regex("<at>.*</at>").Replace(text, "").Trim();
                                 }
 
                                 if (activity.ChannelId == "slack")
@@ -134,6 +134,8 @@ namespace RightpointLabs.ConferenceRoom.Bot.Controllers
                                         Trace.WriteLine($"  Modified Conversation: {activity.Conversation.ConversationType}, id: {activity.Conversation.Id}, name: {activity.Conversation.Name}, role: {activity.Conversation.Role}, properties: {activity.Conversation.Properties}");
                                     }
                                 }
+
+                                activity.AsMessageActivity().Text = text;
 
                                 Trace.WriteLine($"Processing message: '{text}' from {activity.From.Id}/{activity.From.Name} on {activity.ChannelId}/{activity.Conversation.IsGroup.GetValueOrDefault()}");
                                 await Conversation.SendAsync(activity, () => new ExceptionHandlerDialog<object>(new BotDialog(Request.GetRequestUri()), true));
