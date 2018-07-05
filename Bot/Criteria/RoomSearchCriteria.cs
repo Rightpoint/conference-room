@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Bot.Builder.FormFlow;
@@ -14,10 +15,18 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
     {
         public enum EquipmentOptions
         {
-            Whiteboard = 1,
+            None = 0,
+            Whiteboard,
             Telephone,
             Display,
-            None,
+            [Display(Name = "USB Speakerphone")]
+            UsbSpeakerphone = 0x08,
+            [Display(Name = "Mac Mini")]
+            MacMini = 0x10,
+            [Display(Name = "Skype Room System")]
+            SkypeRoomSystem = 0x20,
+            [Display(Name = "Audio System")]
+            AudioSystem = 0x40,
         }
 
         [Template(TemplateUsage.EnumSelectMany, "What equipment do you need? {||}", ChoiceStyle = ChoiceStyleOptions.PerLine)]
@@ -36,15 +45,15 @@ namespace RightpointLabs.ConferenceRoom.Bot.Criteria
             {
                 if (this.Equipment.Count == 1)
                 {
-                    searchMsg += $" with a {this.Equipment[0]}";
+                    searchMsg += $" with a {this.Equipment[0].GetDisplayName()}";
                 }
                 else if (this.Equipment.Count == 2)
                 {
-                    searchMsg += $" with a {this.Equipment[0]} and a {this.Equipment[1]}";
+                    searchMsg += $" with a {this.Equipment[0].GetDisplayName()} and a {this.Equipment[1].GetDisplayName()}";
                 }
                 else
                 {
-                    searchMsg += " with " + string.Join(", ", this.Equipment.Select((i, ix) => (ix == this.Equipment.Count - 1 ? "and " : "") + $"a {i}"));
+                    searchMsg += " with " + string.Join(", ", this.Equipment.Select((i, ix) => (ix == this.Equipment.Count - 1 ? "and " : "") + $"a {i.GetDisplayName()}"));
                 }
             }
             searchMsg += $" from {this.StartTime.ToSimpleTime()} to {this.EndTime.ToSimpleTime()}";
