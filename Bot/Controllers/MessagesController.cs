@@ -123,6 +123,16 @@ namespace RightpointLabs.ConferenceRoom.Bot.Controllers
                                             text = text.Replace(mention.text, "");
                                         }
                                     }
+
+                                    // set up the conversation so we'll be in the thread
+                                    string thread_ts = ((dynamic)activity.ChannelData)?.SlackMessage?.@event?.thread_ts;
+                                    string ts = ((dynamic)activity.ChannelData)?.SlackMessage?.@event?.ts;
+                                    if (string.IsNullOrEmpty(thread_ts) && !string.IsNullOrEmpty(ts) && activity.Conversation.Id.Split(':').Length == 3)
+                                    {
+                                        // this is a main-channel conversation - pretend it came in on a thread
+                                        activity.Conversation.Id += $":{ts}";
+                                        Trace.WriteLine($"  Modified Conversation: {activity.Conversation.ConversationType}, id: {activity.Conversation.Id}, name: {activity.Conversation.Name}, role: {activity.Conversation.Role}, properties: {activity.Conversation.Properties}");
+                                    }
                                 }
 
                                 Trace.WriteLine($"Processing message: '{text}' from {activity.From.Id}/{activity.From.Name} on {activity.ChannelId}/{activity.Conversation.IsGroup.GetValueOrDefault()}");
