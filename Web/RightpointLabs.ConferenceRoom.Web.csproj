@@ -390,6 +390,7 @@
     <Compile Include="Controllers\SettingsController.cs" />
     <Compile Include="Controllers\RoomListController.cs" />
     <Compile Include="Controllers\RoomController.cs" />
+    <Compile Include="EnumExtensions.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

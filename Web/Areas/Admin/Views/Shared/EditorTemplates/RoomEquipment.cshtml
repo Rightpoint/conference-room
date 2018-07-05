@@ -10,8 +10,8 @@
             continue;
         }
         <li>
-            <input name="@(Html.NameForModel())[]" type="checkbox" value="@v" @chk>
-            @v
+            <input id="equipment-@v" name="@(Html.NameForModel())[]" type="checkbox" value="@v" @chk>
+            <label for="equipment-@v">@v.GetDisplayName()</label>
         </li>
     }
 </ul>

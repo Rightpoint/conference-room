@@ -1,3 +1,3 @@
 ﻿@using RightpointLabs.ConferenceRoom.Domain.Models
 @model IEnumerable<RoomEquipment>
-@string.Join(", ", Model ?? new RoomEquipment[0])
+@string.Join(", ", (Model ?? new RoomEquipment[0]).Select(i => i.GetDisplayName()))
