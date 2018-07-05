@@ -86,7 +86,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Controllers
                         switch (activity.GetActivityType())
                         {
                             case ActivityTypes.Message:
-                                var text = activity.AsMessageActivity().Text;
+                                var text = activity.AsMessageActivity().Text ?? "";
                                 Trace.WriteLine($"Recieved message: '{text}' from {activity.From.Id}/{activity.From.Name} on {activity.ChannelId}/{activity.Conversation.IsGroup.GetValueOrDefault()}");
                                 Trace.WriteLine($"  ChannelData: {(activity.ChannelData as JObject)}");
                                 Trace.WriteLine($"  Conversation: {activity.Conversation.ConversationType}, id: {activity.Conversation.Id}, name: {activity.Conversation.Name}, role: {activity.Conversation.Role}, properties: {activity.Conversation.Properties}");
@@ -135,7 +135,7 @@ namespace RightpointLabs.ConferenceRoom.Bot.Controllers
                                     }
                                 }
 
-                                activity.AsMessageActivity().Text = text;
+                                activity.AsMessageActivity().Text = text.Trim();
 
                                 Trace.WriteLine($"Processing message: '{text}' from {activity.From.Id}/{activity.From.Name} on {activity.ChannelId}/{activity.Conversation.IsGroup.GetValueOrDefault()}");
                                 await Conversation.SendAsync(activity, () => new ExceptionHandlerDialog<object>(new BotDialog(Request.GetRequestUri()), true));
