@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <AssemblyName>RightpointLabs.ConferenceRoom.Shared</AssemblyName>
+    <RootNamespace>RightpointLabs.ConferenceRoom.Shared</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Bot.Builder">
+      <HintPath>..\..\..\Users\jorup.REX\.nuget\packages\microsoft.bot.builder\3.15.0\lib\net46\Microsoft.Bot.Builder.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
