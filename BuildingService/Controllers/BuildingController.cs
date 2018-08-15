@@ -23,15 +23,15 @@ namespace BuildingService.Controllers
         }
 
         [HttpGet("{id}")]
-        public Task<Building> Get(string buildingId)
+        public Task<Building> Get(string id)
         {
-            return _repository.GetByIdAsync(buildingId);
+            return _repository.GetByIdAsync(id);
         }
 
         [HttpGet("byOrganization/{id}")]
-        public async Task<Building[]> GetAllByOrganization(string organizationId)
+        public async Task<Building[]> GetAllByOrganization(string id)
         {
-            return (await _repository.GetAllAsync(organizationId)).ToArray();
+            return (await _repository.GetAllAsync(id)).ToArray();
         }
     }
 }

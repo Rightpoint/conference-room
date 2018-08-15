@@ -25,9 +25,9 @@ namespace OrganizationService.Controllers
         }
 
         [HttpGet("{id}")]
-        public Task<Organization> Get(string organizationId)
+        public Task<Organization> Get(string id)
         {
-            return _repository.GetByIdAsync(organizationId);
+            return _repository.GetByIdAsync(id);
         }
 
         [HttpGet("all")]
