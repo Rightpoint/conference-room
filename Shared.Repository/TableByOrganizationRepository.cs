@@ -11,39 +11,38 @@ namespace RightpointLabs.ConferenceRoom.Shared.Repository
         {
         }
         
-        public async Task<IEnumerable<T>> GetAllAsync(string organizationId)
+        public virtual async Task<IEnumerable<T>> GetAllAsync(string organizationId)
         {
             return (await _table.ExecuteQueryAsync(new TableQuery<DynamicTableEntity>().Where(FilterConditionAll(organizationId)))).Select(FromTableEntity);
         }
 
-        public string FilterConditionAll(string organizationId)
+        public virtual string FilterConditionAll(string organizationId)
         {
             return
                 TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, organizationId);
 
         }
 
-        public async Task<T> GetByIdAsync(string organizationId, string id)
+        public virtual async Task<T> GetByIdAsync(string organizationId, string id)
         {
             return (await _table.ExecuteQueryAsync(new TableQuery<DynamicTableEntity>().Where(FilterConditionById(organizationId, id)))).Select(FromTableEntity).SingleOrDefault();
         }
 
-        public string FilterConditionById(string organizationId, string id)
+        protected virtual string FilterConditionById(string organizationId, string id)
         {
             return
                 TableQuery.CombineFilters(
                     TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, organizationId),
                     TableOperators.And,
                     TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, id));
-
         }
         
-        public async Task<IEnumerable<T>> GetByIdAsync(string organizationId, string[] id)
+        public virtual async Task<IEnumerable<T>> GetByIdAsync(string organizationId, string[] id)
         {
             return (await _table.ExecuteQueryAsync(new TableQuery<DynamicTableEntity>().Where(FilterConditionById(organizationId, id)))).Select(FromTableEntity);
         }
 
-        public string FilterConditionById(string organizationId, string[] id)
+        protected virtual string FilterConditionById(string organizationId, string[] id)
         {
             return
                 TableQuery.CombineFilters(

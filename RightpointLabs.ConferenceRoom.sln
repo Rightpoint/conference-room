@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildingService", "Building
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FloorService", "FloorService\FloorService.csproj", "{08D85DBD-DDF2-4D7E-AA83-FCBF7E041019}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterService", "MasterService\MasterService.csproj", "{87C96B52-8F63-4724-ABE5-7A3EFB4D459D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -127,6 +129,14 @@ Global
 		{08D85DBD-DDF2-4D7E-AA83-FCBF7E041019}.Release|Any CPU.Build.0 = Release|Any CPU
 		{08D85DBD-DDF2-4D7E-AA83-FCBF7E041019}.Release|x64.ActiveCfg = Release|Any CPU
 		{08D85DBD-DDF2-4D7E-AA83-FCBF7E041019}.Release|x64.Build.0 = Release|Any CPU
+		{87C96B52-8F63-4724-ABE5-7A3EFB4D459D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87C96B52-8F63-4724-ABE5-7A3EFB4D459D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87C96B52-8F63-4724-ABE5-7A3EFB4D459D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{87C96B52-8F63-4724-ABE5-7A3EFB4D459D}.Debug|x64.Build.0 = Debug|Any CPU
+		{87C96B52-8F63-4724-ABE5-7A3EFB4D459D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87C96B52-8F63-4724-ABE5-7A3EFB4D459D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87C96B52-8F63-4724-ABE5-7A3EFB4D459D}.Release|x64.ActiveCfg = Release|Any CPU
+		{87C96B52-8F63-4724-ABE5-7A3EFB4D459D}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -137,6 +147,7 @@ Global
 		{53E7187B-28C1-412D-B784-A3A654D5C11A} = {E393CEB5-1888-4A85-BD16-084FD8009CF4}
 		{A3783079-D975-4F79-BC1D-521A99249C3E} = {E393CEB5-1888-4A85-BD16-084FD8009CF4}
 		{08D85DBD-DDF2-4D7E-AA83-FCBF7E041019} = {E393CEB5-1888-4A85-BD16-084FD8009CF4}
+		{87C96B52-8F63-4724-ABE5-7A3EFB4D459D} = {E393CEB5-1888-4A85-BD16-084FD8009CF4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {880CB593-93E2-440E-9179-406E1C0D3750}
